@@ -9,6 +9,7 @@ class MonthlyWorkedSummary extends HTMLElement {
     this.selectedYear = now.getFullYear();
     this.selectedMonth = now.getMonth() + 1;
     this.currencySymbol = window.AppState?.settings?.currency_symbol || '€';
+    this.selectedClientId = 'all'; // 'all' or specific client ID
     this.handleMonthChange = this.handleMonthChange.bind(this);
     this.handleWorkedHoursUpdate = this.handleWorkedHoursUpdate.bind(this);
     this.handleClientsUpdate = this.handleClientsUpdate.bind(this);
@@ -87,7 +88,30 @@ class MonthlyWorkedSummary extends HTMLElement {
     window.dispatchEvent(new CustomEvent('clients:open-manager'));
   }
 
+  handleClientFilter(clientId) {
+    this.selectedClientId = clientId;
+    this.render();
+  }
+
+  getFilteredSummary() {
+    if (this.selectedClientId === 'all') {
+      return this.summary;
+    }
+    return this.summary.filter(item => item.client_id === parseInt(this.selectedClientId));
+  }
+
+  getFilteredTotals() {
+    const filtered = this.getFilteredSummary();
+    return {
+      total_hours: filtered.reduce((sum, item) => sum + item.hours, 0),
+      total_amount: filtered.reduce((sum, item) => sum + item.amount, 0)
+    };
+  }
+
   render() {
+    const filteredSummary = this.getFilteredSummary();
+    const filteredTotals = this.getFilteredTotals();
+    
     this.shadowRoot.innerHTML = `
       <style>
         :host {
@@ -117,6 +141,37 @@ class MonthlyWorkedSummary extends HTMLElement {
         .actions {
           display: flex;
           gap: 0.5rem;
+        }
+        .filter-row {
+          display: flex;
+          gap: 0.75rem;
+          align-items: center;
+          margin-bottom: 1rem;
+          padding-bottom: 1rem;
+          border-bottom: 1px solid var(--color-border);
+        }
+        .filter-label {
+          font-size: 0.9rem;
+          font-weight: 500;
+          color: var(--color-text-secondary);
+        }
+        select {
+          padding: 0.5rem 0.75rem;
+          border: 1px solid var(--color-border);
+          border-radius: 0.375rem;
+          background: var(--color-bg);
+          color: var(--color-text-primary);
+          font-size: 0.9rem;
+          cursor: pointer;
+          transition: border-color var(--transition-fast);
+        }
+        select:hover {
+          border-color: var(--color-primary);
+        }
+        select:focus {
+          outline: none;
+          border-color: var(--color-primary);
+          box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
         }
         .btn {
           border-radius: 0.375rem;
@@ -174,6 +229,13 @@ class MonthlyWorkedSummary extends HTMLElement {
           font-weight: 600;
           color: var(--color-text-primary);
         }
+        .filter-active {
+          background: rgba(59, 130, 246, 0.1);
+          padding: 0.5rem 0.75rem;
+          border-radius: 0.375rem;
+          font-size: 0.85rem;
+          color: var(--color-primary);
+        }
         .empty-state, .error {
           padding: 1rem;
           background: var(--color-bg-secondary);
@@ -206,6 +268,22 @@ class MonthlyWorkedSummary extends HTMLElement {
             <div style="margin-top:0.5rem;">Inizia cliccando "Registra Ore".</div>
           </div>
         ` : `
+          <div class="filter-row">
+            <span class="filter-label">Filtra per cliente:</span>
+            <select id="client-filter">
+              <option value="all" ${this.selectedClientId === 'all' ? 'selected' : ''}>Tutti i clienti</option>
+              ${this.summary.map(item => `
+                <option value="${item.client_id}" ${this.selectedClientId == item.client_id ? 'selected' : ''}>
+                  ${item.client_name}
+                </option>
+              `).join('')}
+            </select>
+            ${this.selectedClientId !== 'all' ? `
+              <span class="filter-active">
+                ✓ Filtrato: ${filteredSummary[0]?.client_name || ''}
+              </span>
+            ` : ''}
+          </div>
           <div class="table-wrapper">
             <table>
               <thead>
@@ -217,7 +295,7 @@ class MonthlyWorkedSummary extends HTMLElement {
                 </tr>
               </thead>
               <tbody>
-                ${this.summary.map(item => `
+                ${filteredSummary.map(item => `
                   <tr>
                     <td>${item.client_name}</td>
                     <td style="text-align:right;">${item.hours.toFixed(2)}</td>
@@ -229,8 +307,8 @@ class MonthlyWorkedSummary extends HTMLElement {
             </table>
           </div>
           <div class="summary-footer">
-            <span>Totale ore: ${this.overall?.total_hours?.toFixed(2) || '0.00'}</span>
-            <span>Totale importo: ${this.currencySymbol}${this.overall?.total_amount?.toFixed(2) || '0.00'}</span>
+            <span>Totale ore: ${filteredTotals.total_hours.toFixed(2)}</span>
+            <span>Totale importo: ${this.currencySymbol}${filteredTotals.total_amount.toFixed(2)}</span>
           </div>
         `}
 
@@ -242,6 +320,11 @@ class MonthlyWorkedSummary extends HTMLElement {
 
     const manageBtn = this.shadowRoot.querySelector('#manage-clients-btn');
     if (manageBtn) manageBtn.addEventListener('click', () => this.openClientsManager());
+
+    const filterSelect = this.shadowRoot.querySelector('#client-filter');
+    if (filterSelect) {
+      filterSelect.addEventListener('change', (e) => this.handleClientFilter(e.target.value));
+    }
   }
 }
 
