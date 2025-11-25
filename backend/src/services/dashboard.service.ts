@@ -16,19 +16,26 @@ import { RowDataPacket } from 'mysql2';
 import db from '../config/database';
 import { getInvoiceSummary, updateOverdueInvoices } from './invoice.service';
 import { getExpenseSummary } from './expense.service';
-import { calculateNetIncome } from '../utils/calc.utils';
+import { calculateNetIncome, calculateItalianTaxes } from '../utils/calc.utils';
 import { getFirstDayOfMonth, getLastDayOfMonth, getLastDayOfSpecificMonth, getDateMonthsAgo } from '../utils/date.utils';
 
 /**
  * Dashboard Summary Interface
  * 
  * High-level financial metrics for dashboard display.
+ * 
+ * Note: total_vat is the VAT collected from clients (to be paid to government).
+ * This is separate from income tax and health insurance contributions.
  */
 export interface DashboardSummary {
-  total_income: number;           // Total from all paid invoices
+  total_income: number;           // Total gross income from all paid invoices (excl. VAT)
   total_expenses: number;         // Total from all expenses
-  total_tax: number;              // Total tax from all invoices
-  net_income: number;             // Income - Expenses - Tax
+  total_vat: number;              // Total VAT collected (to be paid to government)
+  taxable_income: number;         // Income × 76% (coefficiente di redditività)
+  income_tax: number;             // Income tax owed (15% of taxable income)
+  health_insurance: number;       // INPS contribution owed (27% of taxable income)
+  total_tax_burden: number;       // Total of income tax + health insurance
+  net_income: number;             // Income - Expenses - Income Tax - Health Insurance
   pending_invoices: number;       // Amount in sent but unpaid invoices
   overdue_invoices: number;       // Amount in overdue invoices
 }
@@ -36,14 +43,18 @@ export interface DashboardSummary {
 /**
  * Monthly Estimate Interface
  * 
- * Current month financial projection.
+ * Current month financial projection with Italian tax calculations.
  */
 export interface MonthlyEstimate {
   month: string;                  // Current month (YYYY-MM)
-  total_income: number;           // Income from paid invoices this month
+  total_income: number;           // Gross income from paid invoices this month (excl. VAT)
   total_expenses: number;         // Expenses this month
-  total_tax: number;              // Tax from paid invoices this month
-  net_income: number;             // Estimated net for this month
+  total_vat: number;              // VAT collected (to be paid to government)
+  taxable_income: number;         // Income × 76%
+  income_tax: number;             // 15% of taxable income
+  health_insurance: number;       // 27% of taxable income
+  total_tax_burden: number;       // Income tax + health insurance
+  net_income: number;             // Income - Expenses - Total tax burden
   invoice_count: number;          // Number of invoices this month
   expense_count: number;          // Number of expenses this month
 }
@@ -65,6 +76,7 @@ export interface MonthlyDataPoint {
  * 
  * Retrieves comprehensive financial overview including all key metrics.
  * Updates overdue invoices before calculating to ensure accuracy.
+ * Uses Italian "regime forfettario" tax calculation.
  * 
  * @returns Promise resolving to dashboard summary
  */
@@ -72,33 +84,57 @@ export async function getDashboardSummary(): Promise<DashboardSummary> {
   // Update overdue invoices first
   await updateOverdueInvoices();
   
+  // Get tax settings
+  const [settingsRows] = await db.query<RowDataPacket[]>(
+    `SELECT setting_key, setting_value FROM settings 
+     WHERE setting_key IN ('taxable_percentage', 'income_tax_rate', 'health_insurance_rate')`
+  );
+  
+  const settings: { [key: string]: number } = {};
+  settingsRows.forEach(row => {
+    settings[row.setting_key] = parseFloat(row.setting_value);
+  });
+  
+  const taxablePercentage = settings['taxable_percentage'] || 76;
+  const incomeTaxRate = settings['income_tax_rate'] || 15;
+  const healthInsuranceRate = settings['health_insurance_rate'] || 27;
+  
   // Get invoice summary
   const invoiceSummary = await getInvoiceSummary();
   
   // Get expense summary
   const expenseSummary = await getExpenseSummary();
   
-  // Calculate total tax from paid invoices
-  const [taxRows] = await db.query<RowDataPacket[]>(
-    `SELECT COALESCE(SUM(tax_amount), 0) as total_tax
+  // Calculate total VAT collected from paid invoices (this goes to government)
+  const [vatRows] = await db.query<RowDataPacket[]>(
+    `SELECT COALESCE(SUM(tax_amount), 0) as total_vat
      FROM invoices
      WHERE status = 'paid'`
   );
   
-  const totalTax = taxRows[0].total_tax;
+  const totalVat = vatRows[0].total_vat;
   
-  // Calculate net income
-  const netIncome = calculateNetIncome(
-    invoiceSummary.total_paid,
-    expenseSummary.total_amount,
-    totalTax
+  // Calculate Italian taxes using the forfettario regime
+  const grossIncome = invoiceSummary.total_paid; // Total from paid invoices (excl. VAT)
+  const taxes = calculateItalianTaxes(
+    grossIncome,
+    taxablePercentage,
+    incomeTaxRate,
+    healthInsuranceRate
   );
   
+  // Calculate net income: Gross Income - Expenses - Income Tax - Health Insurance
+  const netIncome = grossIncome - expenseSummary.total_amount - taxes.totalTaxBurden;
+  
   return {
-    total_income: invoiceSummary.total_paid,
+    total_income: grossIncome,
     total_expenses: expenseSummary.total_amount,
-    total_tax: totalTax,
-    net_income: netIncome,
+    total_vat: totalVat,
+    taxable_income: taxes.taxableIncome,
+    income_tax: taxes.incomeTax,
+    health_insurance: taxes.healthInsurance,
+    total_tax_burden: taxes.totalTaxBurden,
+    net_income: Math.round(netIncome * 100) / 100,
     pending_invoices: invoiceSummary.total_pending,
     overdue_invoices: invoiceSummary.total_overdue
   };
@@ -109,6 +145,7 @@ export async function getDashboardSummary(): Promise<DashboardSummary> {
  * 
  * Calculates financial metrics for the current month.
  * This is a projection of how the current month is performing.
+ * Uses Italian "regime forfettario" tax calculation.
  * 
  * @returns Promise resolving to monthly estimate
  */
@@ -120,12 +157,27 @@ export async function getMonthlyEstimate(): Promise<MonthlyEstimate> {
   const now = new Date();
   const monthLabel = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
   
+  // Get tax settings
+  const [settingsRows] = await db.query<RowDataPacket[]>(
+    `SELECT setting_key, setting_value FROM settings 
+     WHERE setting_key IN ('taxable_percentage', 'income_tax_rate', 'health_insurance_rate')`
+  );
+  
+  const settings: { [key: string]: number } = {};
+  settingsRows.forEach(row => {
+    settings[row.setting_key] = parseFloat(row.setting_value);
+  });
+  
+  const taxablePercentage = settings['taxable_percentage'] || 76;
+  const incomeTaxRate = settings['income_tax_rate'] || 15;
+  const healthInsuranceRate = settings['health_insurance_rate'] || 27;
+  
   // Get income from paid invoices this month
   const [incomeRows] = await db.query<RowDataPacket[]>(
     `SELECT 
       COUNT(*) as invoice_count,
       COALESCE(SUM(amount), 0) as total_income,
-      COALESCE(SUM(tax_amount), 0) as total_tax
+      COALESCE(SUM(tax_amount), 0) as total_vat
      FROM invoices
      WHERE status = 'paid'
      AND paid_date BETWEEN ? AND ?`,
@@ -133,8 +185,8 @@ export async function getMonthlyEstimate(): Promise<MonthlyEstimate> {
   );
   
   const invoiceCount = incomeRows[0].invoice_count;
-  const totalIncome = incomeRows[0].total_income;
-  const totalTax = incomeRows[0].total_tax;
+  const grossIncome = incomeRows[0].total_income;
+  const totalVat = incomeRows[0].total_vat;
   
   // Get expenses for this month
   const [expenseRows] = await db.query<RowDataPacket[]>(
@@ -149,15 +201,27 @@ export async function getMonthlyEstimate(): Promise<MonthlyEstimate> {
   const expenseCount = expenseRows[0].expense_count;
   const totalExpenses = expenseRows[0].total_expenses;
   
-  // Calculate net income for the month
-  const netIncome = calculateNetIncome(totalIncome, totalExpenses, totalTax);
+  // Calculate Italian taxes
+  const taxes = calculateItalianTaxes(
+    grossIncome,
+    taxablePercentage,
+    incomeTaxRate,
+    healthInsuranceRate
+  );
+  
+  // Calculate net income: Gross Income - Expenses - Total Tax Burden
+  const netIncome = grossIncome - totalExpenses - taxes.totalTaxBurden;
   
   return {
     month: monthLabel,
-    total_income: totalIncome,
+    total_income: grossIncome,
     total_expenses: totalExpenses,
-    total_tax: totalTax,
-    net_income: netIncome,
+    total_vat: totalVat,
+    taxable_income: taxes.taxableIncome,
+    income_tax: taxes.incomeTax,
+    health_insurance: taxes.healthInsurance,
+    total_tax_burden: taxes.totalTaxBurden,
+    net_income: Math.round(netIncome * 100) / 100,
     invoice_count: invoiceCount,
     expense_count: expenseCount
   };
@@ -258,17 +322,21 @@ export async function getExpenseByCategoryChartData() {
 /**
  * Monthly Overview with Salary Calculations Interface
  * 
- * Comprehensive monthly financial overview including salary-based calculations.
+ * Comprehensive monthly financial overview including Italian tax calculations
+ * and salary-based savings calculations.
  */
 export interface MonthlyOverview {
   month: string;                    // Month in YYYY-MM format
-  total_income: number;             // Total income for the month
+  total_income: number;             // Gross income for the month (excl. VAT)
   total_expenses: number;           // Total expenses for the month
-  total_tax: number;                // Total tax paid/owed for the month
-  net_income: number;               // Income - Expenses - Tax
+  total_vat: number;                // VAT collected (to be paid to government)
+  taxable_income: number;           // Income × 76% (coefficiente)
+  income_tax: number;               // 15% of taxable income
+  health_insurance: number;         // 27% of taxable income
+  total_tax_burden: number;         // Income tax + health insurance
+  net_income: number;               // Income - Expenses - Total tax burden
   target_salary: number;            // Target monthly salary from settings
-  taxes_to_set_aside: number;      // Amount to set aside for taxes
-  savings: number;                  // Amount to save (net_income - target_salary - taxes_to_set_aside)
+  savings: number;                  // Amount to save (net_income - target_salary)
   invoice_count: number;            // Number of invoices
   expense_count: number;            // Number of expenses
 }
@@ -278,21 +346,24 @@ export interface MonthlyOverview {
  * 
  * Retrieves comprehensive financial data for a specific month including:
  * - Income and expenses
- * - Tax calculations
- * - Amount to set aside for taxes
+ * - Italian "regime forfettario" tax calculations
  * - Savings based on target salary
  * 
  * @param year - The year (e.g., 2024)
  * @param month - The month (1-12)
  * @param targetSalary - Target monthly salary from settings
- * @param taxRate - Tax rate from settings
+ * @param taxablePercentage - Percentage of income that is taxable (e.g., 76)
+ * @param incomeTaxRate - Income tax rate (e.g., 15)
+ * @param healthInsuranceRate - Health insurance rate (e.g., 27)
  * @returns Promise resolving to monthly overview data
  */
 export async function getMonthlyOverview(
   year: number, 
   month: number, 
   targetSalary: number,
-  taxRate: number
+  taxablePercentage: number,
+  incomeTaxRate: number,
+  healthInsuranceRate: number
 ): Promise<MonthlyOverview> {
   const startDate = `${year}-${String(month).padStart(2, '0')}-01`;
   const endDate = getLastDayOfSpecificMonth(year, month);
@@ -302,7 +373,7 @@ export async function getMonthlyOverview(
     `SELECT 
        COUNT(*) as invoice_count,
        COALESCE(SUM(amount), 0) as total_income,
-       COALESCE(SUM(tax_amount), 0) as total_tax
+       COALESCE(SUM(tax_amount), 0) as total_vat
      FROM invoices 
      WHERE status = 'paid' 
        AND paid_date >= ? 
@@ -321,32 +392,38 @@ export async function getMonthlyOverview(
     [startDate, endDate]
   );
   
-  const totalIncome = invoiceRows[0]?.total_income || 0;
+  const grossIncome = invoiceRows[0]?.total_income || 0;
   const totalExpenses = expenseRows[0]?.total_expenses || 0;
-  const totalTax = invoiceRows[0]?.total_tax || 0;
+  const totalVat = invoiceRows[0]?.total_vat || 0;
   const invoiceCount = invoiceRows[0]?.invoice_count || 0;
   const expenseCount = expenseRows[0]?.expense_count || 0;
   
-  // Calculate net income (income - expenses - already paid tax)
-  const netIncome = totalIncome - totalExpenses - totalTax;
+  // Calculate Italian taxes
+  const taxes = calculateItalianTaxes(
+    grossIncome,
+    taxablePercentage,
+    incomeTaxRate,
+    healthInsuranceRate
+  );
   
-  // Calculate taxes to set aside (on remaining net income, if any is left to be taxed)
-  // This represents additional tax liability on net profit
-  const taxableAmount = Math.max(0, netIncome);
-  const taxesToSetAside = (taxableAmount * (taxRate / 100));
+  // Calculate net income: Gross Income - Expenses - Total Tax Burden
+  const netIncome = grossIncome - totalExpenses - taxes.totalTaxBurden;
   
-  // Calculate savings (what's left after taking target salary and setting aside taxes)
-  const savings = Math.max(0, netIncome - targetSalary - taxesToSetAside);
+  // Calculate savings: what's left after taking the target salary
+  const savings = Math.max(0, netIncome - targetSalary);
   
   return {
     month: `${year}-${String(month).padStart(2, '0')}`,
-    total_income: totalIncome,
+    total_income: grossIncome,
     total_expenses: totalExpenses,
-    total_tax: totalTax,
-    net_income: netIncome,
+    total_vat: totalVat,
+    taxable_income: taxes.taxableIncome,
+    income_tax: taxes.incomeTax,
+    health_insurance: taxes.healthInsurance,
+    total_tax_burden: taxes.totalTaxBurden,
+    net_income: Math.round(netIncome * 100) / 100,
     target_salary: targetSalary,
-    taxes_to_set_aside: taxesToSetAside,
-    savings: savings,
+    savings: Math.round(savings * 100) / 100,
     invoice_count: invoiceCount,
     expense_count: expenseCount
   };

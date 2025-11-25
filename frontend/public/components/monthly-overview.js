@@ -31,15 +31,18 @@ class MonthlyOverview extends HTMLElement {
   }
   
   /**
-   * Load application settings (for target salary and tax rate)
+   * Load application settings (for target salary and Italian tax rates)
    */
   async loadSettings() {
     try {
       const settings = await API.settings.getAll();
       this.settings = {
         target_salary: parseFloat(settings.target_salary || 3000),
-        default_tax_rate: parseFloat(settings.default_tax_rate || 22),
-        currency: settings.currency || 'EUR'
+        taxable_percentage: parseFloat(settings.taxable_percentage || 76),
+        income_tax_rate: parseFloat(settings.income_tax_rate || 15),
+        health_insurance_rate: parseFloat(settings.health_insurance_rate || 27),
+        currency: settings.currency || 'EUR',
+        currency_symbol: settings.currency_symbol || '€'
       };
       // After settings are loaded, load the overview
       await this.loadOverview();
@@ -48,8 +51,11 @@ class MonthlyOverview extends HTMLElement {
       // Try to load with defaults even if settings fail
       this.settings = {
         target_salary: 3000,
-        default_tax_rate: 22,
-        currency: 'EUR'
+        taxable_percentage: 76,
+        income_tax_rate: 15,
+        health_insurance_rate: 27,
+        currency: 'EUR',
+        currency_symbol: '€'
       };
       await this.loadOverview();
     }
@@ -69,14 +75,18 @@ class MonthlyOverview extends HTMLElement {
         year: this.selectedYear,
         month: this.selectedMonth,
         targetSalary: this.settings.target_salary,
-        taxRate: this.settings.default_tax_rate
+        taxablePercentage: this.settings.taxable_percentage,
+        incomeTaxRate: this.settings.income_tax_rate,
+        healthInsuranceRate: this.settings.health_insurance_rate
       });
       
       const data = await API.dashboard.getMonthlyOverview(
         this.selectedYear,
         this.selectedMonth,
         this.settings.target_salary,
-        this.settings.default_tax_rate
+        this.settings.taxable_percentage,
+        this.settings.income_tax_rate,
+        this.settings.health_insurance_rate
       );
       
       this.overview = data;
@@ -147,7 +157,7 @@ class MonthlyOverview extends HTMLElement {
         <div class="overview-card income-card">
           <div class="card-header">
             <span class="card-icon">💰</span>
-            <h3 class="card-title">Entrate</h3>
+            <h3 class="card-title">Entrate Lorde</h3>
           </div>
           <div class="card-value positive">${formatCurrency(this.overview.total_income, currency)}</div>
           <div class="card-detail">${this.overview.invoice_count} fattura/e pagata/e</div>
@@ -163,33 +173,79 @@ class MonthlyOverview extends HTMLElement {
           <div class="card-detail">${this.overview.expense_count} spesa/e</div>
         </div>
         
-        <!-- Tax Paid Section -->
-        <div class="overview-card tax-card">
+        <!-- VAT Collected Section -->
+        <div class="overview-card vat-card">
           <div class="card-header">
             <span class="card-icon">🏛️</span>
-            <h3 class="card-title">IVA Pagata</h3>
+            <h3 class="card-title">IVA Riscossa</h3>
           </div>
-          <div class="card-value">${formatCurrency(this.overview.total_tax, currency)}</div>
-          <div class="card-detail">Già inclusa nelle fatture</div>
+          <div class="card-value">${formatCurrency(this.overview.total_vat, currency)}</div>
+          <div class="card-detail">Da versare allo Stato</div>
         </div>
         
-        <!-- Net Income Section -->
-        <div class="overview-card net-card">
+        <!-- Taxable Income Section -->
+        <div class="overview-card taxable-card">
           <div class="card-header">
-            <span class="card-icon">📊</span>
-            <h3 class="card-title">Reddito Netto</h3>
+            <span class="card-icon">📐</span>
+            <h3 class="card-title">Reddito Imponibile</h3>
           </div>
-          <div class="card-value ${this.overview.net_income >= 0 ? 'positive' : 'negative'}">
-            ${formatCurrency(this.overview.net_income, currency)}
-          </div>
-          <div class="card-detail">Dopo spese e tasse</div>
+          <div class="card-value">${formatCurrency(this.overview.taxable_income, currency)}</div>
+          <div class="card-detail">${this.settings.taxable_percentage}% delle entrate</div>
         </div>
       </div>
       
-      <!-- Salary-based Breakdown -->
+      <!-- Italian Tax Breakdown -->
       <div class="salary-breakdown">
-        <h3 class="breakdown-title">Ripartizione Basata sullo Stipendio</h3>
+        <h3 class="breakdown-title">Imposte e Contributi (Regime Forfettario)</h3>
         <div class="breakdown-grid">
+          <!-- Income Tax -->
+          <div class="breakdown-item tax-item">
+            <div class="breakdown-label">
+              <span class="breakdown-icon">📋</span>
+              <span>Imposta Sostitutiva</span>
+            </div>
+            <div class="breakdown-value">${formatCurrency(this.overview.income_tax, currency)}</div>
+            <div class="breakdown-note">${this.settings.income_tax_rate}% del reddito imponibile</div>
+          </div>
+          
+          <!-- Health Insurance (INPS) -->
+          <div class="breakdown-item inps-item">
+            <div class="breakdown-label">
+              <span class="breakdown-icon">🏥</span>
+              <span>Contributi INPS</span>
+            </div>
+            <div class="breakdown-value">${formatCurrency(this.overview.health_insurance, currency)}</div>
+            <div class="breakdown-note">${this.settings.health_insurance_rate}% del reddito imponibile</div>
+          </div>
+          
+          <!-- Total Tax Burden -->
+          <div class="breakdown-item total-tax-item">
+            <div class="breakdown-label">
+              <span class="breakdown-icon">🔢</span>
+              <span>Totale Imposte</span>
+            </div>
+            <div class="breakdown-value">${formatCurrency(this.overview.total_tax_burden, currency)}</div>
+            <div class="breakdown-note">Imposta + INPS</div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Net Income and Savings -->
+      <div class="salary-breakdown">
+        <h3 class="breakdown-title">Reddito Netto e Risparmi</h3>
+        <div class="breakdown-grid">
+          <!-- Net Income -->
+          <div class="breakdown-item net-item">
+            <div class="breakdown-label">
+              <span class="breakdown-icon">📊</span>
+              <span>Reddito Netto</span>
+            </div>
+            <div class="breakdown-value ${this.overview.net_income >= 0 ? 'positive' : 'negative'}">
+              ${formatCurrency(this.overview.net_income, currency)}
+            </div>
+            <div class="breakdown-note">Dopo spese e imposte</div>
+          </div>
+          
           <!-- Target Salary -->
           <div class="breakdown-item salary-item">
             <div class="breakdown-label">
@@ -197,16 +253,7 @@ class MonthlyOverview extends HTMLElement {
               <span>Stipendio Desiderato</span>
             </div>
             <div class="breakdown-value">${formatCurrency(this.overview.target_salary, currency)}</div>
-          </div>
-          
-          <!-- Taxes to Set Aside -->
-          <div class="breakdown-item tax-item">
-            <div class="breakdown-label">
-              <span class="breakdown-icon">📋</span>
-              <span>Tasse da Accantonare</span>
-            </div>
-            <div class="breakdown-value">${formatCurrency(this.overview.taxes_to_set_aside, currency)}</div>
-            <div class="breakdown-note">${this.settings.default_tax_rate}% sul reddito netto</div>
+            <div class="breakdown-note">Obiettivo mensile</div>
           </div>
           
           <!-- Savings -->
@@ -218,7 +265,7 @@ class MonthlyOverview extends HTMLElement {
             <div class="breakdown-value ${this.overview.savings >= 0 ? 'positive' : 'negative'}">
               ${formatCurrency(this.overview.savings, currency)}
             </div>
-            <div class="breakdown-note">Dopo stipendio e tasse</div>
+            <div class="breakdown-note">Reddito netto - Stipendio</div>
           </div>
         </div>
         
@@ -226,13 +273,22 @@ class MonthlyOverview extends HTMLElement {
         <div class="formula-box">
           <h4 class="formula-title">Formula di Calcolo:</h4>
           <div class="formula-text">
-            Risparmi = Reddito Netto - Stipendio Desiderato - Tasse da Accantonare
+            Reddito Netto = Entrate - Spese - Imposta Sostitutiva - INPS
+          </div>
+          <div class="formula-calculation">
+            ${formatCurrency(this.overview.net_income, currency)} = 
+            ${formatCurrency(this.overview.total_income, currency)} - 
+            ${formatCurrency(this.overview.total_expenses, currency)} - 
+            ${formatCurrency(this.overview.income_tax, currency)} - 
+            ${formatCurrency(this.overview.health_insurance, currency)}
+          </div>
+          <div class="formula-text" style="margin-top: 1rem;">
+            Risparmi = Reddito Netto - Stipendio Desiderato
           </div>
           <div class="formula-calculation">
             ${formatCurrency(this.overview.savings, currency)} = 
             ${formatCurrency(this.overview.net_income, currency)} - 
-            ${formatCurrency(this.overview.target_salary, currency)} - 
-            ${formatCurrency(this.overview.taxes_to_set_aside, currency)}
+            ${formatCurrency(this.overview.target_salary, currency)}
           </div>
         </div>
       </div>

@@ -50,9 +50,13 @@ class SettingsPanel extends HTMLElement {
     const formData = new FormData(form);
     
     const updates = {
-      default_tax_rate: parseFloat(formData.get('tax_rate')),
+      default_vat_rate: parseFloat(formData.get('vat_rate')),
       currency: formData.get('currency'),
-      currency_symbol: this.getCurrencySymbol(formData.get('currency'))
+      currency_symbol: this.getCurrencySymbol(formData.get('currency')),
+      target_salary: parseFloat(formData.get('target_salary')),
+      taxable_percentage: parseFloat(formData.get('taxable_percentage')),
+      income_tax_rate: parseFloat(formData.get('income_tax_rate')),
+      health_insurance_rate: parseFloat(formData.get('health_insurance_rate'))
     };
     
     try {
@@ -202,23 +206,9 @@ class SettingsPanel extends HTMLElement {
   renderForm() {
     return `
       <form id="settings-form">
-        <div class="form-group">
-          <label class="form-label" for="tax-rate">Aliquota IVA Predefinita (%)</label>
-          <input
-            type="number"
-            id="tax-rate"
-            name="tax_rate"
-            class="form-input"
-            value="${this.settings.default_tax_rate}"
-            min="0"
-            max="100"
-            step="0.01"
-            required
-          />
-          <span class="form-help">
-            Questa aliquota IVA verrà applicata di default alle nuove fatture
-          </span>
-        </div>
+        <h3 style="font-size: 1.1rem; font-weight: 600; margin: 0 0 1rem 0; color: #374151;">
+          Valuta
+        </h3>
         
         <div class="form-group">
           <label class="form-label" for="currency">Valuta</label>
@@ -237,6 +227,96 @@ class SettingsPanel extends HTMLElement {
             Valuta utilizzata per tutti gli importi nell'applicazione
           </span>
         </div>
+
+        <hr style="border: none; border-top: 1px solid #e5e7eb; margin: 1.5rem 0;">
+        
+        <h3 style="font-size: 1.1rem; font-weight: 600; margin: 0 0 1rem 0; color: #374151;">
+          IVA (Fatture)
+        </h3>
+        
+        <div class="form-group">
+          <label class="form-label" for="vat-rate">Aliquota IVA Predefinita (%)</label>
+          <input
+            type="number"
+            id="vat-rate"
+            name="vat_rate"
+            class="form-input"
+            value="${this.settings.default_vat_rate || this.settings.default_tax_rate || 22}"
+            min="0"
+            max="100"
+            step="0.01"
+            required
+          />
+          <span class="form-help">
+            Questa aliquota IVA verrà applicata di default alle nuove fatture
+          </span>
+        </div>
+
+        <hr style="border: none; border-top: 1px solid #e5e7eb; margin: 1.5rem 0;">
+        
+        <h3 style="font-size: 1.1rem; font-weight: 600; margin: 0 0 1rem 0; color: #374151;">
+          Regime Forfettario (Imposte)
+        </h3>
+        
+        <div class="form-group">
+          <label class="form-label" for="taxable-percentage">Coefficiente di Redditività (%)</label>
+          <input
+            type="number"
+            id="taxable-percentage"
+            name="taxable_percentage"
+            class="form-input"
+            value="${this.settings.taxable_percentage || 76}"
+            min="0"
+            max="100"
+            step="0.01"
+            required
+          />
+          <span class="form-help">
+            Percentuale del reddito lordo che è imponibile (tipicamente 76% per servizi)
+          </span>
+        </div>
+        
+        <div class="form-group">
+          <label class="form-label" for="income-tax-rate">Aliquota Imposta Sostitutiva (%)</label>
+          <input
+            type="number"
+            id="income-tax-rate"
+            name="income_tax_rate"
+            class="form-input"
+            value="${this.settings.income_tax_rate || 15}"
+            min="0"
+            max="100"
+            step="0.01"
+            required
+          />
+          <span class="form-help">
+            Aliquota flat tax sul reddito imponibile (15% standard, 5% primi 5 anni)
+          </span>
+        </div>
+        
+        <div class="form-group">
+          <label class="form-label" for="health-insurance-rate">Contributi INPS (%)</label>
+          <input
+            type="number"
+            id="health-insurance-rate"
+            name="health_insurance_rate"
+            class="form-input"
+            value="${this.settings.health_insurance_rate || 27}"
+            min="0"
+            max="100"
+            step="0.01"
+            required
+          />
+          <span class="form-help">
+            Aliquota contributi previdenziali INPS sul reddito imponibile (tipicamente 27%)
+          </span>
+        </div>
+
+        <hr style="border: none; border-top: 1px solid #e5e7eb; margin: 1.5rem 0;">
+        
+        <h3 style="font-size: 1.1rem; font-weight: 600; margin: 0 0 1rem 0; color: #374151;">
+          Obiettivi Personali
+        </h3>
         
         <div class="form-group">
           <label class="form-label" for="target-salary">Stipendio Mensile Desiderato</label>
@@ -251,7 +331,7 @@ class SettingsPanel extends HTMLElement {
             required
           />
           <span class="form-help">
-            L'importo netto mensile che desideri guadagnare. Utilizzato per calcolare risparmi e tasse.
+            L'importo netto mensile che desideri portare a casa per le spese personali
           </span>
         </div>
         

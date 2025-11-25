@@ -103,3 +103,102 @@ export function sumNumbers(numbers: number[]): number {
   return roundCurrency(sum);
 }
 
+// ============================================================================
+// Italian "Regime Forfettario" Tax Calculations
+// ============================================================================
+// The Italian flat-rate tax regime (regime forfettario) has specific rules:
+// 1. Only a percentage of income is taxable (coefficiente di redditività)
+// 2. A flat tax rate is applied to the taxable income
+// 3. Health insurance (INPS) is calculated on the taxable income
+// ============================================================================
+
+/**
+ * Calculate taxable income for Italian "regime forfettario"
+ * 
+ * In the flat-rate regime, only a percentage of the gross income is
+ * considered taxable (coefficiente di redditività).
+ * For most professions, this is 76%.
+ * 
+ * @param grossIncome - Total gross income
+ * @param taxablePercentage - Percentage of income that is taxable (e.g., 76)
+ * @returns Taxable income amount
+ */
+export function calculateTaxableIncome(
+  grossIncome: number,
+  taxablePercentage: number
+): number {
+  const taxable = grossIncome * (taxablePercentage / 100);
+  return roundCurrency(taxable);
+}
+
+/**
+ * Calculate income tax for Italian "regime forfettario"
+ * 
+ * The flat tax rate (usually 15%, or 5% for the first 5 years) is applied
+ * to the taxable income, not the gross income.
+ * 
+ * @param taxableIncome - The taxable income (after applying coefficiente)
+ * @param incomeTaxRate - Income tax rate percentage (e.g., 15)
+ * @returns Income tax amount
+ */
+export function calculateIncomeTax(
+  taxableIncome: number,
+  incomeTaxRate: number
+): number {
+  const tax = taxableIncome * (incomeTaxRate / 100);
+  return roundCurrency(tax);
+}
+
+/**
+ * Calculate health insurance (INPS) for Italian freelancers
+ * 
+ * Health insurance contribution is calculated as a percentage of the
+ * taxable income. The rate varies by profession but is typically around 27%.
+ * 
+ * @param taxableIncome - The taxable income (after applying coefficiente)
+ * @param healthInsuranceRate - INPS rate percentage (e.g., 27)
+ * @returns Health insurance contribution amount
+ */
+export function calculateHealthInsurance(
+  taxableIncome: number,
+  healthInsuranceRate: number
+): number {
+  const insurance = taxableIncome * (healthInsuranceRate / 100);
+  return roundCurrency(insurance);
+}
+
+/**
+ * Calculate total tax burden for Italian "regime forfettario"
+ * 
+ * This includes both income tax and health insurance contributions.
+ * 
+ * @param grossIncome - Total gross income
+ * @param taxablePercentage - Percentage of income that is taxable (e.g., 76)
+ * @param incomeTaxRate - Income tax rate percentage (e.g., 15)
+ * @param healthInsuranceRate - INPS rate percentage (e.g., 27)
+ * @returns Object with breakdown of all tax components
+ */
+export function calculateItalianTaxes(
+  grossIncome: number,
+  taxablePercentage: number,
+  incomeTaxRate: number,
+  healthInsuranceRate: number
+): {
+  taxableIncome: number;
+  incomeTax: number;
+  healthInsurance: number;
+  totalTaxBurden: number;
+} {
+  const taxableIncome = calculateTaxableIncome(grossIncome, taxablePercentage);
+  const incomeTax = calculateIncomeTax(taxableIncome, incomeTaxRate);
+  const healthInsurance = calculateHealthInsurance(taxableIncome, healthInsuranceRate);
+  const totalTaxBurden = roundCurrency(incomeTax + healthInsurance);
+
+  return {
+    taxableIncome,
+    incomeTax,
+    healthInsurance,
+    totalTaxBurden
+  };
+}
+

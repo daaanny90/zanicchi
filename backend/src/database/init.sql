@@ -132,12 +132,19 @@ CREATE TABLE IF NOT EXISTS settings (
 -- Initial Data: Default Settings
 -- ============================================================================
 -- Insert default configuration values
+-- Settings for Italian "Regime forfettario" (flat-rate tax regime):
+-- - taxable_percentage: Percentage of income that is taxable (coefficiente di redditività)
+-- - income_tax_rate: Flat tax rate applied to taxable income
+-- - health_insurance_rate: INPS contribution rate applied to taxable income
 -- ============================================================================
 INSERT INTO settings (setting_key, setting_value, description) VALUES
-('default_tax_rate', '22', 'Default tax rate percentage for new invoices'),
+('default_vat_rate', '22', 'Default VAT/IVA rate percentage for new invoices (not income tax)'),
 ('currency', 'EUR', 'Currency code used throughout the application (EUR, USD, GBP, etc.)'),
 ('currency_symbol', '€', 'Currency symbol for display purposes'),
-('target_salary', '3000', 'Target monthly salary (net amount to take home after taxes and savings)')
+('target_salary', '3000', 'Target monthly salary (net amount to take home after taxes and savings)'),
+('taxable_percentage', '76', 'Percentage of income that is taxable (regime forfettario coefficient)'),
+('income_tax_rate', '15', 'Income tax rate percentage (regime forfettario flat tax)'),
+('health_insurance_rate', '27', 'Health insurance (INPS) contribution rate percentage')
 ON DUPLICATE KEY UPDATE setting_value = VALUES(setting_value);
 
 -- ============================================================================

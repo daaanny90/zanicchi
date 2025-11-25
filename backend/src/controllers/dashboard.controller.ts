@@ -88,8 +88,8 @@ export async function getExpenseByCategory(_req: Request, res: Response): Promis
  * Get monthly overview with salary-based calculations
  * 
  * GET /api/dashboard/monthly-overview
- * Query params: year, month, targetSalary, taxRate
- * Returns comprehensive monthly financial overview
+ * Query params: year, month, targetSalary, taxablePercentage, incomeTaxRate, healthInsuranceRate
+ * Returns comprehensive monthly financial overview with Italian tax calculations
  */
 export async function getMonthlyOverview(req: Request, res: Response): Promise<void> {
   try {
@@ -98,7 +98,9 @@ export async function getMonthlyOverview(req: Request, res: Response): Promise<v
     const year = req.query.year ? parseInt(req.query.year as string) : now.getFullYear();
     const month = req.query.month ? parseInt(req.query.month as string) : now.getMonth() + 1;
     const targetSalary = req.query.targetSalary ? parseFloat(req.query.targetSalary as string) : 3000;
-    const taxRate = req.query.taxRate ? parseFloat(req.query.taxRate as string) : 22;
+    const taxablePercentage = req.query.taxablePercentage ? parseFloat(req.query.taxablePercentage as string) : 76;
+    const incomeTaxRate = req.query.incomeTaxRate ? parseFloat(req.query.incomeTaxRate as string) : 15;
+    const healthInsuranceRate = req.query.healthInsuranceRate ? parseFloat(req.query.healthInsuranceRate as string) : 27;
     
     // Validate parameters
     if (isNaN(year) || year < 2000 || year > 2100) {
@@ -116,12 +118,29 @@ export async function getMonthlyOverview(req: Request, res: Response): Promise<v
       return;
     }
     
-    if (isNaN(taxRate) || taxRate < 0 || taxRate > 100) {
-      sendValidationError(res, 'Tax rate must be between 0 and 100');
+    if (isNaN(taxablePercentage) || taxablePercentage < 0 || taxablePercentage > 100) {
+      sendValidationError(res, 'Taxable percentage must be between 0 and 100');
       return;
     }
     
-    const overview = await dashboardService.getMonthlyOverview(year, month, targetSalary, taxRate);
+    if (isNaN(incomeTaxRate) || incomeTaxRate < 0 || incomeTaxRate > 100) {
+      sendValidationError(res, 'Income tax rate must be between 0 and 100');
+      return;
+    }
+    
+    if (isNaN(healthInsuranceRate) || healthInsuranceRate < 0 || healthInsuranceRate > 100) {
+      sendValidationError(res, 'Health insurance rate must be between 0 and 100');
+      return;
+    }
+    
+    const overview = await dashboardService.getMonthlyOverview(
+      year, 
+      month, 
+      targetSalary, 
+      taxablePercentage, 
+      incomeTaxRate, 
+      healthInsuranceRate
+    );
     sendSuccess(res, overview);
   } catch (error) {
     console.error('Error fetching monthly overview:', error);

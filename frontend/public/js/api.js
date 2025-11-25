@@ -226,12 +226,14 @@ const API = {
     },
     
     // Get monthly overview with salary calculations
-    getMonthlyOverview: (year, month, targetSalary, taxRate) => {
+    getMonthlyOverview: (year, month, targetSalary, taxablePercentage, incomeTaxRate, healthInsuranceRate) => {
       const params = new URLSearchParams({
         year: year,
         month: month,
         targetSalary: targetSalary,
-        taxRate: taxRate
+        taxablePercentage: taxablePercentage,
+        incomeTaxRate: incomeTaxRate,
+        healthInsuranceRate: healthInsuranceRate
       });
       return apiRequest(`/dashboard/monthly-overview?${params}`);
     }
