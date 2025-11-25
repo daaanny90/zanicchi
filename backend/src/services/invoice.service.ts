@@ -109,11 +109,11 @@ export async function createInvoice(data: CreateInvoiceDTO): Promise<Invoice> {
   let taxRate = data.tax_rate;
   if (taxRate === undefined) {
     const settings = await getAllSettings();
-    taxRate = settings.default_tax_rate;
+    taxRate = settings.default_vat_rate || settings.default_tax_rate || 22;
   }
   
   // Calculate tax and total
-  const taxAmount = calculateTax(data.amount, taxRate);
+  const taxAmount = calculateTax(data.amount, taxRate!);
   const totalAmount = calculateTotal(data.amount, taxAmount);
   
   // Set default status
