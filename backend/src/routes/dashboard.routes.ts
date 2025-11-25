@@ -34,5 +34,12 @@ router.get('/income-expense-chart', dashboardController.getIncomeExpenseChart);
  */
 router.get('/expense-by-category', dashboardController.getExpenseByCategory);
 
+/**
+ * GET /api/dashboard/monthly-overview
+ * Get monthly overview with salary-based calculations
+ * Query params: year, month, targetSalary, taxRate
+ */
+router.get('/monthly-overview', dashboardController.getMonthlyOverview);
+
 export default router;
 

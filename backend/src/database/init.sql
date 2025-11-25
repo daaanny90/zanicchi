@@ -136,7 +136,8 @@ CREATE TABLE IF NOT EXISTS settings (
 INSERT INTO settings (setting_key, setting_value, description) VALUES
 ('default_tax_rate', '22', 'Default tax rate percentage for new invoices'),
 ('currency', 'EUR', 'Currency code used throughout the application (EUR, USD, GBP, etc.)'),
-('currency_symbol', '€', 'Currency symbol for display purposes')
+('currency_symbol', '€', 'Currency symbol for display purposes'),
+('target_salary', '3000', 'Target monthly salary (net amount to take home after taxes and savings)')
 ON DUPLICATE KEY UPDATE setting_value = VALUES(setting_value);
 
 -- ============================================================================

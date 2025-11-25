@@ -29,6 +29,10 @@
                         <span class="nav-icon">📊</span>
                         <span class="nav-text">Cruscotto</span>
                     </li>
+                    <li class="nav-item" data-view="monthly">
+                        <span class="nav-icon">📅</span>
+                        <span class="nav-text">Mensile</span>
+                    </li>
                     <li class="nav-item" data-view="invoices">
                         <span class="nav-icon">📄</span>
                         <span class="nav-text">Fatture</span>
@@ -64,6 +68,12 @@
                         <!-- Expense breakdown by category -->
                         <chart-expense-category></chart-expense-category>
                     </div>
+                </div>
+                
+                <!-- Monthly Overview View -->
+                <div id="monthly-view" class="view">
+                    <h1 class="page-title">Panoramica Mensile</h1>
+                    <monthly-overview></monthly-overview>
                 </div>
                 
                 <!-- Invoices View -->
@@ -114,6 +124,7 @@
     <script src="components/app-header.js"></script>
     <script src="components/dashboard-summary.js"></script>
     <script src="components/monthly-estimate.js"></script>
+    <script src="components/monthly-overview.js"></script>
     <script src="components/invoice-list.js"></script>
     <script src="components/invoice-form.js"></script>
     <script src="components/expense-list.js"></script>

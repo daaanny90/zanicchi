@@ -238,6 +238,23 @@ class SettingsPanel extends HTMLElement {
           </span>
         </div>
         
+        <div class="form-group">
+          <label class="form-label" for="target-salary">Stipendio Mensile Desiderato</label>
+          <input
+            type="number"
+            id="target-salary"
+            name="target_salary"
+            class="form-input"
+            value="${this.settings.target_salary || 3000}"
+            min="0"
+            step="100"
+            required
+          />
+          <span class="form-help">
+            L'importo netto mensile che desideri guadagnare. Utilizzato per calcolare risparmi e tasse.
+          </span>
+        </div>
+        
         <button type="submit" class="btn-primary">
           Salva Impostazioni
         </button>

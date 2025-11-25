@@ -84,3 +84,48 @@ export async function getExpenseByCategory(_req: Request, res: Response): Promis
   }
 }
 
+/**
+ * Get monthly overview with salary-based calculations
+ * 
+ * GET /api/dashboard/monthly-overview
+ * Query params: year, month, targetSalary, taxRate
+ * Returns comprehensive monthly financial overview
+ */
+export async function getMonthlyOverview(req: Request, res: Response): Promise<void> {
+  try {
+    // Get current date as defaults
+    const now = new Date();
+    const year = req.query.year ? parseInt(req.query.year as string) : now.getFullYear();
+    const month = req.query.month ? parseInt(req.query.month as string) : now.getMonth() + 1;
+    const targetSalary = req.query.targetSalary ? parseFloat(req.query.targetSalary as string) : 3000;
+    const taxRate = req.query.taxRate ? parseFloat(req.query.taxRate as string) : 22;
+    
+    // Validate parameters
+    if (isNaN(year) || year < 2000 || year > 2100) {
+      sendValidationError(res, 'Invalid year');
+      return;
+    }
+    
+    if (isNaN(month) || month < 1 || month > 12) {
+      sendValidationError(res, 'Month must be between 1 and 12');
+      return;
+    }
+    
+    if (isNaN(targetSalary) || targetSalary < 0) {
+      sendValidationError(res, 'Invalid target salary');
+      return;
+    }
+    
+    if (isNaN(taxRate) || taxRate < 0 || taxRate > 100) {
+      sendValidationError(res, 'Tax rate must be between 0 and 100');
+      return;
+    }
+    
+    const overview = await dashboardService.getMonthlyOverview(year, month, targetSalary, taxRate);
+    sendSuccess(res, overview);
+  } catch (error) {
+    console.error('Error fetching monthly overview:', error);
+    sendError(res, 'Failed to fetch monthly overview');
+  }
+}
+
