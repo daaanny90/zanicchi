@@ -99,14 +99,13 @@ export async function deleteClient(req: Request, res: Response): Promise<void> {
       return;
     }
 
-    await clientService.deleteClient(id);
-    sendSuccess(res, { deleted: true });
+    const result = await clientService.deleteClient(id);
+    sendSuccess(res, { 
+      deleted: true,
+      deletedHours: result.deletedHours
+    });
   } catch (error: any) {
     console.error('Errore durante l\'eliminazione del cliente:', error);
-    if (error.message?.includes('Impossibile eliminare')) {
-      sendValidationError(res, error.message);
-      return;
-    }
     sendError(res, 'Impossibile eliminare il cliente');
   }
 }

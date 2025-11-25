@@ -115,13 +115,23 @@ class ClientsManager extends HTMLElement {
   }
 
   async handleDelete(clientId) {
-    if (!confirm('Sei sicuro di voler eliminare questo cliente?')) {
+    const client = this.clients.find(c => c.id === clientId);
+    const clientName = client ? client.name : 'questo cliente';
+    
+    if (!confirm(`Sei sicuro di voler eliminare ${clientName}?\n\nNOTA: Tutte le ore registrate associate a questo cliente saranno eliminate definitivamente.`)) {
       return;
     }
 
     try {
-      await API.clients.delete(clientId);
-      showNotification('Cliente eliminato', 'success');
+      const result = await API.clients.delete(clientId);
+      const deletedHours = result.data?.deletedHours || 0;
+      
+      if (deletedHours > 0) {
+        showNotification(`Cliente eliminato (${deletedHours} registrazioni ore eliminate)`, 'success');
+      } else {
+        showNotification('Cliente eliminato', 'success');
+      }
+      
       window.dispatchEvent(new CustomEvent('clients:updated'));
       this.loadClients();
     } catch (error) {

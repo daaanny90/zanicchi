@@ -83,18 +83,24 @@ export async function updateClient(id: number, data: UpdateClientDTO): Promise<C
 }
 
 /**
- * Delete a client if no worked hours are associated.
+ * Delete a client and cascade delete all associated worked hours.
+ * Returns the number of worked hours that were also deleted.
  */
-export async function deleteClient(id: number): Promise<void> {
-  const [rows] = await db.query<RowDataPacket[]>(
-    `SELECT COUNT(*) as total FROM worked_hours WHERE client_id = ?`,
+export async function deleteClient(id: number): Promise<{ deletedHours: number }> {
+  // First, count how many worked hours will be deleted
+  const [countRows] = await db.query<RowDataPacket[]>(
+    `SELECT COUNT(*) as count FROM worked_hours WHERE client_id = ?`,
     [id]
   );
+  
+  const deletedHours = Number(countRows[0]?.count ?? 0);
 
-  if (rows[0].total > 0) {
-    throw new Error('Impossibile eliminare il cliente: sono presenti ore registrate.');
-  }
+  // Delete worked hours first (due to foreign key constraint)
+  await db.query(`DELETE FROM worked_hours WHERE client_id = ?`, [id]);
 
+  // Then delete the client
   await db.query(`DELETE FROM clients WHERE id = ?`, [id]);
+
+  return { deletedHours };
 }
 
