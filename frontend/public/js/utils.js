@@ -165,10 +165,10 @@ function getStatusBadgeClass(status) {
  */
 function getStatusLabel(status) {
   const labels = {
-    'draft': 'Draft',
-    'sent': 'Sent',
-    'paid': 'Paid',
-    'overdue': 'Overdue'
+    'draft': 'Bozza',
+    'sent': 'Inviata',
+    'paid': 'Pagata',
+    'overdue': 'Scaduta'
   };
   
   return labels[status] || status;

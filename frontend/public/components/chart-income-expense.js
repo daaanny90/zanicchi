@@ -79,7 +79,7 @@ class ChartIncomeExpense extends HTMLElement {
       labels: labels,
       datasets: [
         {
-          label: 'Income',
+          label: 'Entrate',
           data: incomeData,
           borderColor: '#10b981',
           backgroundColor: 'rgba(16, 185, 129, 0.1)',
@@ -88,7 +88,7 @@ class ChartIncomeExpense extends HTMLElement {
           fill: true
         },
         {
-          label: 'Expenses',
+          label: 'Spese',
           data: expensesData,
           borderColor: '#ef4444',
           backgroundColor: 'rgba(239, 68, 68, 0.1)',
@@ -97,7 +97,7 @@ class ChartIncomeExpense extends HTMLElement {
           fill: true
         },
         {
-          label: 'Net',
+          label: 'Netto',
           data: netData,
           borderColor: '#2563eb',
           backgroundColor: 'rgba(37, 99, 235, 0.1)',
@@ -170,8 +170,8 @@ class ChartIncomeExpense extends HTMLElement {
       
       <div class="chart-card">
         <div class="chart-header">
-          <h3 class="chart-title">Income vs Expenses</h3>
-          <p class="chart-subtitle">Last 6 months comparison</p>
+          <h3 class="chart-title">Entrate vs Spese</h3>
+          <p class="chart-subtitle">Confronto ultimi 6 mesi</p>
         </div>
         
         <div class="chart-container">
@@ -187,7 +187,7 @@ class ChartIncomeExpense extends HTMLElement {
   showEmpty() {
     const container = this.shadowRoot.querySelector('.chart-container');
     if (container) {
-      container.innerHTML = '<div class="empty">No data available yet</div>';
+      container.innerHTML = '<div class="empty">Nessun dato ancora disponibile</div>';
     }
   }
   
@@ -197,7 +197,7 @@ class ChartIncomeExpense extends HTMLElement {
   showError() {
     const container = this.shadowRoot.querySelector('.chart-container');
     if (container) {
-      container.innerHTML = '<div class="error">Failed to load chart data</div>';
+      container.innerHTML = '<div class="error">Impossibile caricare i dati del grafico</div>';
     }
   }
 }

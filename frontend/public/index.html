@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Freelancer Finance Manager</title>
+    <title>Gestione Finanze Freelance</title>
     
     <!-- Main CSS imports -->
     <link rel="stylesheet" href="styles/main.css">
@@ -27,19 +27,19 @@
                 <ul class="nav-menu">
                     <li class="nav-item active" data-view="dashboard">
                         <span class="nav-icon">📊</span>
-                        <span class="nav-text">Dashboard</span>
+                        <span class="nav-text">Cruscotto</span>
                     </li>
                     <li class="nav-item" data-view="invoices">
                         <span class="nav-icon">📄</span>
-                        <span class="nav-text">Invoices</span>
+                        <span class="nav-text">Fatture</span>
                     </li>
                     <li class="nav-item" data-view="expenses">
                         <span class="nav-icon">💰</span>
-                        <span class="nav-text">Expenses</span>
+                        <span class="nav-text">Spese</span>
                     </li>
                     <li class="nav-item" data-view="settings">
                         <span class="nav-icon">⚙️</span>
-                        <span class="nav-text">Settings</span>
+                        <span class="nav-text">Impostazioni</span>
                     </li>
                 </ul>
             </nav>
@@ -48,7 +48,7 @@
             <main class="content">
                 <!-- Dashboard View (default) -->
                 <div id="dashboard-view" class="view active">
-                    <h1 class="page-title">Dashboard</h1>
+                    <h1 class="page-title">Cruscotto</h1>
                     
                     <!-- Summary cards showing key metrics -->
                     <dashboard-summary></dashboard-summary>
@@ -69,8 +69,8 @@
                 <!-- Invoices View -->
                 <div id="invoices-view" class="view">
                     <div class="view-header">
-                        <h1 class="page-title">Invoices</h1>
-                        <button class="btn btn-primary" id="add-invoice-btn">+ New Invoice</button>
+                        <h1 class="page-title">Fatture</h1>
+                        <button class="btn btn-primary" id="add-invoice-btn">+ Nuova Fattura</button>
                     </div>
                     
                     <!-- Invoice form (hidden by default) -->
@@ -83,8 +83,8 @@
                 <!-- Expenses View -->
                 <div id="expenses-view" class="view">
                     <div class="view-header">
-                        <h1 class="page-title">Expenses</h1>
-                        <button class="btn btn-primary" id="add-expense-btn">+ New Expense</button>
+                        <h1 class="page-title">Spese</h1>
+                        <button class="btn btn-primary" id="add-expense-btn">+ Nuova Spesa</button>
                     </div>
                     
                     <!-- Expense form (hidden by default) -->
@@ -96,7 +96,7 @@
                 
                 <!-- Settings View -->
                 <div id="settings-view" class="view">
-                    <h1 class="page-title">Settings</h1>
+                    <h1 class="page-title">Impostazioni</h1>
                     
                     <!-- Settings panel for tax rate and other configs -->
                     <settings-panel></settings-panel>

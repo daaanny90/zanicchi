@@ -147,16 +147,16 @@ ON DUPLICATE KEY UPDATE setting_value = VALUES(setting_value);
 -- ============================================================================
 INSERT INTO categories (name, type, color) VALUES
 -- Expense categories
-('Software & Subscriptions', 'expense', '#3498db'),    -- Blue
-('Equipment & Hardware', 'expense', '#e74c3c'),        -- Red
-('Office Supplies', 'expense', '#2ecc71'),             -- Green
-('Travel & Transportation', 'expense', '#f39c12'),     -- Orange
-('Marketing & Advertising', 'expense', '#9b59b6'),     -- Purple
-('Professional Services', 'expense', '#1abc9c'),       -- Turquoise
-('Education & Training', 'expense', '#34495e'),        -- Dark gray
-('Insurance', 'expense', '#e67e22'),                   -- Dark orange
-('Utilities & Internet', 'expense', '#95a5a6'),        -- Light gray
-('Miscellaneous', 'expense', '#7f8c8d')                -- Medium gray
+('Software e Abbonamenti', 'expense', '#3498db'),    -- Blue
+('Attrezzature e Hardware', 'expense', '#e74c3c'),        -- Red
+('Forniture Ufficio', 'expense', '#2ecc71'),             -- Green
+('Viaggi e Trasporti', 'expense', '#f39c12'),     -- Orange
+('Marketing e Pubblicità', 'expense', '#9b59b6'),     -- Purple
+('Servizi Professionali', 'expense', '#1abc9c'),       -- Turquoise
+('Formazione e Istruzione', 'expense', '#34495e'),        -- Dark gray
+('Assicurazioni', 'expense', '#e67e22'),                   -- Dark orange
+('Utenze e Internet', 'expense', '#95a5a6'),        -- Light gray
+('Varie', 'expense', '#7f8c8d')                -- Medium gray
 ON DUPLICATE KEY UPDATE name = VALUES(name);
 
 -- ============================================================================

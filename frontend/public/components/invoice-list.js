@@ -26,23 +26,23 @@ class InvoiceList extends HTMLElement {
       this.render();
     } catch (error) {
       console.error('Failed to load invoices:', error);
-      showNotification('Failed to load invoices', 'error');
+      showNotification('Impossibile caricare le fatture', 'error');
     }
   }
   
   async deleteInvoice(id) {
-    if (!confirm('Are you sure you want to delete this invoice?')) {
+    if (!confirm('Sei sicuro di voler eliminare questa fattura?')) {
       return;
     }
     
     try {
       await API.invoices.delete(id);
-      showNotification('Invoice deleted successfully', 'success');
+      showNotification('Fattura eliminata con successo', 'success');
       this.loadInvoices();
       refreshDashboard();
     } catch (error) {
       console.error('Failed to delete invoice:', error);
-      showNotification('Failed to delete invoice', 'error');
+      showNotification('Impossibile eliminare la fattura', 'error');
     }
   }
   
@@ -56,12 +56,12 @@ class InvoiceList extends HTMLElement {
   async updateStatus(id, status) {
     try {
       await API.invoices.updateStatus(id, status);
-      showNotification('Invoice status updated', 'success');
+      showNotification('Stato fattura aggiornato', 'success');
       this.loadInvoices();
       refreshDashboard();
     } catch (error) {
       console.error('Failed to update status:', error);
-      showNotification('Failed to update status', 'error');
+      showNotification('Impossibile aggiornare lo stato', 'error');
     }
   }
   
@@ -93,7 +93,7 @@ class InvoiceList extends HTMLElement {
         .empty { text-align: center; padding: 3rem; color: #6b7280; }
       </style>
       
-      ${this.invoices.length > 0 ? this.renderTable(currency) : '<div class="empty">No invoices yet. Click "New Invoice" to create one.</div>'}
+      ${this.invoices.length > 0 ? this.renderTable(currency) : '<div class="empty">Nessuna fattura ancora. Clicca "Nuova Fattura" per crearne una.</div>'}
     `;
     
     this.attachEventListeners();
@@ -105,13 +105,13 @@ class InvoiceList extends HTMLElement {
         <table class="table">
           <thead>
             <tr>
-              <th>Invoice #</th>
-              <th>Client</th>
-              <th>Amount</th>
-              <th>Status</th>
-              <th>Issue Date</th>
-              <th>Due Date</th>
-              <th>Actions</th>
+              <th>Fattura #</th>
+              <th>Cliente</th>
+              <th>Importo</th>
+              <th>Stato</th>
+              <th>Data Emissione</th>
+              <th>Scadenza</th>
+              <th>Azioni</th>
             </tr>
           </thead>
           <tbody>
@@ -125,9 +125,9 @@ class InvoiceList extends HTMLElement {
                 <td>${formatDate(inv.due_date, 'short')}</td>
                 <td>
                   <div class="actions">
-                    <button class="btn btn-primary btn-sm" data-action="edit" data-id="${inv.id}">Edit</button>
-                    ${inv.status !== 'paid' ? `<button class="btn btn-success btn-sm" data-action="mark-paid" data-id="${inv.id}">Paid</button>` : ''}
-                    <button class="btn btn-danger btn-sm" data-action="delete" data-id="${inv.id}">Delete</button>
+                    <button class="btn btn-primary btn-sm" data-action="edit" data-id="${inv.id}">Modifica</button>
+                    ${inv.status !== 'paid' ? `<button class="btn btn-success btn-sm" data-action="mark-paid" data-id="${inv.id}">Pagata</button>` : ''}
+                    <button class="btn btn-danger btn-sm" data-action="delete" data-id="${inv.id}">Elimina</button>
                   </div>
                 </td>
               </tr>

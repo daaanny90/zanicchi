@@ -152,8 +152,8 @@ class ChartExpenseCategory extends HTMLElement {
       
       <div class="chart-card">
         <div class="chart-header">
-          <h3 class="chart-title">Expenses by Category</h3>
-          <p class="chart-subtitle">Category breakdown</p>
+          <h3 class="chart-title">Spese per Categoria</h3>
+          <p class="chart-subtitle">Ripartizione per categoria</p>
         </div>
         
         <div class="chart-container">
@@ -169,7 +169,7 @@ class ChartExpenseCategory extends HTMLElement {
   showEmpty() {
     const container = this.shadowRoot.querySelector('.chart-container');
     if (container) {
-      container.innerHTML = '<div class="empty">No expenses recorded yet</div>';
+      container.innerHTML = '<div class="empty">Nessuna spesa registrata</div>';
     }
   }
   
@@ -179,7 +179,7 @@ class ChartExpenseCategory extends HTMLElement {
   showError() {
     const container = this.shadowRoot.querySelector('.chart-container');
     if (container) {
-      container.innerHTML = '<div class="error">Failed to load chart data</div>';
+      container.innerHTML = '<div class="error">Impossibile caricare i dati del grafico</div>';
     }
   }
 }

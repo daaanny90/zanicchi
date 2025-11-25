@@ -48,10 +48,10 @@ class ExpenseForm extends HTMLElement {
     try {
       if (this.expense) {
         await API.expenses.update(this.expense.id, data);
-        showNotification('Expense updated successfully', 'success');
+        showNotification('Spesa aggiornata con successo', 'success');
       } else {
         await API.expenses.create(data);
-        showNotification('Expense created successfully', 'success');
+        showNotification('Spesa creata con successo', 'success');
       }
       
       this.hide();
@@ -64,7 +64,7 @@ class ExpenseForm extends HTMLElement {
       refreshDashboard();
     } catch (error) {
       console.error('Failed to save expense:', error);
-      showNotification(error.message || 'Failed to save expense', 'error');
+      showNotification(error.message || 'Impossibile salvare la spesa', 'error');
     }
   }
   
@@ -112,24 +112,24 @@ class ExpenseForm extends HTMLElement {
       <div class="modal">
         <div class="modal-content">
           <div class="modal-header">
-            <h2 class="modal-title">${this.expense ? 'Edit Expense' : 'New Expense'}</h2>
+            <h2 class="modal-title">${this.expense ? 'Modifica Spesa' : 'Nuova Spesa'}</h2>
             <button class="close-btn">×</button>
           </div>
           <div class="modal-body">
             <form id="expense-form">
               <div class="form-grid">
                 <div class="form-group full">
-                  <label class="form-label">Description *</label>
+                  <label class="form-label">Descrizione *</label>
                   <input type="text" name="description" class="form-input" value="${this.expense?.description || ''}" required>
                 </div>
                 <div class="form-group">
-                  <label class="form-label">Amount *</label>
+                  <label class="form-label">Importo *</label>
                   <input type="number" name="amount" class="form-input" value="${this.expense?.amount || ''}" step="0.01" min="0" required>
                 </div>
                 <div class="form-group">
-                  <label class="form-label">Category *</label>
+                  <label class="form-label">Categoria *</label>
                   <select name="category_id" class="form-select" required>
-                    <option value="">Select category...</option>
+                    <option value="">Seleziona categoria...</option>
                     ${categories.filter(c => c.type === 'expense').map(cat => `
                       <option value="${cat.id}" ${this.expense?.category_id === cat.id ? 'selected' : ''}>
                         ${cat.name}
@@ -138,19 +138,19 @@ class ExpenseForm extends HTMLElement {
                   </select>
                 </div>
                 <div class="form-group">
-                  <label class="form-label">Date *</label>
+                  <label class="form-label">Data *</label>
                   <input type="date" name="expense_date" class="form-input" value="${this.expense?.expense_date || getTodayDate()}" required>
                 </div>
                 <div class="form-group full">
-                  <label class="form-label">Notes</label>
+                  <label class="form-label">Note</label>
                   <textarea name="notes" class="form-textarea">${this.expense?.notes || ''}</textarea>
                 </div>
               </div>
             </form>
           </div>
           <div class="modal-footer">
-            <button type="button" class="btn btn-secondary" data-action="cancel">Cancel</button>
-            <button type="submit" form="expense-form" class="btn btn-primary">Save Expense</button>
+            <button type="button" class="btn btn-secondary" data-action="cancel">Annulla</button>
+            <button type="submit" form="expense-form" class="btn btn-primary">Salva Spesa</button>
           </div>
         </div>
       </div>

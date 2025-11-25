@@ -36,7 +36,7 @@ class SettingsPanel extends HTMLElement {
       this.attachEventListeners();
     } catch (error) {
       console.error('Failed to load settings:', error);
-      showNotification('Failed to load settings', 'error');
+      showNotification('Impossibile caricare le impostazioni', 'error');
     }
   }
   
@@ -57,7 +57,7 @@ class SettingsPanel extends HTMLElement {
     
     try {
       this.settings = await API.settings.update(updates);
-      showNotification('Settings saved successfully', 'success');
+      showNotification('Impostazioni salvate con successo', 'success');
       
       // Update global app state
       if (window.AppState) {
@@ -68,7 +68,7 @@ class SettingsPanel extends HTMLElement {
       refreshDashboard();
     } catch (error) {
       console.error('Failed to save settings:', error);
-      showNotification('Failed to save settings', 'error');
+      showNotification('Impossibile salvare le impostazioni', 'error');
     }
   }
   
@@ -188,9 +188,9 @@ class SettingsPanel extends HTMLElement {
       
       <div class="settings-container">
         <div class="card">
-          <h2 class="card-title">Application Settings</h2>
+          <h2 class="card-title">Impostazioni Applicazione</h2>
           
-          ${this.settings ? this.renderForm() : '<div class="loading">Loading settings...</div>'}
+          ${this.settings ? this.renderForm() : '<div class="loading">Caricamento impostazioni...</div>'}
         </div>
       </div>
     `;
@@ -203,7 +203,7 @@ class SettingsPanel extends HTMLElement {
     return `
       <form id="settings-form">
         <div class="form-group">
-          <label class="form-label" for="tax-rate">Default Tax Rate (%)</label>
+          <label class="form-label" for="tax-rate">Aliquota IVA Predefinita (%)</label>
           <input
             type="number"
             id="tax-rate"
@@ -216,12 +216,12 @@ class SettingsPanel extends HTMLElement {
             required
           />
           <span class="form-help">
-            This tax rate will be applied to new invoices by default
+            Questa aliquota IVA verrà applicata di default alle nuove fatture
           </span>
         </div>
         
         <div class="form-group">
-          <label class="form-label" for="currency">Currency</label>
+          <label class="form-label" for="currency">Valuta</label>
           <select
             id="currency"
             name="currency"
@@ -234,12 +234,12 @@ class SettingsPanel extends HTMLElement {
             <option value="JPY" ${this.settings.currency === 'JPY' ? 'selected' : ''}>JPY (¥)</option>
           </select>
           <span class="form-help">
-            Currency used for all amounts in the application
+            Valuta utilizzata per tutti gli importi nell'applicazione
           </span>
         </div>
         
         <button type="submit" class="btn-primary">
-          Save Settings
+          Salva Impostazioni
         </button>
       </form>
     `;

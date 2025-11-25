@@ -129,7 +129,7 @@ class MonthlyEstimate extends HTMLElement {
       </style>
       
       <div class="estimate-card">
-        ${this.data ? this.renderEstimate(currency) : '<div class="loading">Loading estimate...</div>'}
+        ${this.data ? this.renderEstimate(currency) : '<div class="loading">Caricamento stima...</div>'}
       </div>
     `;
   }
@@ -145,27 +145,27 @@ class MonthlyEstimate extends HTMLElement {
     
     return `
       <div class="estimate-header">
-        <h2 class="estimate-title">This Month's Estimate</h2>
+        <h2 class="estimate-title">Stima di Questo Mese</h2>
         <p class="estimate-subtitle">${monthName}</p>
       </div>
       
       <div class="estimate-grid">
         <div class="estimate-item">
-          <div class="estimate-label">Income</div>
+          <div class="estimate-label">Entrate</div>
           <p class="estimate-value">${formatCurrency(this.data.total_income, currency)}</p>
-          <div class="estimate-count">${this.data.invoice_count} invoice(s)</div>
+          <div class="estimate-count">${this.data.invoice_count} fattura/e</div>
         </div>
         
         <div class="estimate-item">
-          <div class="estimate-label">Expenses</div>
+          <div class="estimate-label">Spese</div>
           <p class="estimate-value">${formatCurrency(this.data.total_expenses, currency)}</p>
-          <div class="estimate-count">${this.data.expense_count} expense(s)</div>
+          <div class="estimate-count">${this.data.expense_count} spesa/e</div>
         </div>
         
         <div class="estimate-item">
-          <div class="estimate-label">Net Income</div>
+          <div class="estimate-label">Reddito Netto</div>
           <p class="estimate-value">${formatCurrency(this.data.net_income, currency)}</p>
-          <div class="estimate-count">After tax & expenses</div>
+          <div class="estimate-count">Dopo tasse e spese</div>
         </div>
       </div>
     `;
@@ -179,7 +179,7 @@ class MonthlyEstimate extends HTMLElement {
       <style>
         .error { text-align: center; padding: 2rem; color: #ef4444; }
       </style>
-      <div class="error">Failed to load monthly estimate.</div>
+      <div class="error">Impossibile caricare la stima mensile.</div>
     `;
   }
 }

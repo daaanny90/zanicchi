@@ -137,7 +137,7 @@ class DashboardSummary extends HTMLElement {
       </style>
       
       <div class="summary-grid">
-        ${this.data ? this.renderSummaryCards(currency) : '<div class="loading">Loading summary...</div>'}
+        ${this.data ? this.renderSummaryCards(currency) : '<div class="loading">Caricamento riepilogo...</div>'}
       </div>
     `;
   }
@@ -150,7 +150,7 @@ class DashboardSummary extends HTMLElement {
     return `
       <div class="summary-card">
         <div class="summary-header">
-          <span class="summary-title">Total Income</span>
+          <span class="summary-title">Entrate Totali</span>
           <span class="summary-icon">💰</span>
         </div>
         <p class="summary-value positive">${formatCurrency(this.data.total_income, currency)}</p>
@@ -158,7 +158,7 @@ class DashboardSummary extends HTMLElement {
       
       <div class="summary-card">
         <div class="summary-header">
-          <span class="summary-title">Total Expenses</span>
+          <span class="summary-title">Spese Totali</span>
           <span class="summary-icon">💸</span>
         </div>
         <p class="summary-value">${formatCurrency(this.data.total_expenses, currency)}</p>
@@ -166,7 +166,7 @@ class DashboardSummary extends HTMLElement {
       
       <div class="summary-card">
         <div class="summary-header">
-          <span class="summary-title">Net Income</span>
+          <span class="summary-title">Reddito Netto</span>
           <span class="summary-icon">📊</span>
         </div>
         <p class="summary-value ${this.data.net_income >= 0 ? 'positive' : 'negative'}">
@@ -176,7 +176,7 @@ class DashboardSummary extends HTMLElement {
       
       <div class="summary-card">
         <div class="summary-header">
-          <span class="summary-title">Pending</span>
+          <span class="summary-title">In Attesa</span>
           <span class="summary-icon">⏳</span>
         </div>
         <p class="summary-value">${formatCurrency(this.data.pending_invoices, currency)}</p>
@@ -196,7 +196,7 @@ class DashboardSummary extends HTMLElement {
           color: #ef4444;
         }
       </style>
-      <div class="error">Failed to load summary data. Please try again.</div>
+      <div class="error">Impossibile caricare i dati del riepilogo. Riprova.</div>
     `;
   }
 }

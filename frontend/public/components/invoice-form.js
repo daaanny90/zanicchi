@@ -51,10 +51,10 @@ class InvoiceForm extends HTMLElement {
     try {
       if (this.invoice) {
         await API.invoices.update(this.invoice.id, data);
-        showNotification('Invoice updated successfully', 'success');
+        showNotification('Fattura aggiornata con successo', 'success');
       } else {
         await API.invoices.create(data);
-        showNotification('Invoice created successfully', 'success');
+        showNotification('Fattura creata con successo', 'success');
       }
       
       this.hide();
@@ -67,7 +67,7 @@ class InvoiceForm extends HTMLElement {
       refreshDashboard();
     } catch (error) {
       console.error('Failed to save invoice:', error);
-      showNotification(error.message || 'Failed to save invoice', 'error');
+      showNotification(error.message || 'Impossibile salvare la fattura', 'error');
     }
   }
   
@@ -116,54 +116,54 @@ class InvoiceForm extends HTMLElement {
       <div class="modal">
         <div class="modal-content">
           <div class="modal-header">
-            <h2 class="modal-title">${this.invoice ? 'Edit Invoice' : 'New Invoice'}</h2>
+            <h2 class="modal-title">${this.invoice ? 'Modifica Fattura' : 'Nuova Fattura'}</h2>
             <button class="close-btn">×</button>
           </div>
           <div class="modal-body">
             <form id="invoice-form">
               <div class="form-grid">
                 <div class="form-group">
-                  <label class="form-label">Invoice Number *</label>
+                  <label class="form-label">Numero Fattura *</label>
                   <input type="text" name="invoice_number" class="form-input" value="${this.invoice?.invoice_number || ''}" required>
                 </div>
                 <div class="form-group">
-                  <label class="form-label">Status</label>
+                  <label class="form-label">Stato</label>
                   <select name="status" class="form-select">
-                    <option value="draft" ${!this.invoice || this.invoice.status === 'draft' ? 'selected' : ''}>Draft</option>
-                    <option value="sent" ${this.invoice?.status === 'sent' ? 'selected' : ''}>Sent</option>
-                    <option value="paid" ${this.invoice?.status === 'paid' ? 'selected' : ''}>Paid</option>
+                    <option value="draft" ${!this.invoice || this.invoice.status === 'draft' ? 'selected' : ''}>Bozza</option>
+                    <option value="sent" ${this.invoice?.status === 'sent' ? 'selected' : ''}>Inviata</option>
+                    <option value="paid" ${this.invoice?.status === 'paid' ? 'selected' : ''}>Pagata</option>
                   </select>
                 </div>
                 <div class="form-group full">
-                  <label class="form-label">Client Name *</label>
+                  <label class="form-label">Nome Cliente *</label>
                   <input type="text" name="client_name" class="form-input" value="${this.invoice?.client_name || ''}" required>
                 </div>
                 <div class="form-group full">
-                  <label class="form-label">Description</label>
+                  <label class="form-label">Descrizione</label>
                   <textarea name="description" class="form-textarea">${this.invoice?.description || ''}</textarea>
                 </div>
                 <div class="form-group">
-                  <label class="form-label">Amount *</label>
+                  <label class="form-label">Importo *</label>
                   <input type="number" name="amount" class="form-input" value="${this.invoice?.amount || ''}" step="0.01" min="0" required>
                 </div>
                 <div class="form-group">
-                  <label class="form-label">Tax Rate (%)</label>
+                  <label class="form-label">Aliquota IVA (%)</label>
                   <input type="number" name="tax_rate" class="form-input" value="${this.invoice?.tax_rate || defaultTaxRate}" step="0.01" min="0" max="100">
                 </div>
                 <div class="form-group">
-                  <label class="form-label">Issue Date *</label>
+                  <label class="form-label">Data Emissione *</label>
                   <input type="date" name="issue_date" class="form-input" value="${this.invoice?.issue_date || getTodayDate()}" required>
                 </div>
                 <div class="form-group">
-                  <label class="form-label">Due Date *</label>
+                  <label class="form-label">Data Scadenza *</label>
                   <input type="date" name="due_date" class="form-input" value="${this.invoice?.due_date || getTodayDate()}" required>
                 </div>
               </div>
             </form>
           </div>
           <div class="modal-footer">
-            <button type="button" class="btn btn-secondary" data-action="cancel">Cancel</button>
-            <button type="submit" form="invoice-form" class="btn btn-primary">Save Invoice</button>
+            <button type="button" class="btn btn-secondary" data-action="cancel">Annulla</button>
+            <button type="submit" form="invoice-form" class="btn btn-primary">Salva Fattura</button>
           </div>
         </div>
       </div>

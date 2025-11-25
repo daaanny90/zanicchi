@@ -97,8 +97,8 @@ class AppHeader extends HTMLElement {
           <div class="logo">
             <span class="logo-icon">💼</span>
             <div>
-              <h1 class="logo-text">Freelancer Finance</h1>
-              <p class="tagline">Manage your freelance finances with ease</p>
+              <h1 class="logo-text">Finanze Freelance</h1>
+              <p class="tagline">Gestisci le tue finanze da freelance con facilità</p>
             </div>
           </div>
         </div>

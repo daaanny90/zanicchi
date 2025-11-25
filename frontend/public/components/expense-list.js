@@ -25,23 +25,23 @@ class ExpenseList extends HTMLElement {
       this.render();
     } catch (error) {
       console.error('Failed to load expenses:', error);
-      showNotification('Failed to load expenses', 'error');
+      showNotification('Impossibile caricare le spese', 'error');
     }
   }
   
   async deleteExpense(id) {
-    if (!confirm('Are you sure you want to delete this expense?')) {
+    if (!confirm('Sei sicuro di voler eliminare questa spesa?')) {
       return;
     }
     
     try {
       await API.expenses.delete(id);
-      showNotification('Expense deleted successfully', 'success');
+      showNotification('Spesa eliminata con successo', 'success');
       this.loadExpenses();
       refreshDashboard();
     } catch (error) {
       console.error('Failed to delete expense:', error);
-      showNotification('Failed to delete expense', 'error');
+      showNotification('Impossibile eliminare la spesa', 'error');
     }
   }
   
@@ -75,7 +75,7 @@ class ExpenseList extends HTMLElement {
         .empty { text-align: center; padding: 3rem; color: #6b7280; }
       </style>
       
-      ${this.expenses.length > 0 ? this.renderTable(currency) : '<div class="empty">No expenses yet. Click "New Expense" to create one.</div>'}
+      ${this.expenses.length > 0 ? this.renderTable(currency) : '<div class="empty">Nessuna spesa ancora. Clicca "Nuova Spesa" per crearne una.</div>'}
     `;
     
     this.attachEventListeners();
@@ -87,11 +87,11 @@ class ExpenseList extends HTMLElement {
         <table class="table">
           <thead>
             <tr>
-              <th>Description</th>
-              <th>Category</th>
-              <th>Amount</th>
-              <th>Date</th>
-              <th>Actions</th>
+              <th>Descrizione</th>
+              <th>Categoria</th>
+              <th>Importo</th>
+              <th>Data</th>
+              <th>Azioni</th>
             </tr>
           </thead>
           <tbody>
@@ -108,8 +108,8 @@ class ExpenseList extends HTMLElement {
                 <td>${formatDate(exp.expense_date, 'short')}</td>
                 <td>
                   <div class="actions">
-                    <button class="btn btn-primary" data-action="edit" data-id="${exp.id}">Edit</button>
-                    <button class="btn btn-danger" data-action="delete" data-id="${exp.id}">Delete</button>
+                    <button class="btn btn-primary" data-action="edit" data-id="${exp.id}">Modifica</button>
+                    <button class="btn btn-danger" data-action="delete" data-id="${exp.id}">Elimina</button>
                   </div>
                 </td>
               </tr>

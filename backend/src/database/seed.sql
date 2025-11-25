@@ -31,7 +31,7 @@ INSERT INTO invoices (
 (
     'INV-2024-001',
     'Acme Corporation',
-    'Website development and design services',
+    'Sviluppo e design sito web',
     5000.00,
     22.00,
     1100.00,
@@ -44,7 +44,7 @@ INSERT INTO invoices (
 (
     'INV-2024-002',
     'Tech Startup Ltd',
-    'Mobile app development - Phase 1',
+    'Sviluppo app mobile - Fase 1',
     8500.00,
     22.00,
     1870.00,
@@ -57,7 +57,7 @@ INSERT INTO invoices (
 (
     'INV-2024-003',
     'Marketing Agency',
-    'Custom WordPress plugin development',
+    'Sviluppo plugin WordPress personalizzato',
     3200.00,
     22.00,
     704.00,
@@ -71,7 +71,7 @@ INSERT INTO invoices (
 (
     'INV-2024-004',
     'E-commerce Solutions',
-    'E-commerce platform integration',
+    'Integrazione piattaforma e-commerce',
     6500.00,
     22.00,
     1430.00,
@@ -84,7 +84,7 @@ INSERT INTO invoices (
 (
     'INV-2024-005',
     'Financial Services Co',
-    'API development and documentation',
+    'Sviluppo API e documentazione',
     4200.00,
     22.00,
     924.00,
@@ -97,7 +97,7 @@ INSERT INTO invoices (
 (
     'INV-2024-006',
     'Retail Chain Inc',
-    'Inventory management system',
+    'Sistema di gestione inventario',
     7800.00,
     22.00,
     1716.00,
@@ -111,7 +111,7 @@ INSERT INTO invoices (
 (
     'INV-2024-007',
     'Healthcare Provider',
-    'Patient portal development',
+    'Sviluppo portale pazienti',
     5500.00,
     22.00,
     1210.00,
@@ -131,35 +131,35 @@ INSERT INTO invoices (
 
 INSERT INTO expenses (description, amount, category_id, expense_date, notes) VALUES
 -- September expenses
-('Adobe Creative Cloud subscription', 54.99, 1, '2024-09-01', 'Monthly design software subscription'),
-('GitHub Pro subscription', 4.00, 1, '2024-09-01', 'Code repository hosting'),
-('Laptop replacement - MacBook Pro', 2499.00, 2, '2024-09-05', 'New development machine'),
-('Office chair', 350.00, 2, '2024-09-10', 'Ergonomic office furniture'),
-('Printer paper and ink', 45.00, 3, '2024-09-12', 'Office supplies'),
-('Client meeting - lunch', 85.00, 4, '2024-09-15', 'Business development meeting'),
-('Google Ads campaign', 200.00, 5, '2024-09-20', 'Marketing for new services'),
+('Abbonamento Adobe Creative Cloud', 54.99, 1, '2024-09-01', 'Abbonamento mensile software design'),
+('Abbonamento GitHub Pro', 4.00, 1, '2024-09-01', 'Hosting repository codice'),
+('Sostituzione laptop - MacBook Pro', 2499.00, 2, '2024-09-05', 'Nuova macchina di sviluppo'),
+('Sedia da ufficio', 350.00, 2, '2024-09-10', 'Arredamento ufficio ergonomico'),
+('Carta e inchiostro stampante', 45.00, 3, '2024-09-12', 'Forniture ufficio'),
+('Incontro cliente - pranzo', 85.00, 4, '2024-09-15', 'Incontro sviluppo business'),
+('Campagna Google Ads', 200.00, 5, '2024-09-20', 'Marketing per nuovi servizi'),
 
 -- October expenses
-('Adobe Creative Cloud subscription', 54.99, 1, '2024-10-01', 'Monthly design software subscription'),
-('GitHub Pro subscription', 4.00, 1, '2024-10-01', 'Code repository hosting'),
-('AWS hosting services', 125.00, 1, '2024-10-05', 'Cloud infrastructure costs'),
-('External monitor', 450.00, 2, '2024-10-08', '4K display for productivity'),
-('Udemy courses - React Advanced', 89.99, 7, '2024-10-12', 'Professional development'),
-('Business insurance premium', 450.00, 8, '2024-10-15', 'Quarterly professional liability insurance'),
-('Internet service', 65.00, 9, '2024-10-20', 'High-speed fiber connection'),
+('Abbonamento Adobe Creative Cloud', 54.99, 1, '2024-10-01', 'Abbonamento mensile software design'),
+('Abbonamento GitHub Pro', 4.00, 1, '2024-10-01', 'Hosting repository codice'),
+('Servizi hosting AWS', 125.00, 1, '2024-10-05', 'Costi infrastruttura cloud'),
+('Monitor esterno', 450.00, 2, '2024-10-08', 'Display 4K per produttività'),
+('Corsi Udemy - React Avanzato', 89.99, 7, '2024-10-12', 'Sviluppo professionale'),
+('Premio assicurazione aziendale', 450.00, 8, '2024-10-15', 'Assicurazione responsabilità professionale trimestrale'),
+('Servizio internet', 65.00, 9, '2024-10-20', 'Connessione fibra ad alta velocità'),
 
 -- November expenses (current month)
-('Adobe Creative Cloud subscription', 54.99, 1, '2024-11-01', 'Monthly design software subscription'),
-('GitHub Pro subscription', 4.00, 1, '2024-11-01', 'Code repository hosting'),
-('Notion subscription', 10.00, 1, '2024-11-01', 'Project management tool'),
-('Wireless mouse and keyboard', 120.00, 2, '2024-11-05', 'Peripheral upgrades'),
-('Notebook and pens', 25.00, 3, '2024-11-08', 'Meeting supplies'),
-('Train ticket to conference', 150.00, 4, '2024-11-10', 'Tech conference attendance'),
-('Conference registration', 299.00, 7, '2024-11-10', 'Professional development event'),
-('LinkedIn Ads', 150.00, 5, '2024-11-12', 'Lead generation campaign'),
-('Accountant consultation', 200.00, 6, '2024-11-15', 'Tax planning session'),
-('Internet service', 65.00, 9, '2024-11-20', 'High-speed fiber connection'),
-('Backup hard drive', 89.99, 2, '2024-11-22', 'Data backup solution');
+('Abbonamento Adobe Creative Cloud', 54.99, 1, '2024-11-01', 'Abbonamento mensile software design'),
+('Abbonamento GitHub Pro', 4.00, 1, '2024-11-01', 'Hosting repository codice'),
+('Abbonamento Notion', 10.00, 1, '2024-11-01', 'Strumento gestione progetti'),
+('Mouse e tastiera wireless', 120.00, 2, '2024-11-05', 'Aggiornamento periferiche'),
+('Quaderno e penne', 25.00, 3, '2024-11-08', 'Forniture per riunioni'),
+('Biglietto treno per conferenza', 150.00, 4, '2024-11-10', 'Partecipazione conferenza tech'),
+('Iscrizione conferenza', 299.00, 7, '2024-11-10', 'Evento sviluppo professionale'),
+('LinkedIn Ads', 150.00, 5, '2024-11-12', 'Campagna generazione lead'),
+('Consulenza commercialista', 200.00, 6, '2024-11-15', 'Sessione pianificazione fiscale'),
+('Servizio internet', 65.00, 9, '2024-11-20', 'Connessione fibra ad alta velocità'),
+('Hard disk backup', 89.99, 2, '2024-11-22', 'Soluzione backup dati');
 
 -- ============================================================================
 -- Sample data insertion complete
