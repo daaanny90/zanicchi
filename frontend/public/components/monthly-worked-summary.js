@@ -49,27 +49,30 @@ class MonthlyWorkedSummary extends HTMLElement {
     this.render();
 
     try {
+      // apiRequest already unwraps data.data, so we get {summary: [...], overall: {...}} directly
       const data = await API.workedHours.getMonthlySummary(this.selectedYear, this.selectedMonth);
-      this.summary = data.summary.map(item => ({
+      console.log('Worked hours summary data:', data);
+      
+      this.summary = (data.summary || []).map(item => ({
         ...item,
         hours: typeof item.hours === 'number' ? item.hours : parseFloat(item.hours || '0'),
         amount: typeof item.amount === 'number' ? item.amount : parseFloat(item.amount || '0')
       }));
       this.overall = {
-        total_hours: typeof data.overall.total_hours === 'number'
+        total_hours: typeof data.overall?.total_hours === 'number'
           ? data.overall.total_hours
-          : parseFloat(data.overall.total_hours || '0'),
-        total_amount: typeof data.overall.total_amount === 'number'
+          : parseFloat(data.overall?.total_hours || '0'),
+        total_amount: typeof data.overall?.total_amount === 'number'
           ? data.overall.total_amount
-          : parseFloat(data.overall.total_amount || '0')
+          : parseFloat(data.overall?.total_amount || '0')
       };
+      this.loading = false;
       this.render();
     } catch (error) {
       console.error('Impossibile recuperare il riepilogo ore lavorate:', error);
       this.error = 'Impossibile caricare il riepilogo delle ore';
-      this.render();
-    } finally {
       this.loading = false;
+      this.render();
     }
   }
 
