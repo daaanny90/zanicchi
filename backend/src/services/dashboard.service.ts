@@ -459,3 +459,71 @@ export async function getMonthlyOverview(
   };
 }
 
+/**
+ * Annual Revenue Limit Interface
+ * 
+ * Tracks total invoiced revenue for the year against the Italian flat-tax regime limit.
+ */
+export interface AnnualRevenueLimit {
+  year: number;                     // Current year
+  total_invoiced: number;           // Total amount from all invoices issued this year
+  limit: number;                    // The 85,000 € limit for regime forfettario
+  remaining: number;                // Amount remaining before hitting the limit
+  percentage_used: number;          // Percentage of limit already used
+  invoice_count: number;            // Number of invoices issued this year
+  status: 'safe' | 'attention' | 'critical'; // Risk level
+}
+
+/**
+ * Get annual revenue limit status
+ * 
+ * Calculates total invoiced revenue for the current calendar year
+ * and compares it to the Italian flat-tax regime limit of 85,000 €.
+ * 
+ * Note: This uses invoice ISSUE dates and total_amount (including VAT if applicable)
+ * as this represents what has been officially invoiced to clients.
+ * 
+ * @returns Promise resolving to annual revenue limit data
+ */
+export async function getAnnualRevenueLimit(): Promise<AnnualRevenueLimit> {
+  const currentYear = new Date().getFullYear();
+  const startDate = `${currentYear}-01-01`;
+  const endDate = `${currentYear}-12-31`;
+  
+  // Get all invoices issued this year (regardless of payment status)
+  // Use total_amount to include the full invoiced amount
+  const [invoiceRows] = await db.query<RowDataPacket[]>(
+    `SELECT 
+       COUNT(*) as invoice_count,
+       COALESCE(SUM(total_amount), 0) as total_invoiced
+     FROM invoices 
+     WHERE issue_date >= ? 
+       AND issue_date <= ?`,
+    [startDate, endDate]
+  );
+  
+  const totalInvoiced = parseFloat(invoiceRows[0]?.total_invoiced || '0');
+  const invoiceCount = parseInt(invoiceRows[0]?.invoice_count || '0');
+  const limit = 85000; // Italian flat-tax regime limit
+  const remaining = Math.max(0, limit - totalInvoiced);
+  const percentageUsed = (totalInvoiced / limit) * 100;
+  
+  // Determine status based on percentage used
+  let status: 'safe' | 'attention' | 'critical' = 'safe';
+  if (percentageUsed >= 90) {
+    status = 'critical'; // 90% or more used
+  } else if (percentageUsed >= 70) {
+    status = 'attention'; // 70-89% used
+  }
+  
+  return {
+    year: currentYear,
+    total_invoiced: totalInvoiced,
+    limit,
+    remaining,
+    percentage_used: Math.round(percentageUsed * 100) / 100,
+    invoice_count: invoiceCount,
+    status
+  };
+}
+

@@ -1,0 +1,13 @@
+Update main dashboard to show both invoice-based and hours-based data
+
+- Monthly estimate now displays TWO sections side-by-side:
+  * Invoice-based data (traditional, purple gradient)
+  * Hours-based data (from logged hours, green gradient)
+- Both sections show: income, expenses, net income
+- Hours-based section uses same logic as monthly overview
+- Automatic calculation for current month
+- Visual badges to distinguish sections
+- Color-coded cards for easy identification
+- Fully responsive grid layout
+- Both sections update independently and in parallel
+

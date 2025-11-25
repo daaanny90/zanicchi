@@ -151,6 +151,131 @@ class MonthlyOverview extends HTMLElement {
   }
   
   /**
+   * Calculate goal progress metrics
+   */
+  calculateGoalProgress() {
+    const netIncome = this.overview.net_income;
+    const goal = this.overview.target_salary;
+    const difference = netIncome - goal;
+    const percentage = goal > 0 ? Math.min((netIncome / goal) * 100, 100) : 0;
+    
+    // Determine status based on progress
+    let status = 'far'; // far from goal
+    let statusColor = '#ef4444'; // red
+    let statusIcon = '⚠️';
+    let statusText = 'Lontano dall\'obiettivo';
+    
+    if (percentage >= 100) {
+      status = 'achieved';
+      statusColor = '#10b981'; // green
+      statusIcon = '✅';
+      statusText = 'Obiettivo raggiunto!';
+    } else if (percentage >= 80) {
+      status = 'close';
+      statusColor = '#f59e0b'; // orange
+      statusIcon = '⏱️';
+      statusText = 'Vicino all\'obiettivo';
+    }
+    
+    return {
+      netIncome,
+      goal,
+      difference,
+      percentage,
+      status,
+      statusColor,
+      statusIcon,
+      statusText
+    };
+  }
+
+  /**
+   * Render goal progress tracker
+   */
+  renderGoalProgress() {
+    if (!this.overview || !this.settings) return '';
+    
+    const progress = this.calculateGoalProgress();
+    const currency = this.settings.currency;
+    
+    return `
+      <div class="goal-tracker">
+        <div class="goal-header">
+          <h3 class="goal-title">
+            <span class="goal-icon">${progress.statusIcon}</span>
+            Progresso Obiettivo Mensile
+          </h3>
+          <div class="goal-status" style="color: ${progress.statusColor};">
+            ${progress.statusText}
+          </div>
+        </div>
+        
+        <div class="goal-content">
+          <div class="goal-metrics">
+            <div class="goal-metric">
+              <div class="goal-metric-label">Reddito Netto Attuale</div>
+              <div class="goal-metric-value ${progress.netIncome >= 0 ? 'positive' : 'negative'}">
+                ${formatCurrency(progress.netIncome, currency)}
+              </div>
+            </div>
+            
+            <div class="goal-metric">
+              <div class="goal-metric-label">Obiettivo Mensile</div>
+              <div class="goal-metric-value">
+                ${formatCurrency(progress.goal, currency)}
+              </div>
+            </div>
+            
+            <div class="goal-metric">
+              <div class="goal-metric-label">
+                ${progress.difference >= 0 ? 'Surplus' : 'Mancante'}
+              </div>
+              <div class="goal-metric-value ${progress.difference >= 0 ? 'positive' : 'negative'}">
+                ${progress.difference >= 0 ? '+' : ''}${formatCurrency(Math.abs(progress.difference), currency)}
+              </div>
+            </div>
+          </div>
+          
+          <div class="goal-progress-bar-container">
+            <div class="goal-progress-bar">
+              <div 
+                class="goal-progress-fill ${progress.status}" 
+                style="width: ${progress.percentage}%; background-color: ${progress.statusColor};"
+              >
+                <span class="goal-progress-percentage">${progress.percentage.toFixed(0)}%</span>
+              </div>
+            </div>
+            <div class="goal-progress-labels">
+              <span class="goal-progress-label-start">0%</span>
+              <span class="goal-progress-label-middle">50%</span>
+              <span class="goal-progress-label-end">100%</span>
+            </div>
+          </div>
+          
+          ${progress.percentage < 100 ? `
+            <div class="goal-suggestion">
+              <span class="suggestion-icon">💡</span>
+              <span class="suggestion-text">
+                ${progress.percentage < 50 
+                  ? `Devi guadagnare ancora ${formatCurrency(Math.abs(progress.difference), currency)} per raggiungere l'obiettivo.`
+                  : `Sei quasi arrivato! Mancano solo ${formatCurrency(Math.abs(progress.difference), currency)}.`
+                }
+              </span>
+            </div>
+          ` : `
+            <div class="goal-celebration">
+              <span class="celebration-icon">🎉</span>
+              <span class="celebration-text">
+                Complimenti! Hai superato l'obiettivo mensile di ${formatCurrency(Math.abs(progress.difference), currency)}.
+              </span>
+            </div>
+          `}
+        </div>
+      </div>
+    `;
+  }
+
+  /**
    * Render overview content
    */
   renderOverview() {
@@ -293,6 +418,9 @@ class MonthlyOverview extends HTMLElement {
             <div class="breakdown-note">Reddito netto - Stipendio</div>
           </div>
         </div>
+        
+        <!-- Goal Progress Tracker -->
+        ${this.renderGoalProgress()}
         
         <!-- Summary Formula -->
         <div class="formula-box">
@@ -589,6 +717,167 @@ class MonthlyOverview extends HTMLElement {
           background: rgba(239, 68, 68, 0.1);
           border: 1px solid rgba(239, 68, 68, 0.4);
           border-radius: 0.5rem;
+        }
+        
+        /* Goal Tracker Styles */
+        .goal-tracker {
+          background: var(--color-bg);
+          border: 1px solid var(--color-border);
+          border-radius: 0.75rem;
+          padding: 1.5rem;
+          margin-bottom: 2rem;
+          box-shadow: var(--shadow-md);
+        }
+        
+        .goal-header {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          margin-bottom: 1.5rem;
+          padding-bottom: 1rem;
+          border-bottom: 2px solid var(--color-border);
+        }
+        
+        .goal-title {
+          display: flex;
+          align-items: center;
+          gap: 0.5rem;
+          margin: 0;
+          font-size: 1.25rem;
+          font-weight: 700;
+          color: var(--color-text-primary);
+        }
+        
+        .goal-icon {
+          font-size: 1.5rem;
+        }
+        
+        .goal-status {
+          font-size: 0.875rem;
+          font-weight: 600;
+          padding: 0.375rem 0.75rem;
+          border-radius: 0.375rem;
+          background: rgba(255, 255, 255, 0.1);
+        }
+        
+        .goal-content {
+          display: flex;
+          flex-direction: column;
+          gap: 1.5rem;
+        }
+        
+        .goal-metrics {
+          display: grid;
+          grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+          gap: 1rem;
+        }
+        
+        .goal-metric {
+          background: var(--color-bg-secondary);
+          padding: 1rem;
+          border-radius: 0.5rem;
+          border: 1px solid var(--color-border);
+        }
+        
+        .goal-metric-label {
+          font-size: 0.75rem;
+          font-weight: 600;
+          text-transform: uppercase;
+          letter-spacing: 0.05em;
+          color: var(--color-text-secondary);
+          margin-bottom: 0.5rem;
+        }
+        
+        .goal-metric-value {
+          font-size: 1.5rem;
+          font-weight: 700;
+          color: var(--color-text-primary);
+        }
+        
+        .goal-progress-bar-container {
+          margin-top: 0.5rem;
+        }
+        
+        .goal-progress-bar {
+          width: 100%;
+          height: 2rem;
+          background: var(--color-bg-secondary);
+          border-radius: 1rem;
+          overflow: hidden;
+          border: 2px solid var(--color-border);
+          position: relative;
+        }
+        
+        .goal-progress-fill {
+          height: 100%;
+          display: flex;
+          align-items: center;
+          justify-content: flex-end;
+          padding-right: 0.75rem;
+          transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+          position: relative;
+        }
+        
+        .goal-progress-fill.achieved {
+          background: linear-gradient(90deg, #10b981 0%, #059669 100%) !important;
+        }
+        
+        .goal-progress-fill.close {
+          background: linear-gradient(90deg, #f59e0b 0%, #d97706 100%) !important;
+        }
+        
+        .goal-progress-fill.far {
+          background: linear-gradient(90deg, #ef4444 0%, #dc2626 100%) !important;
+        }
+        
+        .goal-progress-percentage {
+          color: white;
+          font-weight: 700;
+          font-size: 0.875rem;
+          text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+        }
+        
+        .goal-progress-labels {
+          display: flex;
+          justify-content: space-between;
+          margin-top: 0.5rem;
+          font-size: 0.75rem;
+          color: var(--color-text-secondary);
+          padding: 0 0.25rem;
+        }
+        
+        .goal-suggestion,
+        .goal-celebration {
+          display: flex;
+          align-items: center;
+          gap: 0.75rem;
+          padding: 1rem;
+          border-radius: 0.5rem;
+          font-size: 0.875rem;
+        }
+        
+        .goal-suggestion {
+          background: rgba(239, 68, 68, 0.1);
+          border: 1px solid rgba(239, 68, 68, 0.3);
+          color: var(--color-text-primary);
+        }
+        
+        .goal-celebration {
+          background: rgba(16, 185, 129, 0.1);
+          border: 1px solid rgba(16, 185, 129, 0.3);
+          color: var(--color-text-primary);
+        }
+        
+        .suggestion-icon,
+        .celebration-icon {
+          font-size: 1.5rem;
+          flex-shrink: 0;
+        }
+        
+        .suggestion-text,
+        .celebration-text {
+          font-weight: 500;
+          line-height: 1.5;
         }
         
         @media (max-width: 768px) {

@@ -41,5 +41,11 @@ router.get('/expense-by-category', dashboardController.getExpenseByCategory);
  */
 router.get('/monthly-overview', dashboardController.getMonthlyOverview);
 
+/**
+ * GET /api/dashboard/annual-limit
+ * Get annual revenue limit status (85,000 € flat-tax regime)
+ */
+router.get('/annual-limit', dashboardController.getAnnualRevenueLimit);
+
 export default router;
 

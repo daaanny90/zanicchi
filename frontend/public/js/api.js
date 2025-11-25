@@ -225,6 +225,11 @@ const API = {
       return apiRequest('/dashboard/expense-by-category');
     },
     
+    // Get annual revenue limit status
+    getAnnualLimit: () => {
+      return apiRequest('/dashboard/annual-limit');
+    },
+    
     // Get monthly overview with salary calculations
     getMonthlyOverview: (year, month, targetSalary, taxablePercentage, incomeTaxRate, healthInsuranceRate) => {
       const params = new URLSearchParams({

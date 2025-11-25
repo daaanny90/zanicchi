@@ -148,3 +148,19 @@ export async function getMonthlyOverview(req: Request, res: Response): Promise<v
   }
 }
 
+/**
+ * Get annual revenue limit status
+ * 
+ * GET /api/dashboard/annual-limit
+ * Returns total invoiced revenue for the year vs the 85,000 € flat-tax limit
+ */
+export async function getAnnualRevenueLimit(_req: Request, res: Response): Promise<void> {
+  try {
+    const limitData = await dashboardService.getAnnualRevenueLimit();
+    sendSuccess(res, limitData);
+  } catch (error) {
+    console.error('Error fetching annual revenue limit:', error);
+    sendError(res, 'Failed to fetch annual revenue limit');
+  }
+}
+
