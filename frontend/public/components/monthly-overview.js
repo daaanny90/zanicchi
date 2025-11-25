@@ -4,12 +4,16 @@
  * Custom Web Component for displaying comprehensive monthly financial overview
  * with salary-based calculations.
  * 
+ * **IMPORTANT: Income is calculated from worked hours (hours × rate), NOT from invoices.**
+ * This is the single source of truth for monthly accounting.
+ * 
  * Features:
  * - Month selector (dropdown to view different months)
- * - Income, expenses, and tax breakdown
+ * - Income from logged work hours, expenses, and tax breakdown
  * - Target salary tracking
  * - Taxes to set aside calculation
  * - Savings calculation
+ * - Italian "Regime Forfettario" tax calculations
  * 
  * Usage:
  * <monthly-overview></monthly-overview>
@@ -168,10 +172,10 @@ class MonthlyOverview extends HTMLElement {
         <div class="overview-card income-card">
           <div class="card-header">
             <span class="card-icon">💰</span>
-            <h3 class="card-title">Entrate Lorde</h3>
+            <h3 class="card-title">Entrate Lorde (da Ore)</h3>
           </div>
           <div class="card-value positive">${formatCurrency(this.overview.total_income, currency)}</div>
-          <div class="card-detail">${this.overview.invoice_count} fattura/e pagata/e</div>
+          <div class="card-detail">${this.overview.invoice_count} registrazione/i ore</div>
         </div>
         
         <!-- Expenses Section -->
@@ -293,6 +297,9 @@ class MonthlyOverview extends HTMLElement {
         <!-- Summary Formula -->
         <div class="formula-box">
           <h4 class="formula-title">Formula di Calcolo (Regime Forfettario):</h4>
+          <div class="formula-text" style="font-size: 0.875rem; margin-bottom: 0.5rem; background: rgba(59, 130, 246, 0.1); padding: 0.5rem; border-radius: 0.375rem;">
+            <strong>Entrate da Ore Lavorate:</strong> Ore registrate × Tariffa oraria
+          </div>
           <div class="formula-text" style="font-size: 0.875rem; margin-bottom: 0.5rem;">
             1. Reddito Imponibile = Entrate × ${this.settings.taxable_percentage}%
           </div>
@@ -306,7 +313,7 @@ class MonthlyOverview extends HTMLElement {
             4. Imposta Sostitutiva = Reddito per Imposte × ${this.settings.income_tax_rate}% = ${formatCurrency(this.overview.income_tax, currency)}
           </div>
           <div class="formula-text" style="font-weight: 600; margin-top: 1rem;">
-            Reddito Netto = Entrate − Spese − INPS − Imposta Sostitutiva
+            Reddito Netto = Entrate (da ore) − Spese − INPS − Imposta Sostitutiva
           </div>
           <div class="formula-calculation">
             ${formatCurrency(this.overview.net_income, currency)} = 

@@ -341,12 +341,15 @@ export async function getExpenseByCategoryChartData() {
  * 
  * Comprehensive monthly financial overview including Italian tax calculations
  * and salary-based savings calculations.
+ * 
+ * **IMPORTANT: Income is calculated from worked_hours, NOT from invoices.**
+ * All financial metrics are based on logged hours × hourly rates.
  */
 export interface MonthlyOverview {
   month: string;                    // Month in YYYY-MM format
-  total_income: number;             // Gross income for the month (excl. VAT)
+  total_income: number;             // Gross income from WORKED HOURS (hours × rate)
   total_expenses: number;           // Total expenses for the month
-  total_vat: number;                // VAT collected (to be paid to government)
+  total_vat: number;                // VAT collected (always 0 for regime forfettario)
   taxable_income: number;           // Income × coefficient (e.g., 67%)
   health_insurance: number;         // INPS (26.07% of taxable income) - DEDUCTIBLE
   income_for_tax: number;           // Taxable income - INPS (base for income tax)
@@ -355,24 +358,30 @@ export interface MonthlyOverview {
   net_income: number;               // Income - Expenses - Total tax burden
   target_salary: number;            // Target monthly salary from settings
   savings: number;                  // Amount to save (net_income - target_salary)
-  invoice_count: number;            // Number of invoices
+  invoice_count: number;            // Number of worked_hours entries (repurposed field)
   expense_count: number;            // Number of expenses
 }
 
 /**
  * Get monthly overview with salary-based calculations
  * 
+ * **NEW LOGIC: Based on worked hours, NOT invoices**
+ * 
  * Retrieves comprehensive financial data for a specific month including:
- * - Income and expenses
+ * - Income calculated from logged worked hours (hours × hourly rate)
+ * - Expenses
  * - Italian "regime forfettario" tax calculations
  * - Savings based on target salary
+ * 
+ * This function completely ignores invoices and uses worked_hours as the
+ * single source of truth for income calculations.
  * 
  * @param year - The year (e.g., 2024)
  * @param month - The month (1-12)
  * @param targetSalary - Target monthly salary from settings
- * @param taxablePercentage - Percentage of income that is taxable (e.g., 76)
+ * @param taxablePercentage - Percentage of income that is taxable (e.g., 67)
  * @param incomeTaxRate - Income tax rate (e.g., 15)
- * @param healthInsuranceRate - Health insurance rate (e.g., 27)
+ * @param healthInsuranceRate - Health insurance rate (e.g., 26.07)
  * @returns Promise resolving to monthly overview data
  */
 export async function getMonthlyOverview(
@@ -386,16 +395,15 @@ export async function getMonthlyOverview(
   const startDate = `${year}-${String(month).padStart(2, '0')}-01`;
   const endDate = getLastDayOfSpecificMonth(year, month);
   
-  // Get invoices for the month
-  // Count all invoices issued in this month, but only sum income from paid ones
-  const [invoiceRows] = await db.query<RowDataPacket[]>(
+  // Get total income from worked hours (hours × hourly_rate)
+  // This is the NEW single source of truth for monthly income
+  const [workedHoursRows] = await db.query<RowDataPacket[]>(
     `SELECT 
-       COUNT(*) as invoice_count,
-       COALESCE(SUM(CASE WHEN status = 'paid' THEN amount ELSE 0 END), 0) as total_income,
-       COALESCE(SUM(CASE WHEN status = 'paid' THEN tax_amount ELSE 0 END), 0) as total_vat
-     FROM invoices 
-     WHERE issue_date >= ? 
-       AND issue_date <= ?`,
+       COUNT(*) as hours_count,
+       COALESCE(SUM(amount_cached), 0) as total_income
+     FROM worked_hours 
+     WHERE worked_date >= ? 
+       AND worked_date <= ?`,
     [startDate, endDate]
   );
   
@@ -410,13 +418,16 @@ export async function getMonthlyOverview(
     [startDate, endDate]
   );
   
-  const grossIncome = invoiceRows[0]?.total_income || 0;
+  // Income is now purely based on logged hours
+  const grossIncome = workedHoursRows[0]?.total_income || 0;
   const totalExpenses = expenseRows[0]?.total_expenses || 0;
-  const totalVat = invoiceRows[0]?.total_vat || 0;
-  const invoiceCount = invoiceRows[0]?.invoice_count || 0;
+  const hoursCount = workedHoursRows[0]?.hours_count || 0;
   const expenseCount = expenseRows[0]?.expense_count || 0;
   
-  // Calculate Italian taxes
+  // VAT is 0 for regime forfettario (no VAT on invoices)
+  const totalVat = 0;
+  
+  // Calculate Italian taxes based on worked hours income
   const taxes = calculateItalianTaxes(
     grossIncome,
     taxablePercentage,
@@ -424,7 +435,7 @@ export async function getMonthlyOverview(
     healthInsuranceRate
   );
   
-  // Calculate net income: Gross Income - Expenses - Total Tax Burden
+  // Calculate net income: Gross Income (from hours) - Expenses - Total Tax Burden
   const netIncome = grossIncome - totalExpenses - taxes.totalTaxBurden;
   
   // Calculate savings: what's left after taking the target salary
@@ -443,7 +454,7 @@ export async function getMonthlyOverview(
     net_income: Math.round(netIncome * 100) / 100,
     target_salary: targetSalary,
     savings: Math.round(savings * 100) / 100,
-    invoice_count: invoiceCount,
+    invoice_count: hoursCount, // Repurposed: now shows count of work hour entries
     expense_count: expenseCount
   };
 }
