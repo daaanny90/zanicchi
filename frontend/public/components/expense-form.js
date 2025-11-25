@@ -87,7 +87,7 @@ class ExpenseForm extends HTMLElement {
   }
   
   render() {
-    const categories = getCategories() || [];
+    const categories = window.AppState?.categories || [];
     
     this.shadowRoot.innerHTML = `
       <style>

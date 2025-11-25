@@ -90,8 +90,7 @@ class InvoiceForm extends HTMLElement {
   }
   
   render() {
-    const settings = getSettings();
-    const defaultTaxRate = settings?.default_tax_rate || 22;
+    const defaultTaxRate = window.AppState?.settings?.default_tax_rate || 22;
     
     this.shadowRoot.innerHTML = `
       <style>

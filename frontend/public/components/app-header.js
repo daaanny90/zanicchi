@@ -25,6 +25,7 @@ class AppHeader extends HTMLElement {
    */
   connectedCallback() {
     this.render();
+    this.attachEvents();
   }
   
   /**
@@ -77,6 +78,26 @@ class AppHeader extends HTMLElement {
           margin: 0;
         }
         
+        .actions button {
+          border: none;
+          background: #2563eb;
+          color: #fff;
+          padding: 0.55rem 1.25rem;
+          border-radius: 999px;
+          font-size: 0.95rem;
+          font-weight: 500;
+          cursor: pointer;
+          display: flex;
+          align-items: center;
+          gap: 0.4rem;
+          box-shadow: 0 10px 15px -3px rgb(37 99 235 / 0.4);
+        }
+
+        .actions button:focus-visible {
+          outline: 2px solid #93c5fd;
+          outline-offset: 2px;
+        }
+
         @media (max-width: 768px) {
           .header {
             padding: 1rem;
@@ -101,9 +122,29 @@ class AppHeader extends HTMLElement {
               <p class="tagline">Gestisci le tue finanze da freelance con facilità</p>
             </div>
           </div>
+          <div class="actions">
+            <button id="header-log-hours">
+              <span>⏱️</span>
+              <span>Registra Ore</span>
+            </button>
+          </div>
         </div>
       </header>
     `;
+  }
+
+  attachEvents() {
+    const logBtn = this.shadowRoot.querySelector('#header-log-hours');
+    if (logBtn) {
+      logBtn.addEventListener('click', () => {
+        const defaultDate = typeof getTodayDate === 'function'
+          ? getTodayDate()
+          : new Date().toISOString().split('T')[0];
+        window.dispatchEvent(new CustomEvent('worked-hours:open-modal', {
+          detail: { defaultDate }
+        }));
+      });
+    }
   }
 }
 

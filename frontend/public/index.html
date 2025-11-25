@@ -41,6 +41,14 @@
                         <span class="nav-icon">💰</span>
                         <span class="nav-text">Spese</span>
                     </li>
+                    <li class="nav-item" data-action="log-hours">
+                        <span class="nav-icon">⏱️</span>
+                        <span class="nav-text">Registra Ore</span>
+                    </li>
+                    <li class="nav-item" data-action="manage-clients">
+                        <span class="nav-icon">👥</span>
+                        <span class="nav-text">Clienti</span>
+                    </li>
                     <li class="nav-item" data-view="settings">
                         <span class="nav-icon">⚙️</span>
                         <span class="nav-text">Impostazioni</span>
@@ -74,6 +82,7 @@
                 <div id="monthly-view" class="view">
                     <h1 class="page-title">Panoramica Mensile</h1>
                     <monthly-overview></monthly-overview>
+                    <monthly-worked-summary></monthly-worked-summary>
                 </div>
                 
                 <!-- Invoices View -->
@@ -114,6 +123,10 @@
             </main>
         </div>
     </div>
+
+    <!-- Global modals -->
+    <worked-hours-modal id="global-worked-hours-modal"></worked-hours-modal>
+    <clients-manager id="global-clients-manager"></clients-manager>
     
     <!-- Load utility modules first -->
     <script src="js/utils.js"></script>
@@ -125,6 +138,9 @@
     <script src="components/dashboard-summary.js"></script>
     <script src="components/monthly-estimate.js"></script>
     <script src="components/monthly-overview.js"></script>
+    <script src="components/worked-hours-modal.js"></script>
+    <script src="components/clients-manager.js"></script>
+    <script src="components/monthly-worked-summary.js"></script>
     <script src="components/invoice-list.js"></script>
     <script src="components/invoice-form.js"></script>
     <script src="components/expense-list.js"></script>

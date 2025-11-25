@@ -52,10 +52,16 @@ function setupNavigation() {
   const navItems = document.querySelectorAll('.nav-item');
   
   navItems.forEach(item => {
-    item.addEventListener('click', () => {
-      const viewName = item.getAttribute('data-view');
-      showView(viewName);
-    });
+    const action = item.getAttribute('data-action');
+    if (action) {
+      item.addEventListener('click', () => handleNavigationAction(action));
+      return;
+    }
+    
+    const viewName = item.getAttribute('data-view');
+    if (viewName) {
+      item.addEventListener('click', () => showView(viewName));
+    }
   });
   
   // Setup "Add" buttons
@@ -78,6 +84,23 @@ function setupNavigation() {
         form.show();
       }
     });
+  }
+}
+
+function handleNavigationAction(action) {
+  switch (action) {
+    case 'log-hours': {
+      const defaultDate = typeof getTodayDate === 'function'
+        ? getTodayDate()
+        : new Date().toISOString().split('T')[0];
+      window.dispatchEvent(new CustomEvent('worked-hours:open-modal', {
+        detail: { defaultDate }
+      }));
+      break;
+    }
+    case 'manage-clients':
+      window.dispatchEvent(new CustomEvent('clients:open-manager'));
+      break;
   }
 }
 

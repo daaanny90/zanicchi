@@ -255,6 +255,56 @@ const API = {
         body: JSON.stringify(data)
       });
     }
+  },
+
+  /**
+   * Client API Methods
+   */
+  clients: {
+    getAll: () => apiRequest('/clients'),
+    create: (data) =>
+      apiRequest('/clients', {
+        method: 'POST',
+        body: JSON.stringify(data)
+      }),
+    update: (id, data) =>
+      apiRequest(`/clients/${id}`, {
+        method: 'PUT',
+        body: JSON.stringify(data)
+      }),
+    delete: (id) =>
+      apiRequest(`/clients/${id}`, {
+        method: 'DELETE'
+      })
+  },
+
+  /**
+   * Worked Hours API Methods
+   */
+  workedHours: {
+    getAll: (params = {}) => {
+      const query = new URLSearchParams();
+      if (params.month) query.set('month', params.month);
+      if (params.clientId) query.set('clientId', params.clientId);
+      const suffix = query.toString() ? `?${query.toString()}` : '';
+      return apiRequest(`/worked-hours${suffix}`);
+    },
+    create: (data) =>
+      apiRequest('/worked-hours', {
+        method: 'POST',
+        body: JSON.stringify(data)
+      }),
+    update: (id, data) =>
+      apiRequest(`/worked-hours/${id}`, {
+        method: 'PUT',
+        body: JSON.stringify(data)
+      }),
+    delete: (id) =>
+      apiRequest(`/worked-hours/${id}`, {
+        method: 'DELETE'
+      }),
+    getMonthlySummary: (year, month) =>
+      apiRequest(`/worked-hours/summary/monthly?year=${year}&month=${month}`)
   }
 };
 

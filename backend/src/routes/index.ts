@@ -11,6 +11,8 @@ import expenseRoutes from './expense.routes';
 import dashboardRoutes from './dashboard.routes';
 import categoryRoutes from './category.routes';
 import settingsRoutes from './settings.routes';
+import clientRoutes from './client.routes';
+import workedHoursRoutes from './worked-hours.routes';
 
 const router = Router();
 
@@ -30,6 +32,8 @@ router.use('/expenses', expenseRoutes);
 router.use('/dashboard', dashboardRoutes);
 router.use('/categories', categoryRoutes);
 router.use('/settings', settingsRoutes);
+router.use('/clients', clientRoutes);
+router.use('/worked-hours', workedHoursRoutes);
 
 export default router;
 

@@ -66,8 +66,7 @@ class InvoiceList extends HTMLElement {
   }
   
   render() {
-    const settings = getSettings();
-    const currency = settings?.currency || 'EUR';
+    const currency = window.AppState?.settings?.currency || 'EUR';
     
     this.shadowRoot.innerHTML = `
       <style>

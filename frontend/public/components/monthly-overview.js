@@ -60,6 +60,15 @@ class MonthlyOverview extends HTMLElement {
       await this.loadOverview();
     }
   }
+
+  notifyMonthChange() {
+    window.dispatchEvent(new CustomEvent('monthly:monthChanged', {
+      detail: {
+        year: this.selectedYear,
+        month: this.selectedMonth
+      }
+    }));
+  }
   
   /**
    * Load monthly overview data
@@ -69,6 +78,8 @@ class MonthlyOverview extends HTMLElement {
       console.error('Settings not loaded yet');
       return;
     }
+
+    this.notifyMonthChange();
     
     try {
       console.log('Loading monthly overview:', {
@@ -327,6 +338,7 @@ class MonthlyOverview extends HTMLElement {
         const [year, month] = e.target.value.split('-');
         this.selectedYear = parseInt(year);
         this.selectedMonth = parseInt(month);
+        this.notifyMonthChange();
         this.loadOverview();
       });
     }
