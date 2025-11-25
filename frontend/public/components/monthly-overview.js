@@ -53,7 +53,7 @@ class MonthlyOverview extends HTMLElement {
         target_salary: 3000,
         taxable_percentage: 67,
         income_tax_rate: 15,
-        health_insurance_rate: 27,
+        health_insurance_rate: 26.07,
         currency: 'EUR',
         currency_symbol: '€'
       };
@@ -198,6 +198,26 @@ class MonthlyOverview extends HTMLElement {
       <div class="salary-breakdown">
         <h3 class="breakdown-title">Imposte e Contributi (Regime Forfettario)</h3>
         <div class="breakdown-grid">
+          <!-- Health Insurance (INPS) - DEDUCTIBLE -->
+          <div class="breakdown-item inps-item">
+            <div class="breakdown-label">
+              <span class="breakdown-icon">🏥</span>
+              <span>Contributi INPS</span>
+            </div>
+            <div class="breakdown-value">${formatCurrency(this.overview.health_insurance, currency)}</div>
+            <div class="breakdown-note">${this.settings.health_insurance_rate}% del reddito imponibile (deducibile)</div>
+          </div>
+          
+          <!-- Income for Tax (after INPS deduction) -->
+          <div class="breakdown-item taxable-card">
+            <div class="breakdown-label">
+              <span class="breakdown-icon">📉</span>
+              <span>Reddito per Imposte</span>
+            </div>
+            <div class="breakdown-value">${formatCurrency(this.overview.income_for_tax, currency)}</div>
+            <div class="breakdown-note">Dopo deduzione INPS</div>
+          </div>
+          
           <!-- Income Tax -->
           <div class="breakdown-item tax-item">
             <div class="breakdown-label">
@@ -205,17 +225,7 @@ class MonthlyOverview extends HTMLElement {
               <span>Imposta Sostitutiva</span>
             </div>
             <div class="breakdown-value">${formatCurrency(this.overview.income_tax, currency)}</div>
-            <div class="breakdown-note">${this.settings.income_tax_rate}% del reddito imponibile</div>
-          </div>
-          
-          <!-- Health Insurance (INPS) -->
-          <div class="breakdown-item inps-item">
-            <div class="breakdown-label">
-              <span class="breakdown-icon">🏥</span>
-              <span>Contributi INPS</span>
-            </div>
-            <div class="breakdown-value">${formatCurrency(this.overview.health_insurance, currency)}</div>
-            <div class="breakdown-note">${this.settings.health_insurance_rate}% del reddito imponibile</div>
+            <div class="breakdown-note">${this.settings.income_tax_rate}% del reddito per imposte</div>
           </div>
           
           <!-- Total Tax Burden -->
@@ -225,7 +235,7 @@ class MonthlyOverview extends HTMLElement {
               <span>Totale Imposte</span>
             </div>
             <div class="breakdown-value">${formatCurrency(this.overview.total_tax_burden, currency)}</div>
-            <div class="breakdown-note">Imposta + INPS</div>
+            <div class="breakdown-note">INPS + Imposta Sostitutiva</div>
           </div>
         </div>
       </div>
@@ -271,23 +281,35 @@ class MonthlyOverview extends HTMLElement {
         
         <!-- Summary Formula -->
         <div class="formula-box">
-          <h4 class="formula-title">Formula di Calcolo:</h4>
-          <div class="formula-text">
-            Reddito Netto = Entrate - Spese - Imposta Sostitutiva - INPS
+          <h4 class="formula-title">Formula di Calcolo (Regime Forfettario):</h4>
+          <div class="formula-text" style="font-size: 0.875rem; margin-bottom: 0.5rem;">
+            1. Reddito Imponibile = Entrate × ${this.settings.taxable_percentage}%
+          </div>
+          <div class="formula-text" style="font-size: 0.875rem; margin-bottom: 0.5rem;">
+            2. INPS = Reddito Imponibile × ${this.settings.health_insurance_rate}% = ${formatCurrency(this.overview.health_insurance, currency)}
+          </div>
+          <div class="formula-text" style="font-size: 0.875rem; margin-bottom: 0.5rem;">
+            3. Reddito per Imposte = Reddito Imponibile − INPS = ${formatCurrency(this.overview.income_for_tax, currency)}
+          </div>
+          <div class="formula-text" style="font-size: 0.875rem; margin-bottom: 0.5rem;">
+            4. Imposta Sostitutiva = Reddito per Imposte × ${this.settings.income_tax_rate}% = ${formatCurrency(this.overview.income_tax, currency)}
+          </div>
+          <div class="formula-text" style="font-weight: 600; margin-top: 1rem;">
+            Reddito Netto = Entrate − Spese − INPS − Imposta Sostitutiva
           </div>
           <div class="formula-calculation">
             ${formatCurrency(this.overview.net_income, currency)} = 
-            ${formatCurrency(this.overview.total_income, currency)} - 
-            ${formatCurrency(this.overview.total_expenses, currency)} - 
-            ${formatCurrency(this.overview.income_tax, currency)} - 
-            ${formatCurrency(this.overview.health_insurance, currency)}
+            ${formatCurrency(this.overview.total_income, currency)} − 
+            ${formatCurrency(this.overview.total_expenses, currency)} − 
+            ${formatCurrency(this.overview.health_insurance, currency)} − 
+            ${formatCurrency(this.overview.income_tax, currency)}
           </div>
           <div class="formula-text" style="margin-top: 1rem;">
-            Risparmi = Reddito Netto - Stipendio Desiderato
+            Risparmi = Reddito Netto − Stipendio Desiderato
           </div>
           <div class="formula-calculation">
             ${formatCurrency(this.overview.savings, currency)} = 
-            ${formatCurrency(this.overview.net_income, currency)} - 
+            ${formatCurrency(this.overview.net_income, currency)} − 
             ${formatCurrency(this.overview.target_salary, currency)}
           </div>
         </div>

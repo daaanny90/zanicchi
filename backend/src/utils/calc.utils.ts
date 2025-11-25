@@ -170,12 +170,19 @@ export function calculateHealthInsurance(
 /**
  * Calculate total tax burden for Italian "regime forfettario"
  * 
- * This includes both income tax and health insurance contributions.
+ * IMPORTANT: INPS contributions are deductible from taxable income before calculating income tax.
+ * 
+ * Calculation steps:
+ * 1. Taxable Income = Gross Income × Coefficient (e.g., 67%)
+ * 2. INPS = Taxable Income × INPS Rate (e.g., 26.07%)
+ * 3. Income for Tax = Taxable Income - INPS (deduction!)
+ * 4. Income Tax = Income for Tax × Tax Rate (e.g., 15%)
+ * 5. Net Income = Gross Income - INPS - Income Tax
  * 
  * @param grossIncome - Total gross income
- * @param taxablePercentage - Percentage of income that is taxable (e.g., 76)
+ * @param taxablePercentage - Percentage of income that is taxable (e.g., 67)
  * @param incomeTaxRate - Income tax rate percentage (e.g., 15)
- * @param healthInsuranceRate - INPS rate percentage (e.g., 27)
+ * @param healthInsuranceRate - INPS rate percentage (e.g., 26.07)
  * @returns Object with breakdown of all tax components
  */
 export function calculateItalianTaxes(
@@ -185,19 +192,31 @@ export function calculateItalianTaxes(
   healthInsuranceRate: number
 ): {
   taxableIncome: number;
-  incomeTax: number;
   healthInsurance: number;
+  incomeForTax: number;
+  incomeTax: number;
   totalTaxBurden: number;
 } {
+  // Step 1: Calculate taxable income (reddito imponibile)
   const taxableIncome = calculateTaxableIncome(grossIncome, taxablePercentage);
-  const incomeTax = calculateIncomeTax(taxableIncome, incomeTaxRate);
+  
+  // Step 2: Calculate INPS contributions (deductible!)
   const healthInsurance = calculateHealthInsurance(taxableIncome, healthInsuranceRate);
-  const totalTaxBurden = roundCurrency(incomeTax + healthInsurance);
+  
+  // Step 3: Calculate income for tax purposes (after INPS deduction)
+  const incomeForTax = roundCurrency(taxableIncome - healthInsurance);
+  
+  // Step 4: Calculate income tax on the reduced taxable income
+  const incomeTax = calculateIncomeTax(incomeForTax, incomeTaxRate);
+  
+  // Step 5: Total tax burden (INPS + Income Tax)
+  const totalTaxBurden = roundCurrency(healthInsurance + incomeTax);
 
   return {
     taxableIncome,
-    incomeTax,
     healthInsurance,
+    incomeForTax,
+    incomeTax,
     totalTaxBurden
   };
 }

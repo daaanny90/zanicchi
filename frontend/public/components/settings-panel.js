@@ -301,14 +301,14 @@ class SettingsPanel extends HTMLElement {
             id="health-insurance-rate"
             name="health_insurance_rate"
             class="form-input"
-            value="${this.settings.health_insurance_rate || 27}"
+            value="${this.settings.health_insurance_rate || 26.07}"
             min="0"
             max="100"
             step="0.01"
             required
           />
           <span class="form-help">
-            Aliquota contributi previdenziali INPS sul reddito imponibile (tipicamente 27%)
+            Aliquota contributi previdenziali INPS Gestione Separata (26,07% standard)
           </span>
         </div>
 

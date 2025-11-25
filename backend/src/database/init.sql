@@ -143,8 +143,8 @@ INSERT INTO settings (setting_key, setting_value, description) VALUES
 ('currency_symbol', '€', 'Currency symbol for display purposes'),
 ('target_salary', '3000', 'Target monthly salary (net amount to take home after taxes and savings)'),
 ('taxable_percentage', '67', 'Percentage of income that is taxable (regime forfettario coefficient)'),
-('income_tax_rate', '15', 'Income tax rate percentage (regime forfettario flat tax)'),
-('health_insurance_rate', '27', 'Health insurance (INPS) contribution rate percentage')
+('income_tax_rate', '15', 'Income tax rate percentage (regime forfettario flat tax - 15% standard, 5% first 5 years)'),
+('health_insurance_rate', '26.07', 'Health insurance (INPS Gestione Separata) contribution rate percentage')
 ON DUPLICATE KEY UPDATE setting_value = VALUES(setting_value);
 
 -- ============================================================================

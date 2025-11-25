@@ -31,11 +31,12 @@ export interface DashboardSummary {
   total_income: number;           // Total gross income from all paid invoices (excl. VAT)
   total_expenses: number;         // Total from all expenses
   total_vat: number;              // Total VAT collected (to be paid to government)
-  taxable_income: number;         // Income × 76% (coefficiente di redditività)
-  income_tax: number;             // Income tax owed (15% of taxable income)
-  health_insurance: number;       // INPS contribution owed (27% of taxable income)
+  taxable_income: number;         // Income × coefficient (e.g., 67%)
+  health_insurance: number;       // INPS contribution (26.07% of taxable income) - DEDUCTIBLE
+  income_for_tax: number;         // Taxable income - INPS (base for income tax)
+  income_tax: number;             // Income tax (15% of income_for_tax)
   total_tax_burden: number;       // Total of income tax + health insurance
-  net_income: number;             // Income - Expenses - Income Tax - Health Insurance
+  net_income: number;             // Income - Expenses - Total Tax Burden
   pending_invoices: number;       // Amount in sent but unpaid invoices
   overdue_invoices: number;       // Amount in overdue invoices
 }
@@ -50,9 +51,10 @@ export interface MonthlyEstimate {
   total_income: number;           // Gross income from paid invoices this month (excl. VAT)
   total_expenses: number;         // Expenses this month
   total_vat: number;              // VAT collected (to be paid to government)
-  taxable_income: number;         // Income × 76%
-  income_tax: number;             // 15% of taxable income
-  health_insurance: number;       // 27% of taxable income
+  taxable_income: number;         // Income × coefficient (e.g., 67%)
+  health_insurance: number;       // INPS (26.07% of taxable income) - DEDUCTIBLE
+  income_for_tax: number;         // Taxable income - INPS (base for income tax)
+  income_tax: number;             // 15% of income_for_tax
   total_tax_burden: number;       // Income tax + health insurance
   net_income: number;             // Income - Expenses - Total tax burden
   invoice_count: number;          // Number of invoices this month
@@ -131,8 +133,9 @@ export async function getDashboardSummary(): Promise<DashboardSummary> {
     total_expenses: expenseSummary.total_amount,
     total_vat: totalVat,
     taxable_income: taxes.taxableIncome,
-    income_tax: taxes.incomeTax,
     health_insurance: taxes.healthInsurance,
+    income_for_tax: taxes.incomeForTax,
+    income_tax: taxes.incomeTax,
     total_tax_burden: taxes.totalTaxBurden,
     net_income: Math.round(netIncome * 100) / 100,
     pending_invoices: invoiceSummary.total_pending,
@@ -218,8 +221,9 @@ export async function getMonthlyEstimate(): Promise<MonthlyEstimate> {
     total_expenses: totalExpenses,
     total_vat: totalVat,
     taxable_income: taxes.taxableIncome,
-    income_tax: taxes.incomeTax,
     health_insurance: taxes.healthInsurance,
+    income_for_tax: taxes.incomeForTax,
+    income_tax: taxes.incomeTax,
     total_tax_burden: taxes.totalTaxBurden,
     net_income: Math.round(netIncome * 100) / 100,
     invoice_count: invoiceCount,
@@ -329,9 +333,10 @@ export interface MonthlyOverview {
   total_income: number;             // Gross income for the month (excl. VAT)
   total_expenses: number;           // Total expenses for the month
   total_vat: number;                // VAT collected (to be paid to government)
-  taxable_income: number;           // Income × 76% (coefficiente)
-  income_tax: number;               // 15% of taxable income
-  health_insurance: number;         // 27% of taxable income
+  taxable_income: number;           // Income × coefficient (e.g., 67%)
+  health_insurance: number;         // INPS (26.07% of taxable income) - DEDUCTIBLE
+  income_for_tax: number;           // Taxable income - INPS (base for income tax)
+  income_tax: number;               // 15% of income_for_tax
   total_tax_burden: number;         // Income tax + health insurance
   net_income: number;               // Income - Expenses - Total tax burden
   target_salary: number;            // Target monthly salary from settings
@@ -417,8 +422,9 @@ export async function getMonthlyOverview(
     total_expenses: totalExpenses,
     total_vat: totalVat,
     taxable_income: taxes.taxableIncome,
-    income_tax: taxes.incomeTax,
     health_insurance: taxes.healthInsurance,
+    income_for_tax: taxes.incomeForTax,
+    income_tax: taxes.incomeTax,
     total_tax_burden: taxes.totalTaxBurden,
     net_income: Math.round(netIncome * 100) / 100,
     target_salary: targetSalary,

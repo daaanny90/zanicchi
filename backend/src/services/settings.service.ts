@@ -66,7 +66,7 @@ export async function getAllSettings(): Promise<Settings> {
     target_salary: settings.target_salary || 3000,
     taxable_percentage: settings.taxable_percentage || 67,
     income_tax_rate: settings.income_tax_rate || 15,
-    health_insurance_rate: settings.health_insurance_rate || 27
+    health_insurance_rate: settings.health_insurance_rate || 26.07
   };
 }
 
