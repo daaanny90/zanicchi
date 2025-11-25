@@ -1,0 +1,261 @@
+/**
+ * Dashboard Layout Styles
+ * 
+ * Defines the layout and structure for the main dashboard interface.
+ * Uses CSS Grid and Flexbox for a responsive, modern layout.
+ * 
+ * Layout Structure:
+ * - Fixed header at top
+ * - Sidebar navigation on left
+ * - Main content area that scrolls
+ * - Responsive: sidebar collapses on mobile
+ */
+
+/* ============================================================================
+   App Container
+   ============================================================================ */
+
+#app {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ============================================================================
+   Main Container (Sidebar + Content)
+   ============================================================================ */
+
+.main-container {
+  display: flex;
+  flex: 1;
+  overflow: hidden;
+}
+
+/* ============================================================================
+   Sidebar Navigation
+   ============================================================================ */
+
+.sidebar {
+  /* Dimensions */
+  width: var(--sidebar-width);
+  min-width: var(--sidebar-width);
+  
+  /* Background and borders */
+  background-color: var(--color-bg);
+  border-right: 1px solid var(--color-border);
+  
+  /* Layout */
+  padding: var(--space-lg) 0;
+  
+  /* Make sidebar scrollable if content exceeds height */
+  overflow-y: auto;
+}
+
+/* Navigation menu list */
+.nav-menu {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xs);
+}
+
+/* Individual navigation items */
+.nav-item {
+  /* Layout */
+  display: flex;
+  align-items: center;
+  gap: var(--space-md);
+  padding: var(--space-md) var(--space-lg);
+  
+  /* Typography */
+  font-size: var(--font-size-base);
+  font-weight: 500;
+  color: var(--color-text-secondary);
+  
+  /* Interaction */
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  
+  /* Remove default button styles */
+  background: none;
+  border: none;
+  width: 100%;
+  text-align: left;
+}
+
+/* Hover state - subtle background highlight */
+.nav-item:hover {
+  background-color: var(--color-bg-secondary);
+  color: var(--color-text-primary);
+}
+
+/* Active state - highlighted with primary color */
+.nav-item.active {
+  background-color: var(--color-primary-light);
+  color: var(--color-primary);
+  font-weight: 600;
+  
+  /* Add left border indicator */
+  border-left: 3px solid var(--color-primary);
+}
+
+/* Navigation icon */
+.nav-icon {
+  font-size: var(--font-size-xl);
+  width: 24px;
+  text-align: center;
+}
+
+/* ============================================================================
+   Main Content Area
+   ============================================================================ */
+
+.content {
+  /* Take remaining space */
+  flex: 1;
+  
+  /* Scrollable content */
+  overflow-y: auto;
+  overflow-x: hidden;
+  
+  /* Padding for content spacing */
+  padding: var(--space-2xl);
+  
+  /* Max width for readability */
+  max-width: var(--container-max-width);
+  margin: 0 auto;
+  width: 100%;
+}
+
+/* ============================================================================
+   Views (Different Pages)
+   ============================================================================ */
+
+/* All views are hidden by default */
+.view {
+  display: none;
+  animation: fadeIn var(--transition-base);
+}
+
+/* Active view is visible */
+.view.active {
+  display: block;
+}
+
+/* Fade in animation for views */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* View header (title + action button) */
+.view-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--space-xl);
+}
+
+/* Page title */
+.page-title {
+  font-size: var(--font-size-3xl);
+  font-weight: 700;
+  color: var(--color-text-primary);
+  margin: 0;
+}
+
+/* ============================================================================
+   Dashboard Specific Styles
+   ============================================================================ */
+
+/* Charts container - grid layout for charts */
+.charts-container {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+  gap: var(--space-xl);
+  margin-top: var(--space-xl);
+}
+
+/* ============================================================================
+   Responsive Design
+   ============================================================================ */
+
+/* Tablet breakpoint - smaller spacing */
+@media (max-width: 1024px) {
+  .content {
+    padding: var(--space-xl);
+  }
+  
+  .charts-container {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Mobile breakpoint - hide sidebar, show mobile menu */
+@media (max-width: 768px) {
+  .main-container {
+    flex-direction: column;
+  }
+  
+  .sidebar {
+    width: 100%;
+    min-width: 100%;
+    border-right: none;
+    border-bottom: 1px solid var(--color-border);
+    padding: var(--space-md) 0;
+  }
+  
+  .nav-menu {
+    flex-direction: row;
+    overflow-x: auto;
+    padding: 0 var(--space-md);
+  }
+  
+  .nav-item {
+    flex-direction: column;
+    gap: var(--space-xs);
+    padding: var(--space-sm) var(--space-md);
+    white-space: nowrap;
+  }
+  
+  .nav-item.active {
+    border-left: none;
+    border-bottom: 3px solid var(--color-primary);
+  }
+  
+  .content {
+    padding: var(--space-lg);
+  }
+  
+  .view-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--space-md);
+  }
+  
+  .page-title {
+    font-size: var(--font-size-2xl);
+  }
+  
+  .charts-container {
+    grid-template-columns: 1fr;
+    gap: var(--space-lg);
+  }
+}
+
+/* Small mobile - further reduce spacing */
+@media (max-width: 480px) {
+  .content {
+    padding: var(--space-md);
+  }
+  
+  .nav-text {
+    font-size: var(--font-size-sm);
+  }
+}
+

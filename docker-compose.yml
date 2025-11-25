@@ -1,0 +1,208 @@
+# ============================================================================
+# Docker Compose Configuration
+# ============================================================================
+# Orchestrates multi-container setup for Freelancer Finance Manager
+# 
+# Services:
+# 1. mysql - Database server
+# 2. backend - Node.js API server
+# 3. frontend - Nginx web server for frontend files
+#
+# To start: docker-compose up -d
+# To stop: docker-compose down
+# To view logs: docker-compose logs -f
+# ============================================================================
+
+version: '3.8'
+
+services:
+  # --------------------------------------------------------------------------
+  # MySQL Database Service
+  # --------------------------------------------------------------------------
+  # Stores all application data (invoices, expenses, categories, settings)
+  mysql:
+    # Official MySQL 8.0 image
+    image: mysql:8.0
+    
+    # Container name for easy reference
+    container_name: freelancer-finance-db
+    
+    # Restart policy - always restart if container stops
+    restart: unless-stopped
+    
+    # Environment variables for MySQL configuration
+    environment:
+      # Root password for MySQL admin user
+      MYSQL_ROOT_PASSWORD: root_password_change_me
+      
+      # Create this database on first run
+      MYSQL_DATABASE: freelancer_finance
+      
+      # Create this user on first run
+      MYSQL_USER: freelancer
+      
+      # Password for the created user
+      MYSQL_PASSWORD: freelancer_password_change_me
+    
+    # Persistent volume for database data
+    # This ensures data survives container restarts
+    volumes:
+      # MySQL data directory
+      - mysql-data:/var/lib/mysql
+      
+      # Database initialization script
+      # Automatically runs on first startup to create schema
+      - ./backend/src/database/init.sql:/docker-entrypoint-initdb.d/01-init.sql
+      
+      # Optional: Seed data script
+      - ./backend/src/database/seed.sql:/docker-entrypoint-initdb.d/02-seed.sql
+    
+    # Port mapping - MySQL accessible on host port 3307
+    # Using 3307 to avoid conflict with local MySQL on 3306
+    ports:
+      - "3307:3306"
+    
+    # Health check - verify MySQL is ready to accept connections
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-proot_password_change_me"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    
+    # Internal network
+    networks:
+      - app-network
+
+  # --------------------------------------------------------------------------
+  # Backend API Service
+  # --------------------------------------------------------------------------
+  # Node.js REST API server
+  backend:
+    # Build from local Dockerfile
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    
+    container_name: freelancer-finance-backend
+    
+    restart: unless-stopped
+    
+    # Environment variables for backend configuration
+    environment:
+      # Server port
+      PORT: 3000
+      
+      # Database connection settings
+      # Use service name 'mysql' as hostname (Docker DNS)
+      DB_HOST: mysql
+      DB_PORT: 3306
+      DB_NAME: freelancer_finance
+      DB_USER: freelancer
+      DB_PASSWORD: freelancer_password_change_me
+      
+      # Application settings
+      NODE_ENV: production
+      DEFAULT_TAX_RATE: 22
+      CURRENCY: EUR
+    
+    # Port mapping - API accessible on host port 3001
+    # Bind to 0.0.0.0 to make it accessible on local network
+    ports:
+      - "3001:3000"
+    
+    # Wait for MySQL to be healthy before starting backend
+    depends_on:
+      mysql:
+        condition: service_healthy
+    
+    # Health check
+    healthcheck:
+      test: ["CMD", "node", "-e", "require('http').get('http://localhost:3000/health', (r) => {process.exit(r.statusCode === 200 ? 0 : 1)})"]
+      interval: 30s
+      timeout: 3s
+      retries: 3
+      start_period: 40s
+    
+    networks:
+      - app-network
+
+  # --------------------------------------------------------------------------
+  # Frontend Web Server
+  # --------------------------------------------------------------------------
+  # Nginx serving static frontend files
+  frontend:
+    # Official Nginx Alpine image (lightweight)
+    image: nginx:alpine
+    
+    container_name: freelancer-finance-frontend
+    
+    restart: unless-stopped
+    
+    # Mount frontend files into Nginx html directory
+    volumes:
+      - ./frontend/public:/usr/share/nginx/html:ro
+      # Custom Nginx configuration (optional)
+      # - ./nginx.conf:/etc/nginx/nginx.conf:ro
+    
+    # Port mapping - frontend accessible on host port 8082
+    ports:
+      - "8082:80"
+    
+    # Frontend needs backend to be running
+    depends_on:
+      - backend
+    
+    networks:
+      - app-network
+
+# ============================================================================
+# Volumes
+# ============================================================================
+# Named volumes for data persistence
+volumes:
+  # MySQL data volume
+  # Data persists even when container is removed
+  mysql-data:
+    driver: local
+
+# ============================================================================
+# Networks
+# ============================================================================
+# Internal network for container communication
+networks:
+  app-network:
+    driver: bridge
+
+# ============================================================================
+# Usage Instructions
+# ============================================================================
+# 
+# Start all services:
+#   docker-compose up -d
+#
+# View logs:
+#   docker-compose logs -f
+#   docker-compose logs -f backend
+#   docker-compose logs -f mysql
+#
+# Stop all services:
+#   docker-compose down
+#
+# Stop and remove volumes (WARNING: deletes all data):
+#   docker-compose down -v
+#
+# Rebuild containers after code changes:
+#   docker-compose up -d --build
+#
+# Access the application:
+#   Frontend: http://localhost:8080
+#   Backend API: http://localhost:3000/api
+#   MySQL: localhost:3307
+#
+# Access from other devices on network:
+#   Frontend: http://<your-ip>:8080
+#   Backend API: http://<your-ip>:3000/api
+#
+# ============================================================================
+

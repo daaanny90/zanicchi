@@ -1,0 +1,36 @@
+{
+  "compilerOptions": {
+    /* Language and Environment */
+    "target": "ES2020",                          /* Set the JavaScript language version for emitted JavaScript */
+    "lib": ["ES2020"],                           /* Specify a set of bundled library declaration files */
+    "module": "commonjs",                        /* Specify what module code is generated */
+    
+    /* Modules */
+    "rootDir": "./src",                          /* Specify the root folder within your source files */
+    "moduleResolution": "node",                  /* Specify how TypeScript looks up a file from a given module specifier */
+    "resolveJsonModule": true,                   /* Enable importing .json files */
+    
+    /* Emit */
+    "outDir": "./dist",                          /* Specify an output folder for all emitted files */
+    "removeComments": true,                      /* Disable emitting comments in output */
+    "sourceMap": true,                           /* Create source map files for emitted JavaScript files */
+    
+    /* Interop Constraints */
+    "esModuleInterop": true,                     /* Emit additional JavaScript for easier support of CommonJS modules */
+    "forceConsistentCasingInFileNames": true,    /* Ensure that casing is correct in imports */
+    "allowSyntheticDefaultImports": true,        /* Allow 'import x from y' when module doesn't have default export */
+    
+    /* Type Checking */
+    "strict": true,                              /* Enable all strict type-checking options */
+    "noUnusedLocals": true,                      /* Report errors on unused local variables */
+    "noUnusedParameters": true,                  /* Report errors on unused parameters */
+    "noImplicitReturns": true,                   /* Report error when not all code paths in function return a value */
+    "noFallthroughCasesInSwitch": true,          /* Report errors for fallthrough cases in switch statements */
+    
+    /* Completeness */
+    "skipLibCheck": true                         /* Skip type checking all .d.ts files */
+  },
+  "include": ["src/**/*"],
+  "exclude": ["node_modules", "dist"]
+}
+

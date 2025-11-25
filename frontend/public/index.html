@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Freelancer Finance Manager</title>
+    
+    <!-- Main CSS imports -->
+    <link rel="stylesheet" href="styles/main.css">
+    <link rel="stylesheet" href="styles/dashboard.css">
+    <link rel="stylesheet" href="styles/components.css">
+    <link rel="stylesheet" href="styles/charts.css">
+    
+    <!-- Chart.js library for data visualization -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+</head>
+<body>
+    <!-- Main application container -->
+    <div id="app">
+        <!-- Header component: displays app title and navigation -->
+        <app-header></app-header>
+        
+        <!-- Main content area with sidebar and dashboard -->
+        <div class="main-container">
+            <!-- Sidebar navigation -->
+            <nav class="sidebar">
+                <ul class="nav-menu">
+                    <li class="nav-item active" data-view="dashboard">
+                        <span class="nav-icon">📊</span>
+                        <span class="nav-text">Dashboard</span>
+                    </li>
+                    <li class="nav-item" data-view="invoices">
+                        <span class="nav-icon">📄</span>
+                        <span class="nav-text">Invoices</span>
+                    </li>
+                    <li class="nav-item" data-view="expenses">
+                        <span class="nav-icon">💰</span>
+                        <span class="nav-text">Expenses</span>
+                    </li>
+                    <li class="nav-item" data-view="settings">
+                        <span class="nav-icon">⚙️</span>
+                        <span class="nav-text">Settings</span>
+                    </li>
+                </ul>
+            </nav>
+            
+            <!-- Main content area that changes based on selected view -->
+            <main class="content">
+                <!-- Dashboard View (default) -->
+                <div id="dashboard-view" class="view active">
+                    <h1 class="page-title">Dashboard</h1>
+                    
+                    <!-- Summary cards showing key metrics -->
+                    <dashboard-summary></dashboard-summary>
+                    
+                    <!-- Monthly net income estimate -->
+                    <monthly-estimate></monthly-estimate>
+                    
+                    <!-- Charts section -->
+                    <div class="charts-container">
+                        <!-- Income vs Expenses over time -->
+                        <chart-income-expense></chart-income-expense>
+                        
+                        <!-- Expense breakdown by category -->
+                        <chart-expense-category></chart-expense-category>
+                    </div>
+                </div>
+                
+                <!-- Invoices View -->
+                <div id="invoices-view" class="view">
+                    <div class="view-header">
+                        <h1 class="page-title">Invoices</h1>
+                        <button class="btn btn-primary" id="add-invoice-btn">+ New Invoice</button>
+                    </div>
+                    
+                    <!-- Invoice form (hidden by default) -->
+                    <invoice-form></invoice-form>
+                    
+                    <!-- List of all invoices -->
+                    <invoice-list></invoice-list>
+                </div>
+                
+                <!-- Expenses View -->
+                <div id="expenses-view" class="view">
+                    <div class="view-header">
+                        <h1 class="page-title">Expenses</h1>
+                        <button class="btn btn-primary" id="add-expense-btn">+ New Expense</button>
+                    </div>
+                    
+                    <!-- Expense form (hidden by default) -->
+                    <expense-form></expense-form>
+                    
+                    <!-- List of all expenses -->
+                    <expense-list></expense-list>
+                </div>
+                
+                <!-- Settings View -->
+                <div id="settings-view" class="view">
+                    <h1 class="page-title">Settings</h1>
+                    
+                    <!-- Settings panel for tax rate and other configs -->
+                    <settings-panel></settings-panel>
+                </div>
+            </main>
+        </div>
+    </div>
+    
+    <!-- Load utility modules first -->
+    <script src="js/utils.js"></script>
+    <script src="js/api.js"></script>
+    <script src="js/chart-helper.js"></script>
+    
+    <!-- Load Web Components -->
+    <script src="components/app-header.js"></script>
+    <script src="components/dashboard-summary.js"></script>
+    <script src="components/monthly-estimate.js"></script>
+    <script src="components/invoice-list.js"></script>
+    <script src="components/invoice-form.js"></script>
+    <script src="components/expense-list.js"></script>
+    <script src="components/expense-form.js"></script>
+    <script src="components/chart-income-expense.js"></script>
+    <script src="components/chart-expense-category.js"></script>
+    <script src="components/settings-panel.js"></script>
+    
+    <!-- Initialize main application -->
+    <script src="js/app.js"></script>
+</body>
+</html>
+
