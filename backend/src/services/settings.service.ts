@@ -37,20 +37,36 @@ export async function getAllSettings(): Promise<Settings> {
     const value = parseSettingValue(key, row.setting_value);
     
     // Map database keys to Settings object properties
-    if (key === 'default_tax_rate') {
+    if (key === 'default_vat_rate') {
+      settings.default_vat_rate = value as number;
+    } else if (key === 'default_tax_rate') {
       settings.default_tax_rate = value as number;
     } else if (key === 'currency') {
       settings.currency = value as string;
     } else if (key === 'currency_symbol') {
       settings.currency_symbol = value as string;
+    } else if (key === 'target_salary') {
+      settings.target_salary = value as number;
+    } else if (key === 'taxable_percentage') {
+      settings.taxable_percentage = value as number;
+    } else if (key === 'income_tax_rate') {
+      settings.income_tax_rate = value as number;
+    } else if (key === 'health_insurance_rate') {
+      settings.health_insurance_rate = value as number;
     }
   });
   
   // Return with defaults if any setting is missing
+  // Support backward compatibility with default_tax_rate
   return {
-    default_tax_rate: settings.default_tax_rate || 22,
+    default_vat_rate: settings.default_vat_rate || settings.default_tax_rate || 22,
+    default_tax_rate: settings.default_tax_rate || settings.default_vat_rate || 22,
     currency: settings.currency || 'EUR',
-    currency_symbol: settings.currency_symbol || '€'
+    currency_symbol: settings.currency_symbol || '€',
+    target_salary: settings.target_salary || 3000,
+    taxable_percentage: settings.taxable_percentage || 76,
+    income_tax_rate: settings.income_tax_rate || 15,
+    health_insurance_rate: settings.health_insurance_rate || 27
   };
 }
 
@@ -67,11 +83,20 @@ export async function updateSettings(updates: UpdateSettingsDTO): Promise<Settin
   // Update each provided setting
   const updatePromises: Promise<any>[] = [];
   
+  if (updates.default_vat_rate !== undefined) {
+    updatePromises.push(
+      db.query(
+        'INSERT INTO settings (setting_key, setting_value) VALUES (?, ?) ON DUPLICATE KEY UPDATE setting_value = ?',
+        ['default_vat_rate', updates.default_vat_rate.toString(), updates.default_vat_rate.toString()]
+      )
+    );
+  }
+  
   if (updates.default_tax_rate !== undefined) {
     updatePromises.push(
       db.query(
-        'UPDATE settings SET setting_value = ? WHERE setting_key = ?',
-        [updates.default_tax_rate.toString(), 'default_tax_rate']
+        'INSERT INTO settings (setting_key, setting_value) VALUES (?, ?) ON DUPLICATE KEY UPDATE setting_value = ?',
+        ['default_tax_rate', updates.default_tax_rate.toString(), updates.default_tax_rate.toString()]
       )
     );
   }
@@ -79,8 +104,8 @@ export async function updateSettings(updates: UpdateSettingsDTO): Promise<Settin
   if (updates.currency !== undefined) {
     updatePromises.push(
       db.query(
-        'UPDATE settings SET setting_value = ? WHERE setting_key = ?',
-        [updates.currency, 'currency']
+        'INSERT INTO settings (setting_key, setting_value) VALUES (?, ?) ON DUPLICATE KEY UPDATE setting_value = ?',
+        ['currency', updates.currency, updates.currency]
       )
     );
   }
@@ -88,8 +113,44 @@ export async function updateSettings(updates: UpdateSettingsDTO): Promise<Settin
   if (updates.currency_symbol !== undefined) {
     updatePromises.push(
       db.query(
-        'UPDATE settings SET setting_value = ? WHERE setting_key = ?',
-        [updates.currency_symbol, 'currency_symbol']
+        'INSERT INTO settings (setting_key, setting_value) VALUES (?, ?) ON DUPLICATE KEY UPDATE setting_value = ?',
+        ['currency_symbol', updates.currency_symbol, updates.currency_symbol]
+      )
+    );
+  }
+  
+  if (updates.target_salary !== undefined) {
+    updatePromises.push(
+      db.query(
+        'INSERT INTO settings (setting_key, setting_value) VALUES (?, ?) ON DUPLICATE KEY UPDATE setting_value = ?',
+        ['target_salary', updates.target_salary.toString(), updates.target_salary.toString()]
+      )
+    );
+  }
+  
+  if (updates.taxable_percentage !== undefined) {
+    updatePromises.push(
+      db.query(
+        'INSERT INTO settings (setting_key, setting_value) VALUES (?, ?) ON DUPLICATE KEY UPDATE setting_value = ?',
+        ['taxable_percentage', updates.taxable_percentage.toString(), updates.taxable_percentage.toString()]
+      )
+    );
+  }
+  
+  if (updates.income_tax_rate !== undefined) {
+    updatePromises.push(
+      db.query(
+        'INSERT INTO settings (setting_key, setting_value) VALUES (?, ?) ON DUPLICATE KEY UPDATE setting_value = ?',
+        ['income_tax_rate', updates.income_tax_rate.toString(), updates.income_tax_rate.toString()]
+      )
+    );
+  }
+  
+  if (updates.health_insurance_rate !== undefined) {
+    updatePromises.push(
+      db.query(
+        'INSERT INTO settings (setting_key, setting_value) VALUES (?, ?) ON DUPLICATE KEY UPDATE setting_value = ?',
+        ['health_insurance_rate', updates.health_insurance_rate.toString(), updates.health_insurance_rate.toString()]
       )
     );
   }

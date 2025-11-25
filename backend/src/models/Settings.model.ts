@@ -18,9 +18,14 @@
  * This ensures type safety when accessing settings.
  */
 export enum SettingKey {
-  DEFAULT_TAX_RATE = 'default_tax_rate',
+  DEFAULT_VAT_RATE = 'default_vat_rate',
+  DEFAULT_TAX_RATE = 'default_tax_rate',  // Deprecated, use default_vat_rate
   CURRENCY = 'currency',
-  CURRENCY_SYMBOL = 'currency_symbol'
+  CURRENCY_SYMBOL = 'currency_symbol',
+  TARGET_SALARY = 'target_salary',
+  TAXABLE_PERCENTAGE = 'taxable_percentage',
+  INCOME_TAX_RATE = 'income_tax_rate',
+  HEALTH_INSURANCE_RATE = 'health_insurance_rate'
 }
 
 /**
@@ -43,9 +48,14 @@ export interface Setting {
  * Used for type-safe access to settings in the application.
  */
 export interface Settings {
-  default_tax_rate: number;     // Default tax percentage for new invoices
-  currency: string;             // Currency code (EUR, USD, GBP, etc.)
-  currency_symbol: string;      // Symbol for display (€, $, £, etc.)
+  default_vat_rate: number;           // Default VAT/IVA percentage for new invoices
+  default_tax_rate?: number;          // Deprecated, for backward compatibility
+  currency: string;                   // Currency code (EUR, USD, GBP, etc.)
+  currency_symbol: string;            // Symbol for display (€, $, £, etc.)
+  target_salary: number;              // Target monthly salary
+  taxable_percentage: number;         // Percentage of income that is taxable (regime forfettario)
+  income_tax_rate: number;            // Income tax rate (imposta sostitutiva)
+  health_insurance_rate: number;      // Health insurance rate (INPS)
 }
 
 /**
@@ -55,9 +65,14 @@ export interface Settings {
  * All fields are optional - only provided fields will be updated.
  */
 export interface UpdateSettingsDTO {
-  default_tax_rate?: number;
+  default_vat_rate?: number;
+  default_tax_rate?: number;          // Deprecated, use default_vat_rate
   currency?: string;
   currency_symbol?: string;
+  target_salary?: number;
+  taxable_percentage?: number;
+  income_tax_rate?: number;
+  health_insurance_rate?: number;
 }
 
 /**
@@ -72,13 +87,20 @@ export interface UpdateSettingsDTO {
  */
 export function parseSettingValue(key: string, value: string): string | number {
   switch (key) {
+    case SettingKey.DEFAULT_VAT_RATE:
     case SettingKey.DEFAULT_TAX_RATE:
+    case SettingKey.TARGET_SALARY:
+    case SettingKey.TAXABLE_PERCENTAGE:
+    case SettingKey.INCOME_TAX_RATE:
+    case SettingKey.HEALTH_INSURANCE_RATE:
       return parseFloat(value);
     case SettingKey.CURRENCY:
     case SettingKey.CURRENCY_SYMBOL:
       return value;
     default:
-      return value;
+      // Try to parse as number, otherwise return as string
+      const num = parseFloat(value);
+      return isNaN(num) ? value : num;
   }
 }
 
