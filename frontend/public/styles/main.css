@@ -22,7 +22,10 @@
   /* Colors - Minimalist palette with subtle accents */
   --color-primary: #2563eb;           /* Primary blue for CTAs and highlights */
   --color-primary-hover: #1d4ed8;     /* Darker blue for hover states */
-  --color-primary-light: #dbeafe;     /* Light blue for backgrounds */
+  --color-primary-light: rgba(37, 99, 235, 0.12); /* Light blue for backgrounds */
+  --gradient-primary-start: #2563eb;
+  --gradient-primary-end: #1d4ed8;
+  --color-overlay: rgba(15, 23, 42, 0.45);
   
   --color-success: #10b981;           /* Green for positive actions/states */
   --color-warning: #f59e0b;           /* Orange for warnings */
@@ -30,9 +33,9 @@
   --color-info: #3b82f6;              /* Blue for informational elements */
   
   /* Neutral colors - Shades of gray for UI elements */
-  --color-bg: #ffffff;                /* Main background (pure white) */
-  --color-bg-secondary: #f9fafb;      /* Secondary background (very light gray) */
-  --color-bg-tertiary: #f3f4f6;       /* Tertiary background (light gray) */
+  --color-bg: #ffffff;                /* Card/background */
+  --color-bg-secondary: #f9fafb;      /* Page background */
+  --color-bg-tertiary: #f3f4f6;       /* Muted surfaces */
   
   --color-text-primary: #111827;      /* Primary text (near black) */
   --color-text-secondary: #6b7280;    /* Secondary text (medium gray) */
@@ -90,6 +93,29 @@
   --sidebar-width: 240px;
   --header-height: 64px;
   --container-max-width: 1400px;
+}
+
+body.dark-theme {
+  --color-primary: #60a5fa;
+  --color-primary-hover: #3b82f6;
+  --color-primary-light: rgba(96, 165, 250, 0.18);
+  --gradient-primary-start: #3b82f6;
+  --gradient-primary-end: #1e3a8a;
+  --color-overlay: rgba(15, 23, 42, 0.65);
+
+  --color-bg: #1e293b;
+  --color-bg-secondary: #0f172a;
+  --color-bg-tertiary: #14213d;
+
+  --color-text-primary: #f8fafc;
+  --color-text-secondary: #cbd5f5;
+  --color-text-muted: #94a3b8;
+
+  --color-border: #334155;
+  --color-border-hover: #475569;
+
+  background-color: var(--color-bg-secondary);
+  color: var(--color-text-primary);
 }
 
 /* ============================================================================

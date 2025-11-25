@@ -142,30 +142,32 @@ class ClientsManager extends HTMLElement {
           display: ${this.isOpen ? 'flex' : 'none'};
           align-items: center;
           justify-content: center;
-          background: rgba(15, 23, 42, 0.45);
+          background: var(--color-overlay);
           z-index: 2100;
           padding: 1rem;
         }
         .modal-content {
           width: 100%;
           max-width: 720px;
-          background: #fff;
+          background: var(--color-bg);
+          color: var(--color-text-primary);
           border-radius: 0.75rem;
-          box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.1);
+          box-shadow: var(--shadow-xl);
           overflow: hidden;
           display: flex;
           flex-direction: column;
+          border: 1px solid var(--color-border);
         }
         .modal-header,
         .modal-footer {
           padding: 1.25rem 1.5rem;
-          border-bottom: 1px solid #e5e7eb;
+          border-bottom: 1px solid var(--color-border);
           display: flex;
           justify-content: space-between;
           align-items: center;
         }
         .modal-footer {
-          border-top: 1px solid #e5e7eb;
+          border-top: 1px solid var(--color-border);
           border-bottom: none;
           justify-content: flex-end;
         }
@@ -173,14 +175,14 @@ class ClientsManager extends HTMLElement {
           margin: 0;
           font-size: 1.125rem;
           font-weight: 600;
-          color: #111827;
+          color: var(--color-text-primary);
         }
         .close-btn {
           background: none;
           border: none;
           font-size: 1.5rem;
           cursor: pointer;
-          color: #6b7280;
+          color: var(--color-text-secondary);
         }
         .modal-body {
           padding: 1.5rem;
@@ -201,15 +203,17 @@ class ClientsManager extends HTMLElement {
         label {
           font-size: 0.9rem;
           font-weight: 500;
-          color: #374151;
+          color: var(--color-text-secondary);
           margin-bottom: 0.35rem;
         }
         input,
         textarea {
-          border: 1px solid #d1d5db;
+          border: 1px solid var(--color-border);
           border-radius: 0.375rem;
           padding: 0.5rem 0.75rem;
           font-size: 1rem;
+          background: var(--color-bg);
+          color: var(--color-text-primary);
         }
         textarea {
           min-height: 80px;
@@ -221,14 +225,14 @@ class ClientsManager extends HTMLElement {
         }
         th, td {
           padding: 0.65rem;
-          border-bottom: 1px solid #e5e7eb;
+          border-bottom: 1px solid var(--color-border);
           text-align: left;
           font-size: 0.95rem;
         }
         th {
-          background: #f8fafc;
+          background: var(--color-bg-tertiary);
           font-weight: 600;
-          color: #1f2937;
+          color: var(--color-text-primary);
         }
         td .actions {
           display: flex;
@@ -242,22 +246,22 @@ class ClientsManager extends HTMLElement {
           cursor: pointer;
         }
         .btn-primary {
-          background: #2563eb;
+          background: var(--color-primary);
           color: #fff;
         }
         .btn-danger {
-          background: #ef4444;
+          background: var(--color-danger);
           color: #fff;
         }
         .btn-outline {
           background: transparent;
-          border: 1px solid #d1d5db;
-          color: #374151;
+          border: 1px solid var(--color-border);
+          color: var(--color-text-primary);
         }
         .list-empty {
           text-align: center;
           padding: 1rem;
-          color: #6b7280;
+          color: var(--color-text-secondary);
           font-style: italic;
         }
       </style>
@@ -270,7 +274,7 @@ class ClientsManager extends HTMLElement {
           </div>
           <div class="modal-body">
             <section>
-              <h3 style="margin:0 0 0.75rem 0;font-size:1rem;color:#1f2937;">${this.editingClient ? 'Modifica Cliente' : 'Nuovo Cliente'}</h3>
+              <h3 style="margin:0 0 0.75rem 0;font-size:1rem;color:var(--color-text-primary);">${this.editingClient ? 'Modifica Cliente' : 'Nuovo Cliente'}</h3>
               <form id="client-form">
                 <div class="form-group">
                   <label>Nome</label>
@@ -292,7 +296,7 @@ class ClientsManager extends HTMLElement {
             </section>
 
             <section>
-              <h3 style="margin:0 0 0.75rem 0;font-size:1rem;color:#1f2937;">Clienti</h3>
+              <h3 style="margin:0 0 0.75rem 0;font-size:1rem;color:var(--color-text-primary);">Clienti</h3>
               ${this.clients.length === 0 ? `
                 <div class="list-empty">Nessun cliente presente.</div>
               ` : `

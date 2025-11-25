@@ -9,40 +9,39 @@
  */
 
 class AppHeader extends HTMLElement {
-  /**
-   * Constructor
-   * Called when component is created
-   */
   constructor() {
     super();
-    // Attach shadow DOM for style encapsulation
     this.attachShadow({ mode: 'open' });
+    this.isDark = document.body.classList.contains('dark-theme');
+    this.handleThemeChange = this.handleThemeChange.bind(this);
   }
   
-  /**
-   * Connected Callback
-   * Called when component is added to the DOM
-   */
   connectedCallback() {
+    this.render();
+    this.attachEvents();
+    window.addEventListener('theme:changed', this.handleThemeChange);
+  }
+  
+  disconnectedCallback() {
+    window.removeEventListener('theme:changed', this.handleThemeChange);
+  }
+
+  handleThemeChange(event) {
+    this.isDark = event.detail?.theme === 'dark';
     this.render();
     this.attachEvents();
   }
   
-  /**
-   * Render Component
-   * Creates the component's HTML and styles
-   */
   render() {
     this.shadowRoot.innerHTML = `
       <style>
-        /* Component-specific styles */
         :host {
           display: block;
         }
         
         .header {
-          background-color: #ffffff;
-          border-bottom: 1px solid #e5e7eb;
+          background-color: var(--color-bg);
+          border-bottom: 1px solid var(--color-border);
           padding: 1rem 2rem;
           box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05);
         }
@@ -68,34 +67,56 @@ class AppHeader extends HTMLElement {
         .logo-text {
           font-size: 1.25rem;
           font-weight: 700;
-          color: #111827;
+          color: var(--color-text-primary);
           margin: 0;
         }
         
         .tagline {
           font-size: 0.875rem;
-          color: #6b7280;
+          color: var(--color-text-secondary);
           margin: 0;
+        }
+
+        .actions {
+          display: flex;
+          gap: 0.5rem;
         }
         
         .actions button {
           border: none;
-          background: #2563eb;
+          background: var(--color-primary);
           color: #fff;
           padding: 0.55rem 1.25rem;
           border-radius: 999px;
           font-size: 0.95rem;
           font-weight: 500;
           cursor: pointer;
-          display: flex;
+          display: inline-flex;
           align-items: center;
           gap: 0.4rem;
-          box-shadow: 0 10px 15px -3px rgb(37 99 235 / 0.4);
+          box-shadow: 0 10px 15px -3px rgb(37 99 235 / 0.35);
+          transition: background-color var(--transition-fast), border-color var(--transition-fast);
         }
 
         .actions button:focus-visible {
-          outline: 2px solid #93c5fd;
+          outline: 2px solid var(--color-primary-light);
           outline-offset: 2px;
+        }
+
+        .actions button:hover {
+          background: var(--color-primary-hover);
+        }
+
+        .theme-toggle {
+          background: var(--color-bg-tertiary);
+          color: var(--color-text-primary);
+          border: 1px solid var(--color-border);
+          padding: 0.45rem 0.8rem;
+          box-shadow: none;
+        }
+
+        .theme-toggle:hover {
+          background: var(--color-bg-secondary);
         }
 
         @media (max-width: 768px) {
@@ -127,6 +148,9 @@ class AppHeader extends HTMLElement {
               <span>⏱️</span>
               <span>Registra Ore</span>
             </button>
+            <button class="theme-toggle" id="header-theme-toggle" title="Cambia tema">
+              ${this.isDark ? '☀️' : '🌙'}
+            </button>
           </div>
         </div>
       </header>
@@ -143,6 +167,15 @@ class AppHeader extends HTMLElement {
         window.dispatchEvent(new CustomEvent('worked-hours:open-modal', {
           detail: { defaultDate }
         }));
+      });
+    }
+
+    const themeBtn = this.shadowRoot.querySelector('#header-theme-toggle');
+    if (themeBtn) {
+      themeBtn.addEventListener('click', () => {
+        if (window.AppTheme?.toggle) {
+          window.AppTheme.toggle();
+        }
       });
     }
   }

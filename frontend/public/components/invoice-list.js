@@ -71,25 +71,25 @@ class InvoiceList extends HTMLElement {
     this.shadowRoot.innerHTML = `
       <style>
         :host { display: block; }
-        .table-container { overflow-x: auto; border-radius: 0.75rem; border: 1px solid #e5e7eb; }
-        .table { width: 100%; border-collapse: collapse; background-color: #ffffff; }
-        .table thead { background-color: #f3f4f6; border-bottom: 2px solid #e5e7eb; }
-        .table th { padding: 1rem; text-align: left; font-size: 0.75rem; font-weight: 600; color: #6b7280; text-transform: uppercase; }
-        .table td { padding: 1rem; border-bottom: 1px solid #e5e7eb; font-size: 0.875rem; }
-        .table tbody tr:hover { background-color: #f9fafb; }
+        .table-container { overflow-x: auto; border-radius: 0.75rem; border: 1px solid var(--color-border); }
+        .table { width: 100%; border-collapse: collapse; background-color: var(--color-bg); }
+        .table thead { background-color: var(--color-bg-tertiary); border-bottom: 2px solid var(--color-border); }
+        .table th { padding: 1rem; text-align: left; font-size: 0.75rem; font-weight: 600; color: var(--color-text-secondary); text-transform: uppercase; }
+        .table td { padding: 1rem; border-bottom: 1px solid var(--color-border); font-size: 0.875rem; color: var(--color-text-primary); }
+        .table tbody tr:hover { background-color: var(--color-bg-secondary); }
         .table tbody tr:last-child td { border-bottom: none; }
         .badge { display: inline-block; padding: 0.25rem 0.75rem; font-size: 0.75rem; font-weight: 600; text-transform: uppercase; border-radius: 9999px; }
-        .badge-draft { background-color: #f3f4f6; color: #374151; }
+        .badge-draft { background-color: #f3f4f6; color: var(--color-text-primary); }
         .badge-sent { background-color: #dbeafe; color: #1e40af; }
         .badge-paid { background-color: #d1fae5; color: #065f46; }
         .badge-overdue { background-color: #fee2e2; color: #991b1b; }
         .actions { display: flex; gap: 0.5rem; }
         .btn { padding: 0.25rem 0.75rem; font-size: 0.75rem; border: none; border-radius: 0.375rem; cursor: pointer; }
         .btn-sm { font-size: 0.75rem; padding: 0.25rem 0.5rem; }
-        .btn-primary { background-color: #2563eb; color: white; }
-        .btn-success { background-color: #10b981; color: white; }
-        .btn-danger { background-color: #ef4444; color: white; }
-        .empty { text-align: center; padding: 3rem; color: #6b7280; }
+        .btn-primary { background-color: var(--color-primary); color: white; }
+        .btn-success { background-color: var(--color-success); color: white; }
+        .btn-danger { background-color: var(--color-danger); color: white; }
+        .empty { text-align: center; padding: 3rem; color: var(--color-text-secondary); }
       </style>
       
       ${this.invoices.length > 0 ? this.renderTable(currency) : '<div class="empty">Nessuna fattura ancora. Clicca "Nuova Fattura" per crearne una.</div>'}
@@ -120,7 +120,7 @@ class InvoiceList extends HTMLElement {
                 <td>${inv.client_name}</td>
                 <td>
                   ${formatCurrency(inv.amount, currency)}
-                  ${inv.tax_rate > 0 ? `<br><small style="color: #6b7280; font-size: 0.75rem;">+ IVA ${inv.tax_rate}%</small>` : '<br><small style="color: #6b7280; font-size: 0.75rem;">IVA esclusa</small>'}
+                  ${inv.tax_rate > 0 ? `<br><small style="color: var(--color-text-secondary); font-size: 0.75rem;">+ IVA ${inv.tax_rate}%</small>` : '<br><small style="color: var(--color-text-secondary); font-size: 0.75rem;">IVA esclusa</small>'}
                 </td>
                 <td><span class="badge ${getStatusBadgeClass(inv.status)}">${getStatusLabel(inv.status)}</span></td>
                 <td>${formatDate(inv.issue_date, 'short')}</td>

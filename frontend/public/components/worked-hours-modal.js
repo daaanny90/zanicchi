@@ -124,21 +124,23 @@ class WorkedHoursModal extends HTMLElement {
           display: ${this.isOpen ? 'flex' : 'none'};
           align-items: center;
           justify-content: center;
-          background: rgba(15, 23, 42, 0.45);
+          background: var(--color-overlay);
           z-index: 2000;
           padding: 1rem;
         }
         .modal-content {
           width: 100%;
           max-width: 480px;
-          background: #fff;
+          background: var(--color-bg);
+          color: var(--color-text-primary);
           border-radius: 0.75rem;
-          box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.1);
+          box-shadow: var(--shadow-xl);
           overflow: hidden;
+          border: 1px solid var(--color-border);
         }
         .modal-header {
           padding: 1.25rem 1.5rem;
-          border-bottom: 1px solid #e5e7eb;
+          border-bottom: 1px solid var(--color-border);
           display: flex;
           justify-content: space-between;
           align-items: center;
@@ -147,14 +149,14 @@ class WorkedHoursModal extends HTMLElement {
           margin: 0;
           font-size: 1.125rem;
           font-weight: 600;
-          color: #111827;
+          color: var(--color-text-primary);
         }
         .close-btn {
           background: none;
           border: none;
           font-size: 1.5rem;
           cursor: pointer;
-          color: #6b7280;
+          color: var(--color-text-secondary);
         }
         .modal-body {
           padding: 1.5rem;
@@ -174,10 +176,12 @@ class WorkedHoursModal extends HTMLElement {
         textarea {
           width: 100%;
           padding: 0.5rem 0.75rem;
-          border: 1px solid #d1d5db;
+          border: 1px solid var(--color-border);
           border-radius: 0.375rem;
           font-size: 1rem;
           font-family: inherit;
+          background: var(--color-bg);
+          color: var(--color-text-primary);
         }
         textarea {
           min-height: 80px;
@@ -185,7 +189,7 @@ class WorkedHoursModal extends HTMLElement {
         }
         .modal-footer {
           padding: 1.25rem 1.5rem;
-          border-top: 1px solid #e5e7eb;
+          border-top: 1px solid var(--color-border);
           display: flex;
           justify-content: flex-end;
           gap: 0.75rem;
@@ -199,28 +203,29 @@ class WorkedHoursModal extends HTMLElement {
           cursor: pointer;
         }
         .btn-secondary {
-          background: #e5e7eb;
-          color: #374151;
+          background: var(--color-bg-tertiary);
+          color: var(--color-text-primary);
+          border: 1px solid var(--color-border);
         }
         .btn-primary {
-          background: #2563eb;
+          background: var(--color-primary);
           color: #fff;
         }
         .empty-state {
-          background: #f8fafc;
-          border: 1px dashed #cbd5f5;
+          background: var(--color-bg-secondary);
+          border: 1px dashed var(--color-border);
           padding: 1rem;
           border-radius: 0.5rem;
           text-align: center;
           font-size: 0.95rem;
-          color: #475569;
+          color: var(--color-text-secondary);
         }
         .empty-state button {
           margin-top: 0.75rem;
           padding: 0.4rem 1rem;
           border-radius: 999px;
           border: none;
-          background: #0f172a;
+          background: var(--color-primary);
           color: #fff;
           cursor: pointer;
         }

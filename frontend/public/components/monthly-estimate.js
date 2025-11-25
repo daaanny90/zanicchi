@@ -44,7 +44,7 @@ class MonthlyEstimate extends HTMLElement {
    * Render Component
    */
   render() {
-    const settings = getSettings();
+    const settings = window.AppState?.settings;
     const currency = settings?.currency || 'EUR';
     
     this.shadowRoot.innerHTML = `
@@ -55,11 +55,11 @@ class MonthlyEstimate extends HTMLElement {
         }
         
         .estimate-card {
-          background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+          background: linear-gradient(135deg, var(--gradient-primary-start) 0%, var(--gradient-primary-end) 100%);
           border-radius: 0.75rem;
           padding: 2rem;
-          color: white;
-          box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1);
+          color: #fff;
+          box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.2);
         }
         
         .estimate-header {

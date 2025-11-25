@@ -360,7 +360,7 @@ class MonthlyOverview extends HTMLElement {
         .month-selector {
           margin-bottom: 2rem;
           padding: 1.5rem;
-          background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+          background: linear-gradient(135deg, var(--gradient-primary-start) 0%, var(--gradient-primary-end) 100%);
           border-radius: 0.75rem;
           box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
         }
@@ -388,20 +388,20 @@ class MonthlyOverview extends HTMLElement {
           font-weight: 600;
           border: 2px solid rgba(255, 255, 255, 0.3);
           border-radius: 0.5rem;
-          background-color: rgba(255, 255, 255, 0.95);
-          color: #1f2937;
+          background-color: var(--color-bg);
+          color: var(--color-text-primary);
           cursor: pointer;
           transition: all 0.2s;
         }
         
         .month-select:hover {
-          background-color: #ffffff;
+          background-color: var(--color-bg);
           border-color: rgba(255, 255, 255, 0.5);
         }
         
         .month-select:focus {
           outline: none;
-          border-color: #ffffff;
+          border-color: rgba(255, 255, 255, 0.9);
           box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.2);
         }
         
@@ -413,8 +413,8 @@ class MonthlyOverview extends HTMLElement {
         }
         
         .overview-card {
-          background: #ffffff;
-          border: 1px solid #e5e7eb;
+          background: var(--color-bg);
+          border: 1px solid var(--color-border);
           border-radius: 0.75rem;
           padding: 1.5rem;
           box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1);
@@ -440,7 +440,7 @@ class MonthlyOverview extends HTMLElement {
         .card-title {
           font-size: 0.875rem;
           font-weight: 600;
-          color: #6b7280;
+          color: var(--color-text-secondary);
           margin: 0;
           text-transform: uppercase;
           letter-spacing: 0.05em;
@@ -449,26 +449,26 @@ class MonthlyOverview extends HTMLElement {
         .card-value {
           font-size: 1.875rem;
           font-weight: 700;
-          color: #1f2937;
+          color: var(--color-text-primary);
           margin-bottom: 0.5rem;
         }
         
         .card-value.positive {
-          color: #10b981;
+          color: var(--color-success);
         }
         
         .card-value.negative {
-          color: #ef4444;
+          color: var(--color-danger);
         }
         
         .card-detail {
           font-size: 0.875rem;
-          color: #6b7280;
+          color: var(--color-text-secondary);
         }
         
         .salary-breakdown {
-          background: #ffffff;
-          border: 1px solid #e5e7eb;
+          background: var(--color-bg);
+          border: 1px solid var(--color-border);
           border-radius: 0.75rem;
           padding: 2rem;
           box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1);
@@ -477,7 +477,7 @@ class MonthlyOverview extends HTMLElement {
         .breakdown-title {
           font-size: 1.25rem;
           font-weight: 700;
-          color: #1f2937;
+          color: var(--color-text-primary);
           margin: 0 0 1.5rem 0;
         }
         
@@ -492,14 +492,14 @@ class MonthlyOverview extends HTMLElement {
           justify-content: space-between;
           align-items: center;
           padding: 1.25rem;
-          background: #f9fafb;
-          border: 1px solid #e5e7eb;
+          background: var(--color-bg-secondary);
+          border: 1px solid var(--color-border);
           border-radius: 0.5rem;
           transition: background-color 0.2s;
         }
         
         .breakdown-item:hover {
-          background: #f3f4f6;
+          background: var(--color-bg-tertiary);
         }
         
         .breakdown-label {
@@ -507,7 +507,7 @@ class MonthlyOverview extends HTMLElement {
           align-items: center;
           gap: 0.75rem;
           font-weight: 600;
-          color: #374151;
+          color: var(--color-text-primary);
         }
         
         .breakdown-icon {
@@ -517,28 +517,28 @@ class MonthlyOverview extends HTMLElement {
         .breakdown-value {
           font-size: 1.5rem;
           font-weight: 700;
-          color: #1f2937;
+          color: var(--color-text-primary);
         }
         
         .breakdown-value.positive {
-          color: #10b981;
+          color: var(--color-success);
         }
         
         .breakdown-value.negative {
-          color: #ef4444;
+          color: var(--color-danger);
         }
         
         .breakdown-note {
           font-size: 0.75rem;
-          color: #6b7280;
+          color: var(--color-text-secondary);
           margin-top: 0.25rem;
           text-align: right;
         }
         
         .formula-box {
           padding: 1.5rem;
-          background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
-          border: 2px solid #fbbf24;
+          background: var(--color-bg-secondary);
+          border: 1px solid var(--color-border);
           border-radius: 0.5rem;
           margin-top: 1.5rem;
         }
@@ -546,40 +546,41 @@ class MonthlyOverview extends HTMLElement {
         .formula-title {
           font-size: 1rem;
           font-weight: 700;
-          color: #92400e;
+          color: var(--color-text-primary);
           margin: 0 0 0.75rem 0;
         }
         
         .formula-text {
           font-size: 0.875rem;
-          color: #78350f;
+          color: var(--color-text-secondary);
           margin-bottom: 0.5rem;
           font-weight: 500;
         }
         
         .formula-calculation {
           font-size: 0.875rem;
-          color: #78350f;
+          color: var(--color-text-primary);
           font-family: 'Courier New', monospace;
-          background: rgba(255, 255, 255, 0.5);
+          background: var(--color-bg);
           padding: 0.5rem;
           border-radius: 0.25rem;
+          border: 1px solid var(--color-border);
         }
         
         .loading {
           text-align: center;
           padding: 3rem;
-          color: #6b7280;
+          color: var(--color-text-secondary);
           font-size: 1.125rem;
         }
         
         .error {
           text-align: center;
           padding: 3rem;
-          color: #ef4444;
+          color: var(--color-danger);
           font-size: 1.125rem;
-          background: #fef2f2;
-          border: 1px solid #fecaca;
+          background: rgba(239, 68, 68, 0.1);
+          border: 1px solid rgba(239, 68, 68, 0.4);
           border-radius: 0.5rem;
         }
         

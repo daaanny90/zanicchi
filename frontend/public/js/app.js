@@ -21,6 +21,12 @@ const AppState = {
   categories: []
 };
 
+const ThemeState = {
+  current: 'light'
+};
+
+const THEME_STORAGE_KEY = 'ff_theme';
+
 /**
  * Initialize Application
  * 
@@ -30,16 +36,45 @@ const AppState = {
 async function initApp() {
   console.log('Initializing Freelancer Finance Manager...');
   
-  // Setup navigation
+  initializeTheme();
   setupNavigation();
-  
-  // Load settings and categories
   await loadAppData();
-  
-  // Show initial view
   showView('dashboard');
   
   console.log('Application initialized successfully');
+}
+
+function initializeTheme() {
+  const storedTheme = localStorage.getItem(THEME_STORAGE_KEY);
+  const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+  const initialTheme = storedTheme || (prefersDark ? 'dark' : 'light');
+  applyTheme(initialTheme);
+
+  window.AppTheme = {
+    toggle: toggleTheme,
+    set: applyTheme,
+    get: () => ThemeState.current
+  };
+
+  if (window.matchMedia) {
+    window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', (event) => {
+      if (!localStorage.getItem(THEME_STORAGE_KEY)) {
+        applyTheme(event.matches ? 'dark' : 'light');
+      }
+    });
+  }
+}
+
+function applyTheme(theme) {
+  ThemeState.current = theme === 'dark' ? 'dark' : 'light';
+  document.body.classList.toggle('dark-theme', ThemeState.current === 'dark');
+  localStorage.setItem(THEME_STORAGE_KEY, ThemeState.current);
+  window.dispatchEvent(new CustomEvent('theme:changed', { detail: { theme: ThemeState.current } }));
+}
+
+function toggleTheme() {
+  const next = ThemeState.current === 'dark' ? 'light' : 'dark';
+  applyTheme(next);
 }
 
 /**
@@ -100,6 +135,11 @@ function handleNavigationAction(action) {
     }
     case 'manage-clients':
       window.dispatchEvent(new CustomEvent('clients:open-manager'));
+      break;
+    case 'toggle-theme':
+      if (window.AppTheme?.toggle) {
+        window.AppTheme.toggle();
+      }
       break;
   }
 }

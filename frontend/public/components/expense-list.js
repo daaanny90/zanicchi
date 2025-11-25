@@ -53,26 +53,26 @@ class ExpenseList extends HTMLElement {
   }
   
   render() {
-    const settings = getSettings();
+    const settings = window.AppState?.settings;
     const currency = settings?.currency || 'EUR';
     
     this.shadowRoot.innerHTML = `
       <style>
         :host { display: block; }
-        .table-container { overflow-x: auto; border-radius: 0.75rem; border: 1px solid #e5e7eb; }
-        .table { width: 100%; border-collapse: collapse; background-color: #ffffff; }
-        .table thead { background-color: #f3f4f6; border-bottom: 2px solid #e5e7eb; }
-        .table th { padding: 1rem; text-align: left; font-size: 0.75rem; font-weight: 600; color: #6b7280; text-transform: uppercase; }
-        .table td { padding: 1rem; border-bottom: 1px solid #e5e7eb; font-size: 0.875rem; }
-        .table tbody tr:hover { background-color: #f9fafb; }
+        .table-container { overflow-x: auto; border-radius: 0.75rem; border: 1px solid var(--color-border); }
+        .table { width: 100%; border-collapse: collapse; background-color: var(--color-bg); }
+        .table thead { background-color: var(--color-bg-tertiary); border-bottom: 2px solid var(--color-border); }
+        .table th { padding: 1rem; text-align: left; font-size: 0.75rem; font-weight: 600; color: var(--color-text-secondary); text-transform: uppercase; }
+        .table td { padding: 1rem; border-bottom: 1px solid var(--color-border); font-size: 0.875rem; color: var(--color-text-primary); }
+        .table tbody tr:hover { background-color: var(--color-bg-secondary); }
         .table tbody tr:last-child td { border-bottom: none; }
-        .category-badge { display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.25rem 0.75rem; border-radius: 9999px; background-color: #f3f4f6; font-size: 0.75rem; }
+        .category-badge { display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.25rem 0.75rem; border-radius: 9999px; background-color: var(--color-bg-tertiary); font-size: 0.75rem; }
         .category-color { width: 12px; height: 12px; border-radius: 50%; }
         .actions { display: flex; gap: 0.5rem; }
         .btn { padding: 0.25rem 0.75rem; font-size: 0.75rem; border: none; border-radius: 0.375rem; cursor: pointer; }
-        .btn-primary { background-color: #2563eb; color: white; }
-        .btn-danger { background-color: #ef4444; color: white; }
-        .empty { text-align: center; padding: 3rem; color: #6b7280; }
+        .btn-primary { background-color: var(--color-primary); color: white; }
+        .btn-danger { background-color: var(--color-danger); color: white; }
+        .empty { text-align: center; padding: 3rem; color: var(--color-text-secondary); }
       </style>
       
       ${this.expenses.length > 0 ? this.renderTable(currency) : '<div class="empty">Nessuna spesa ancora. Clicca "Nuova Spesa" per crearne una.</div>'}

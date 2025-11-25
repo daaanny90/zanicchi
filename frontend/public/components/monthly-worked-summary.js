@@ -90,13 +90,14 @@ class MonthlyWorkedSummary extends HTMLElement {
         :host {
           display: block;
           margin-top: 1.5rem;
+          color: var(--color-text-primary);
         }
         .card {
-          background: #fff;
-          border: 1px solid #e5e7eb;
+          background: var(--color-bg);
+          border: 1px solid var(--color-border);
           border-radius: 0.75rem;
           padding: 1.5rem;
-          box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.05);
+          box-shadow: var(--shadow-md);
         }
         .header {
           display: flex;
@@ -108,27 +109,35 @@ class MonthlyWorkedSummary extends HTMLElement {
           margin: 0;
           font-size: 1.1rem;
           font-weight: 600;
-          color: #111827;
+          color: var(--color-text-primary);
         }
         .actions {
           display: flex;
           gap: 0.5rem;
         }
         .btn {
-          border: none;
           border-radius: 0.375rem;
           padding: 0.45rem 1rem;
           font-size: 0.9rem;
           font-weight: 500;
           cursor: pointer;
+          border: 1px solid transparent;
+          transition: background-color var(--transition-fast), border-color var(--transition-fast);
         }
         .btn-primary {
-          background: #2563eb;
+          background: var(--color-primary);
           color: #fff;
         }
+        .btn-primary:hover {
+          background: var(--color-primary-hover);
+        }
         .btn-secondary {
-          background: #e0e7ff;
-          color: #1e3a8a;
+          background: var(--color-bg-tertiary);
+          color: var(--color-text-primary);
+          border-color: var(--color-border);
+        }
+        .btn-secondary:hover {
+          background: var(--color-bg-secondary);
         }
         table {
           width: 100%;
@@ -138,40 +147,40 @@ class MonthlyWorkedSummary extends HTMLElement {
         th, td {
           padding: 0.65rem 0.5rem;
           text-align: left;
-          border-bottom: 1px solid #f1f5f9;
+          border-bottom: 1px solid var(--color-border);
         }
         th {
           font-size: 0.85rem;
           text-transform: uppercase;
-          color: #94a3b8;
+          color: var(--color-text-secondary);
           letter-spacing: 0.04em;
         }
         tbody tr:hover {
-          background: #f8fafc;
+          background: var(--color-bg-secondary);
         }
         .amount {
           font-weight: 600;
-          color: #0f172a;
+          color: var(--color-text-primary);
         }
         .summary-footer {
           margin-top: 0.75rem;
           padding-top: 0.75rem;
-          border-top: 1px solid #e2e8f0;
+          border-top: 1px solid var(--color-border);
           display: flex;
           justify-content: space-between;
           font-weight: 600;
-          color: #111827;
+          color: var(--color-text-primary);
         }
         .empty-state, .error {
           padding: 1rem;
-          background: #f8fafc;
+          background: var(--color-bg-secondary);
           border-radius: 0.5rem;
           text-align: center;
-          color: #475569;
+          color: var(--color-text-secondary);
         }
         .error {
-          background: #fef2f2;
-          color: #dc2626;
+          background: rgba(239, 68, 68, 0.15);
+          color: var(--color-danger);
         }
       </style>
 
