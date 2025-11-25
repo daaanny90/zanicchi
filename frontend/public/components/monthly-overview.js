@@ -51,7 +51,7 @@ class MonthlyOverview extends HTMLElement {
       // Try to load with defaults even if settings fail
       this.settings = {
         target_salary: 3000,
-        taxable_percentage: 76,
+        taxable_percentage: 67,
         income_tax_rate: 15,
         health_insurance_rate: 27,
         currency: 'EUR',

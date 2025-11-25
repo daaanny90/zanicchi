@@ -172,15 +172,15 @@ export async function getMonthlyEstimate(): Promise<MonthlyEstimate> {
   const incomeTaxRate = settings['income_tax_rate'] || 15;
   const healthInsuranceRate = settings['health_insurance_rate'] || 27;
   
-  // Get income from paid invoices this month
+  // Get income from invoices this month
+  // Count all invoices issued this month, but only sum income from paid ones
   const [incomeRows] = await db.query<RowDataPacket[]>(
     `SELECT 
       COUNT(*) as invoice_count,
-      COALESCE(SUM(amount), 0) as total_income,
-      COALESCE(SUM(tax_amount), 0) as total_vat
+      COALESCE(SUM(CASE WHEN status = 'paid' THEN amount ELSE 0 END), 0) as total_income,
+      COALESCE(SUM(CASE WHEN status = 'paid' THEN tax_amount ELSE 0 END), 0) as total_vat
      FROM invoices
-     WHERE status = 'paid'
-     AND paid_date BETWEEN ? AND ?`,
+     WHERE issue_date BETWEEN ? AND ?`,
     [firstDay, lastDay]
   );
   
@@ -239,16 +239,15 @@ export async function getMonthlyEstimate(): Promise<MonthlyEstimate> {
 export async function getIncomeExpenseChartData(months: number = 6): Promise<MonthlyDataPoint[]> {
   const startDate = getDateMonthsAgo(months - 1);
   
-  // Get monthly income from paid invoices
+  // Get monthly income from invoices (only paid ones count)
   const [incomeRows] = await db.query<RowDataPacket[]>(
     `SELECT 
-      DATE_FORMAT(paid_date, '%Y-%m') as month,
-      COALESCE(SUM(amount), 0) as income,
-      COALESCE(SUM(tax_amount), 0) as tax
+      DATE_FORMAT(issue_date, '%Y-%m') as month,
+      COALESCE(SUM(CASE WHEN status = 'paid' THEN amount ELSE 0 END), 0) as income,
+      COALESCE(SUM(CASE WHEN status = 'paid' THEN tax_amount ELSE 0 END), 0) as tax
      FROM invoices
-     WHERE status = 'paid'
-     AND paid_date >= ?
-     GROUP BY DATE_FORMAT(paid_date, '%Y-%m')
+     WHERE issue_date >= ?
+     GROUP BY DATE_FORMAT(issue_date, '%Y-%m')
      ORDER BY month ASC`,
     [startDate]
   );
@@ -368,16 +367,16 @@ export async function getMonthlyOverview(
   const startDate = `${year}-${String(month).padStart(2, '0')}-01`;
   const endDate = getLastDayOfSpecificMonth(year, month);
   
-  // Get invoices for the month (only paid ones count as income)
+  // Get invoices for the month
+  // Count all invoices issued in this month, but only sum income from paid ones
   const [invoiceRows] = await db.query<RowDataPacket[]>(
     `SELECT 
        COUNT(*) as invoice_count,
-       COALESCE(SUM(amount), 0) as total_income,
-       COALESCE(SUM(tax_amount), 0) as total_vat
+       COALESCE(SUM(CASE WHEN status = 'paid' THEN amount ELSE 0 END), 0) as total_income,
+       COALESCE(SUM(CASE WHEN status = 'paid' THEN tax_amount ELSE 0 END), 0) as total_vat
      FROM invoices 
-     WHERE status = 'paid' 
-       AND paid_date >= ? 
-       AND paid_date <= ?`,
+     WHERE issue_date >= ? 
+       AND issue_date <= ?`,
     [startDate, endDate]
   );
   

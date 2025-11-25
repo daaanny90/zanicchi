@@ -265,7 +265,7 @@ class SettingsPanel extends HTMLElement {
             id="taxable-percentage"
             name="taxable_percentage"
             class="form-input"
-            value="${this.settings.taxable_percentage || 76}"
+            value="${this.settings.taxable_percentage || 67}"
             min="0"
             max="100"
             step="0.01"

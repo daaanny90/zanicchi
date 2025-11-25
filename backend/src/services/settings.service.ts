@@ -64,7 +64,7 @@ export async function getAllSettings(): Promise<Settings> {
     currency: settings.currency || 'EUR',
     currency_symbol: settings.currency_symbol || '€',
     target_salary: settings.target_salary || 3000,
-    taxable_percentage: settings.taxable_percentage || 76,
+    taxable_percentage: settings.taxable_percentage || 67,
     income_tax_rate: settings.income_tax_rate || 15,
     health_insurance_rate: settings.health_insurance_rate || 27
   };

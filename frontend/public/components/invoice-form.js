@@ -129,9 +129,9 @@ class InvoiceForm extends HTMLElement {
                 <div class="form-group">
                   <label class="form-label">Stato</label>
                   <select name="status" class="form-select">
-                    <option value="draft" ${!this.invoice || this.invoice.status === 'draft' ? 'selected' : ''}>Bozza</option>
+                    <option value="draft" ${this.invoice?.status === 'draft' ? 'selected' : ''}>Bozza</option>
                     <option value="sent" ${this.invoice?.status === 'sent' ? 'selected' : ''}>Inviata</option>
-                    <option value="paid" ${this.invoice?.status === 'paid' ? 'selected' : ''}>Pagata</option>
+                    <option value="paid" ${!this.invoice || this.invoice.status === 'paid' ? 'selected' : ''}>Pagata</option>
                   </select>
                 </div>
                 <div class="form-group full">
