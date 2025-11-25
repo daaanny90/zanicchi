@@ -119,7 +119,10 @@ class InvoiceList extends HTMLElement {
               <tr>
                 <td>${inv.invoice_number}</td>
                 <td>${inv.client_name}</td>
-                <td>${formatCurrency(inv.total_amount, currency)}</td>
+                <td>
+                  ${formatCurrency(inv.amount, currency)}
+                  ${inv.tax_rate > 0 ? `<br><small style="color: #6b7280; font-size: 0.75rem;">+ IVA ${inv.tax_rate}%</small>` : '<br><small style="color: #6b7280; font-size: 0.75rem;">IVA esclusa</small>'}
+                </td>
                 <td><span class="badge ${getStatusBadgeClass(inv.status)}">${getStatusLabel(inv.status)}</span></td>
                 <td>${formatDate(inv.issue_date, 'short')}</td>
                 <td>${formatDate(inv.due_date, 'short')}</td>

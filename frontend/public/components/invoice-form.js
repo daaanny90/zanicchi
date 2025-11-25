@@ -42,7 +42,7 @@ class InvoiceForm extends HTMLElement {
       client_name: formData.get('client_name'),
       description: formData.get('description'),
       amount: parseFloat(formData.get('amount')),
-      tax_rate: parseFloat(formData.get('tax_rate')),
+      tax_rate: 0, // Regime Forfettario: no VAT charged to clients
       status: formData.get('status'),
       issue_date: formData.get('issue_date'),
       due_date: formData.get('due_date')
@@ -145,10 +145,9 @@ class InvoiceForm extends HTMLElement {
                 <div class="form-group">
                   <label class="form-label">Importo *</label>
                   <input type="number" name="amount" class="form-input" value="${this.invoice?.amount || ''}" step="0.01" min="0" required>
-                </div>
-                <div class="form-group">
-                  <label class="form-label">Aliquota IVA (%)</label>
-                  <input type="number" name="tax_rate" class="form-input" value="${this.invoice?.tax_rate || defaultTaxRate}" step="0.01" min="0" max="100">
+                  <small style="display: block; margin-top: 0.25rem; font-size: 0.75rem; color: #6b7280;">
+                    Importo senza IVA (Regime Forfettario)
+                  </small>
                 </div>
                 <div class="form-group">
                   <label class="form-label">Data Emissione *</label>
