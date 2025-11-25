@@ -237,77 +237,91 @@ export async function getMonthlyEstimate(): Promise<MonthlyEstimate> {
  * Retrieves monthly income and expense data for the last N months.
  * Used to render time-series charts showing financial trends.
  * 
+ * For Italian Regime Forfettario:
+ * - Income: Gross income from paid invoices
+ * - Expenses: All business expenses
+ * - Net: Income - Expenses - Italian Taxes (INPS + Income Tax)
+ * 
  * @param months - Number of months to include (default: 6)
  * @returns Promise resolving to array of monthly data points
  */
 export async function getIncomeExpenseChartData(months: number = 6): Promise<MonthlyDataPoint[]> {
-  const startDate = getDateMonthsAgo(months - 1);
-  
-  // Get monthly income from invoices (only paid ones count)
-  const [incomeRows] = await db.query<RowDataPacket[]>(
-    `SELECT 
-      DATE_FORMAT(issue_date, '%Y-%m') as month,
-      COALESCE(SUM(CASE WHEN status = 'paid' THEN amount ELSE 0 END), 0) as income,
-      COALESCE(SUM(CASE WHEN status = 'paid' THEN tax_amount ELSE 0 END), 0) as tax
-     FROM invoices
-     WHERE issue_date >= ?
-     GROUP BY DATE_FORMAT(issue_date, '%Y-%m')
-     ORDER BY month ASC`,
-    [startDate]
+  // Get tax settings for Italian tax calculation
+  const [settingsRows] = await db.query<RowDataPacket[]>(
+    `SELECT setting_key, setting_value FROM settings 
+     WHERE setting_key IN ('taxable_percentage', 'income_tax_rate', 'health_insurance_rate')`
   );
   
-  // Get monthly expenses
-  const [expenseRows] = await db.query<RowDataPacket[]>(
-    `SELECT 
-      DATE_FORMAT(expense_date, '%Y-%m') as month,
-      COALESCE(SUM(amount), 0) as expenses
-     FROM expenses
-     WHERE expense_date >= ?
-     GROUP BY DATE_FORMAT(expense_date, '%Y-%m')
-     ORDER BY month ASC`,
-    [startDate]
+  const settings: { [key: string]: number } = {};
+  settingsRows.forEach(row => {
+    settings[row.setting_key] = parseFloat(row.setting_value);
+  });
+  
+  const taxablePercentage = settings['taxable_percentage'] || 67;
+  const incomeTaxRate = settings['income_tax_rate'] || 15;
+  const healthInsuranceRate = settings['health_insurance_rate'] || 26.07;
+  
+  // Get all unique months from both invoices and expenses
+  const [monthsRows] = await db.query<RowDataPacket[]>(
+    `SELECT DISTINCT month FROM (
+      SELECT DATE_FORMAT(issue_date, '%Y-%m') as month FROM invoices
+      UNION
+      SELECT DATE_FORMAT(expense_date, '%Y-%m') as month FROM expenses
+    ) AS all_months
+    ORDER BY month DESC
+    LIMIT ?`,
+    [months]
   );
   
-  // Create a map of income by month
-  const incomeMap = new Map<string, { income: number; tax: number }>();
-  incomeRows.forEach((row) => {
-    incomeMap.set(row.month, {
-      income: row.income,
-      tax: row.tax
-    });
-  });
-  
-  // Create a map of expenses by month
-  const expenseMap = new Map<string, number>();
-  expenseRows.forEach((row) => {
-    expenseMap.set(row.month, row.expenses);
-  });
-  
-  // Generate all months in the range
   const result: MonthlyDataPoint[] = [];
-  const now = new Date();
   
-  for (let i = months - 1; i >= 0; i--) {
-    const date = new Date(now.getFullYear(), now.getMonth() - i, 1);
-    const monthLabel = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
+  // For each month, get income and expenses
+  for (const monthRow of monthsRows) {
+    const month = monthRow.month;
+    const startDate = `${month}-01`;
+    const [year, monthNum] = month.split('-');
+    const endDate = getLastDayOfSpecificMonth(parseInt(year), parseInt(monthNum));
     
-    const incomeData = incomeMap.get(monthLabel);
-    const income = incomeData?.income || 0;
-    const tax = incomeData?.tax || 0;
-    const expenses = expenseMap.get(monthLabel) || 0;
+    // Get income for this month (only paid invoices)
+    const [incomeRows] = await db.query<RowDataPacket[]>(
+      `SELECT COALESCE(SUM(CASE WHEN status = 'paid' THEN amount ELSE 0 END), 0) as income
+       FROM invoices
+       WHERE issue_date >= ? AND issue_date <= ?`,
+      [startDate, endDate]
+    );
     
-    // Calculate net (income - expenses - tax)
-    const net = calculateNetIncome(income, expenses, tax);
+    // Get expenses for this month
+    const [expenseRows] = await db.query<RowDataPacket[]>(
+      `SELECT COALESCE(SUM(amount), 0) as expenses
+       FROM expenses
+       WHERE expense_date >= ? AND expense_date <= ?`,
+      [startDate, endDate]
+    );
+    
+    const income = parseFloat(incomeRows[0]?.income || 0);
+    const expenses = parseFloat(expenseRows[0]?.expenses || 0);
+    
+    // Calculate Italian taxes on the income
+    const taxes = calculateItalianTaxes(
+      income,
+      taxablePercentage,
+      incomeTaxRate,
+      healthInsuranceRate
+    );
+    
+    // Calculate net: Income - Expenses - Italian Taxes
+    const net = income - expenses - taxes.totalTaxBurden;
     
     result.push({
-      month: monthLabel,
+      month,
       income,
       expenses,
-      net
+      net: Math.round(net * 100) / 100
     });
   }
   
-  return result;
+  // Sort by month ascending and return only the requested number of months
+  return result.reverse().slice(-months);
 }
 
 /**
