@@ -223,6 +223,17 @@ const API = {
     // Get expense by category data
     getExpenseByCategory: () => {
       return apiRequest('/dashboard/expense-by-category');
+    },
+    
+    // Get monthly overview with salary calculations
+    getMonthlyOverview: (year, month, targetSalary, taxRate) => {
+      const params = new URLSearchParams({
+        year: year,
+        month: month,
+        targetSalary: targetSalary,
+        taxRate: taxRate
+      });
+      return apiRequest(`/dashboard/monthly-overview?${params}`);
     }
   },
   

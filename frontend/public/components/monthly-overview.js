@@ -41,9 +41,17 @@ class MonthlyOverview extends HTMLElement {
         default_tax_rate: parseFloat(settings.default_tax_rate || 22),
         currency: settings.currency || 'EUR'
       };
-      this.loadOverview();
+      // After settings are loaded, load the overview
+      await this.loadOverview();
     } catch (error) {
       console.error('Failed to load settings:', error);
+      // Try to load with defaults even if settings fail
+      this.settings = {
+        target_salary: 3000,
+        default_tax_rate: 22,
+        currency: 'EUR'
+      };
+      await this.loadOverview();
     }
   }
   
@@ -51,28 +59,40 @@ class MonthlyOverview extends HTMLElement {
    * Load monthly overview data
    */
   async loadOverview() {
-    if (!this.settings) return;
+    if (!this.settings) {
+      console.error('Settings not loaded yet');
+      return;
+    }
     
     try {
-      const params = new URLSearchParams({
+      console.log('Loading monthly overview:', {
         year: this.selectedYear,
         month: this.selectedMonth,
         targetSalary: this.settings.target_salary,
         taxRate: this.settings.default_tax_rate
       });
       
-      const response = await fetch(`${API_BASE_URL}/dashboard/monthly-overview?${params}`);
-      const result = await response.json();
+      const data = await API.dashboard.getMonthlyOverview(
+        this.selectedYear,
+        this.selectedMonth,
+        this.settings.target_salary,
+        this.settings.default_tax_rate
+      );
       
-      if (result.success) {
-        this.overview = result.data;
-        this.render();
-      }
+      this.overview = data;
+      this.render();
     } catch (error) {
       console.error('Failed to load monthly overview:', error);
-      this.overview = null;
-      this.render();
+      this.showError();
     }
+  }
+  
+  /**
+   * Show error message
+   */
+  showError() {
+    this.overview = 'error';
+    this.render();
   }
   
   /**
@@ -109,6 +129,12 @@ class MonthlyOverview extends HTMLElement {
    * Render overview content
    */
   renderOverview() {
+    // Show error if failed to load
+    if (this.overview === 'error') {
+      return '<div class="error">Impossibile caricare la panoramica mensile. Riprova.</div>';
+    }
+    
+    // Show loading state
     if (!this.overview || !this.settings) {
       return '<div class="loading">Caricamento panoramica mensile...</div>';
     }
@@ -457,6 +483,16 @@ class MonthlyOverview extends HTMLElement {
           font-size: 1.125rem;
         }
         
+        .error {
+          text-align: center;
+          padding: 3rem;
+          color: #ef4444;
+          font-size: 1.125rem;
+          background: #fef2f2;
+          border: 1px solid #fecaca;
+          border-radius: 0.5rem;
+        }
+        
         @media (max-width: 768px) {
           .overview-grid {
             grid-template-columns: 1fr;
@@ -487,7 +523,9 @@ class MonthlyOverview extends HTMLElement {
         </div>
       </div>
       
-      ${this.renderOverview()}
+      <div class="overview-container">
+        ${this.renderOverview()}
+      </div>
     `;
     
     this.attachEventListeners();
