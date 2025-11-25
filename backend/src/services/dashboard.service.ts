@@ -17,7 +17,7 @@ import db from '../config/database';
 import { getInvoiceSummary, updateOverdueInvoices } from './invoice.service';
 import { getExpenseSummary } from './expense.service';
 import { calculateNetIncome } from '../utils/calc.utils';
-import { getFirstDayOfMonth, getLastDayOfMonth, getDateMonthsAgo } from '../utils/date.utils';
+import { getFirstDayOfMonth, getLastDayOfMonth, getLastDayOfSpecificMonth, getDateMonthsAgo } from '../utils/date.utils';
 
 /**
  * Dashboard Summary Interface
@@ -295,7 +295,7 @@ export async function getMonthlyOverview(
   taxRate: number
 ): Promise<MonthlyOverview> {
   const startDate = `${year}-${String(month).padStart(2, '0')}-01`;
-  const endDate = getLastDayOfMonth(year, month);
+  const endDate = getLastDayOfSpecificMonth(year, month);
   
   // Get invoices for the month (only paid ones count as income)
   const [invoiceRows] = await db.query<RowDataPacket[]>(
