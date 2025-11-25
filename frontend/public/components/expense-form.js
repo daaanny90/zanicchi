@@ -139,7 +139,7 @@ class ExpenseForm extends HTMLElement {
                 </div>
                 <div class="form-group">
                   <label class="form-label">Data *</label>
-                  <input type="date" name="expense_date" class="form-input" value="${this.expense?.expense_date || getTodayDate()}" required>
+                  <input type="date" name="expense_date" class="form-input" value="${this.expense?.expense_date ? formatDateForInput(this.expense.expense_date) : getTodayDate()}" required>
                 </div>
                 <div class="form-group full">
                   <label class="form-label">Note</label>

@@ -151,11 +151,11 @@ class InvoiceForm extends HTMLElement {
                 </div>
                 <div class="form-group">
                   <label class="form-label">Data Emissione *</label>
-                  <input type="date" name="issue_date" class="form-input" value="${this.invoice?.issue_date || getTodayDate()}" required>
+                  <input type="date" name="issue_date" class="form-input" value="${this.invoice?.issue_date ? formatDateForInput(this.invoice.issue_date) : getTodayDate()}" required>
                 </div>
                 <div class="form-group">
                   <label class="form-label">Data Scadenza *</label>
-                  <input type="date" name="due_date" class="form-input" value="${this.invoice?.due_date || getTodayDate()}" required>
+                  <input type="date" name="due_date" class="form-input" value="${this.invoice?.due_date ? formatDateForInput(this.invoice.due_date) : getTodayDate()}" required>
                 </div>
               </div>
             </form>

@@ -52,36 +52,50 @@ function formatCurrency(amount, currency = 'EUR') {
 /**
  * Format date to readable string
  * 
- * Converts YYYY-MM-DD format to a more readable format.
+ * Converts YYYY-MM-DD format or ISO date string to a more readable format.
  * 
- * @param {string} dateString - Date in YYYY-MM-DD format
+ * @param {string} dateString - Date in YYYY-MM-DD or ISO format
  * @param {string} format - Format type: 'short', 'long', 'medium' (default: 'medium')
  * @returns {string} Formatted date string
  * 
  * @example
  * formatDate('2024-11-25', 'medium') // "Nov 25, 2024"
- * formatDate('2024-11-25', 'long') // "November 25, 2024"
+ * formatDate('2024-11-25T00:00:00.000Z', 'long') // "November 25, 2024"
  */
 function formatDate(dateString, format = 'medium') {
   if (!dateString) return '';
   
-  const date = new Date(dateString + 'T00:00:00'); // Prevent timezone issues
+  // Extract just the date part if it's an ISO string
+  let datePart = dateString;
+  if (dateString.includes('T')) {
+    datePart = dateString.split('T')[0];
+  }
+  
+  // Create date with explicit UTC to avoid timezone issues
+  const [year, month, day] = datePart.split('-').map(Number);
+  const date = new Date(Date.UTC(year, month - 1, day));
+  
+  // Check if date is valid
+  if (isNaN(date.getTime())) {
+    return 'Invalid Date';
+  }
   
   const options = {
-    short: { month: 'numeric', day: 'numeric', year: '2-digit' },
-    medium: { month: 'short', day: 'numeric', year: 'numeric' },
-    long: { month: 'long', day: 'numeric', year: 'numeric' }
+    short: { month: 'numeric', day: 'numeric', year: '2-digit', timeZone: 'UTC' },
+    medium: { month: 'short', day: 'numeric', year: 'numeric', timeZone: 'UTC' },
+    long: { month: 'long', day: 'numeric', year: 'numeric', timeZone: 'UTC' }
   };
   
-  return date.toLocaleDateString('en-US', options[format] || options.medium);
+  return date.toLocaleDateString('it-IT', options[format] || options.medium);
 }
 
 /**
  * Format date for input field
  * 
  * Ensures date is in YYYY-MM-DD format for date inputs.
+ * Handles both Date objects and ISO date strings from API.
  * 
- * @param {Date|string} date - Date object or string
+ * @param {Date|string} date - Date object or ISO date string
  * @returns {string} Date in YYYY-MM-DD format
  */
 function formatDateForInput(date) {
@@ -89,10 +103,20 @@ function formatDateForInput(date) {
     date = new Date();
   }
   
+  // If it's already in YYYY-MM-DD format (with or without time), extract date part
   if (typeof date === 'string') {
+    if (date.includes('T')) {
+      // ISO format: "2024-11-01T00:00:00.000Z" -> "2024-11-01"
+      return date.split('T')[0];
+    } else if (date.match(/^\d{4}-\d{2}-\d{2}$/)) {
+      // Already in YYYY-MM-DD format
+      return date;
+    }
+    // Try to parse as Date
     date = new Date(date);
   }
   
+  // Handle Date object
   const year = date.getFullYear();
   const month = String(date.getMonth() + 1).padStart(2, '0');
   const day = String(date.getDate()).padStart(2, '0');
