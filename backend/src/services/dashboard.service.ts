@@ -16,8 +16,8 @@ import { RowDataPacket } from 'mysql2';
 import db from '../config/database';
 import { getInvoiceSummary, updateOverdueInvoices } from './invoice.service';
 import { getExpenseSummary } from './expense.service';
-import { calculateNetIncome, calculateItalianTaxes } from '../utils/calc.utils';
-import { getFirstDayOfMonth, getLastDayOfMonth, getLastDayOfSpecificMonth, getDateMonthsAgo } from '../utils/date.utils';
+import { calculateItalianTaxes } from '../utils/calc.utils';
+import { getFirstDayOfMonth, getLastDayOfMonth, getLastDayOfSpecificMonth } from '../utils/date.utils';
 
 /**
  * Dashboard Summary Interface
