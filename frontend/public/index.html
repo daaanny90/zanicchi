@@ -103,7 +103,10 @@
                 <div id="expenses-view" class="view">
                     <div class="view-header">
                         <h1 class="page-title">Spese</h1>
-                        <button class="btn btn-primary" id="add-expense-btn">+ Nuova Spesa</button>
+                        <div class="view-actions">
+                            <button class="btn btn-secondary" id="manage-categories-btn" type="button">Categorie</button>
+                            <button class="btn btn-primary" id="add-expense-btn">+ Nuova Spesa</button>
+                        </div>
                     </div>
                     
                     <!-- Expense form (hidden by default) -->
@@ -127,6 +130,7 @@
     <!-- Global modals -->
     <worked-hours-modal id="global-worked-hours-modal"></worked-hours-modal>
     <clients-manager id="global-clients-manager"></clients-manager>
+    <category-manager id="global-category-manager"></category-manager>
     
     <!-- Load utility modules first -->
     <script src="js/utils.js"></script>
@@ -140,6 +144,7 @@
     <script src="components/monthly-overview.js"></script>
     <script src="components/worked-hours-modal.js"></script>
     <script src="components/clients-manager.js"></script>
+    <script src="components/category-manager.js"></script>
     <script src="components/monthly-worked-summary.js"></script>
     <script src="components/invoice-list.js"></script>
     <script src="components/invoice-form.js"></script>

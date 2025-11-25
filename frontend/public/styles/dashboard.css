@@ -161,6 +161,12 @@
   margin-bottom: var(--space-xl);
 }
 
+.view-actions {
+  display: flex;
+  gap: var(--space-sm);
+  flex-wrap: wrap;
+}
+
 /* Page title */
 .page-title {
   font-size: var(--font-size-3xl);

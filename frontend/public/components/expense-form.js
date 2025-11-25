@@ -13,15 +13,49 @@ class ExpenseForm extends HTMLElement {
     super();
     this.attachShadow({ mode: 'open' });
     this.expense = null;
+    this.categories = [];
+    this.handleCategoriesUpdated = this.handleCategoriesUpdated.bind(this);
   }
   
   connectedCallback() {
     this.render();
+    this.syncCategories();
+    window.addEventListener('categories:updated', this.handleCategoriesUpdated);
+  }
+
+  disconnectedCallback() {
+    window.removeEventListener('categories:updated', this.handleCategoriesUpdated);
+  }
+
+  handleCategoriesUpdated() {
+    this.syncCategories();
+  }
+
+  async syncCategories() {
+    const globalCategories = window.AppState?.categories;
+    if (globalCategories && globalCategories.length) {
+      this.categories = globalCategories;
+      this.render();
+      return;
+    }
+    try {
+      this.categories = await API.categories.getAll();
+      if (window.AppState) {
+        window.AppState.categories = this.categories;
+      }
+      this.render();
+    } catch (error) {
+      console.error('Impossibile caricare le categorie:', error);
+      showNotification('Impossibile caricare le categorie', 'error');
+    }
   }
   
   show(expense = null) {
     this.expense = expense;
     this.render();
+    if (!this.categories.length) {
+      this.syncCategories();
+    }
     this.shadowRoot.querySelector('.modal').style.display = 'flex';
     this.attachEventListeners();
   }
@@ -72,6 +106,7 @@ class ExpenseForm extends HTMLElement {
     const form = this.shadowRoot.querySelector('#expense-form');
     const closeBtn = this.shadowRoot.querySelector('.close-btn');
     const cancelBtn = this.shadowRoot.querySelector('[data-action="cancel"]');
+    const categoryBtn = this.shadowRoot.querySelector('#open-category-manager');
     
     if (form) {
       form.addEventListener('submit', (e) => this.submitForm(e));
@@ -84,10 +119,16 @@ class ExpenseForm extends HTMLElement {
     if (cancelBtn) {
       cancelBtn.addEventListener('click', () => this.hide());
     }
+
+    if (categoryBtn) {
+      categoryBtn.addEventListener('click', () => {
+        window.dispatchEvent(new CustomEvent('categories:open-manager'));
+      });
+    }
   }
   
   render() {
-    const categories = window.AppState?.categories || [];
+    const categories = this.categories || [];
     
     this.shadowRoot.innerHTML = `
       <style>
@@ -136,6 +177,11 @@ class ExpenseForm extends HTMLElement {
                       </option>
                     `).join('')}
                   </select>
+                  ${categories.filter(c => c.type === 'expense').length === 0 ? `
+                    <small style="display:block;margin-top:0.35rem;color:var(--color-text-secondary);">
+                      Nessuna categoria disponibile. <button type="button" id="open-category-manager" style="color:var(--color-primary);background:none;border:none;cursor:pointer;padding:0;">Crea categoria</button>
+                    </small>
+                  ` : ''}
                 </div>
                 <div class="form-group">
                   <label class="form-label">Data *</label>

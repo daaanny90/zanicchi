@@ -102,6 +102,7 @@ function setupNavigation() {
   // Setup "Add" buttons
   const addInvoiceBtn = document.getElementById('add-invoice-btn');
   const addExpenseBtn = document.getElementById('add-expense-btn');
+  const manageCategoriesBtn = document.getElementById('manage-categories-btn');
   
   if (addInvoiceBtn) {
     addInvoiceBtn.addEventListener('click', () => {
@@ -118,6 +119,12 @@ function setupNavigation() {
       if (form) {
         form.show();
       }
+    });
+  }
+
+  if (manageCategoriesBtn) {
+    manageCategoriesBtn.addEventListener('click', () => {
+      window.dispatchEvent(new CustomEvent('categories:open-manager'));
     });
   }
 }
@@ -300,10 +307,13 @@ function getCategories() {
 async function reloadCategories() {
   try {
     AppState.categories = await API.categories.getAll();
+    window.dispatchEvent(new CustomEvent('categories:updated'));
   } catch (error) {
     console.error('Failed to reload categories:', error);
   }
 }
+
+window.reloadCategories = reloadCategories;
 
 // Initialize app when DOM is ready
 if (document.readyState === 'loading') {
