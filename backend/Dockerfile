@@ -14,9 +14,9 @@
 # ----------------------------------------------------------------------------
 # Stage 1: Builder
 # ----------------------------------------------------------------------------
-# Uses Node.js 20 Alpine (minimal Linux distribution)
+# Uses Node.js 18 Alpine (supports linux/arm/v7)
 # Compiles TypeScript code to JavaScript
-FROM node:20-alpine AS builder
+FROM node:18-alpine AS builder
 
 # Set working directory inside container
 WORKDIR /app
@@ -40,7 +40,7 @@ RUN npm run build
 # Stage 2: Production
 # ----------------------------------------------------------------------------
 # Minimal production image with only runtime dependencies
-FROM node:20-alpine
+FROM node:18-alpine
 
 # Set working directory
 WORKDIR /app

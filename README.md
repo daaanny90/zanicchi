@@ -11,7 +11,7 @@ Modern, hour-driven bookkeeping for Italian freelancers operating under Regime F
 
 ## Tech Stack
 - **Frontend**: HTML, CSS custom properties, vanilla JS, native Web Components, Chart.js.
-- **Backend**: Node.js 20, TypeScript, Express, MySQL2, Docker-ready.
+- **Backend**: Node.js 18 (ARM-friendly), TypeScript, Express, MySQL2, Docker-ready.
 - **Database**: MariaDB 10 (MySQL-compatible schema for invoices, expenses, clients, worked hours, categories, settings).
 
 ## Quick Start (Docker)
