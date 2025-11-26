@@ -12,7 +12,7 @@ Modern, hour-driven bookkeeping for Italian freelancers operating under Regime F
 ## Tech Stack
 - **Frontend**: HTML, CSS custom properties, vanilla JS, native Web Components, Chart.js.
 - **Backend**: Node.js 20, TypeScript, Express, MySQL2, Docker-ready.
-- **Database**: MySQL 8 with tables for invoices, expenses, clients, worked hours, categories, and settings.
+- **Database**: MariaDB 10 (MySQL-compatible schema for invoices, expenses, clients, worked hours, categories, settings).
 
 ## Quick Start (Docker)
 ```bash
@@ -20,7 +20,7 @@ git clone <repo>
 cd zanicchi
 docker-compose up -d --build
 ```
-Visit `http://localhost:8080` (frontend) and `http://localhost:3000/api` (API).  
+Visit `http://localhost:8082` (frontend via Nginx) and `http://localhost:3001/api` (API proxy).  
 Stop with `docker-compose down`. Remove volumes with `docker-compose down -v`.
 
 ## Local Development
@@ -35,7 +35,7 @@ npm run dev            # or npm run build && npm start
 cd ../frontend/public
 python -m http.server 8080  # or any static server
 ```
-MySQL schema lives in `backend/src/database/init.sql`; lightweight sample data in `seed.sql`.
+MariaDB/MySQL schema lives in `backend/src/database/init.sql`; lightweight sample data in `seed.sql`.
 
 ## Key Components
 - `frontend/public/components`: dashboard-summary, monthly-estimate (invoices + hours panels), monthly-overview, monthly-worked-summary, clients/ categories managers, worked-hours modal, invoice/expense forms, charts, annual-limit-indicator.

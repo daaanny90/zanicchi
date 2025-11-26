@@ -4,7 +4,7 @@
 # Orchestrates multi-container setup for Freelancer Finance Manager
 # 
 # Services:
-# 1. mysql - Database server
+# 1. mariadb - Database server
 # 2. backend - Node.js API server
 # 3. frontend - Nginx web server for frontend files
 #
@@ -17,12 +17,12 @@ version: '3.8'
 
 services:
   # --------------------------------------------------------------------------
-  # MySQL Database Service
+  # MariaDB Database Service (ARM-friendly)
   # --------------------------------------------------------------------------
   # Stores all application data (invoices, expenses, categories, settings)
-  mysql:
-    # Official MySQL 8.0 image
-    image: mysql:8.0
+  mariadb:
+    # Official MariaDB image supports linux/arm/v7 (Raspberry Pi)
+    image: mariadb:10.11
     
     # Container name for easy reference
     container_name: freelancer-finance-db
@@ -30,25 +30,25 @@ services:
     # Restart policy - always restart if container stops
     restart: unless-stopped
     
-    # Environment variables for MySQL configuration
+    # Environment variables for MariaDB configuration
     environment:
-      # Root password for MySQL admin user
-      MYSQL_ROOT_PASSWORD: root_password_change_me
+      # Root password for MariaDB admin user
+      MARIADB_ROOT_PASSWORD: root_password_change_me
       
       # Create this database on first run
-      MYSQL_DATABASE: freelancer_finance
+      MARIADB_DATABASE: freelancer_finance
       
       # Create this user on first run
-      MYSQL_USER: freelancer
+      MARIADB_USER: freelancer
       
       # Password for the created user
-      MYSQL_PASSWORD: freelancer_password_change_me
+      MARIADB_PASSWORD: freelancer_password_change_me
     
     # Persistent volume for database data
     # This ensures data survives container restarts
     volumes:
-      # MySQL data directory
-      - mysql-data:/var/lib/mysql
+      # MariaDB data directory
+      - mariadb-data:/var/lib/mysql
       
       # Database initialization script
       # Automatically runs on first startup to create schema
@@ -57,12 +57,12 @@ services:
       # Optional: Seed data script
       - ./backend/src/database/seed.sql:/docker-entrypoint-initdb.d/02-seed.sql
     
-    # Port mapping - MySQL accessible on host port 3307
-    # Using 3307 to avoid conflict with local MySQL on 3306
+    # Port mapping - MariaDB accessible on host port 3307
+    # Using 3307 to avoid conflict with local MySQL/MariaDB on 3306
     ports:
       - "3307:3306"
     
-    # Health check - verify MySQL is ready to accept connections
+    # Health check - verify MariaDB is ready to accept connections
     healthcheck:
       test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-proot_password_change_me"]
       interval: 10s
@@ -94,8 +94,8 @@ services:
       PORT: 3000
       
       # Database connection settings
-      # Use service name 'mysql' as hostname (Docker DNS)
-      DB_HOST: mysql
+      # Use service name 'mariadb' as hostname (Docker DNS)
+      DB_HOST: mariadb
       DB_PORT: 3306
       DB_NAME: freelancer_finance
       DB_USER: freelancer
@@ -111,9 +111,9 @@ services:
     ports:
       - "3001:3000"
     
-    # Wait for MySQL to be healthy before starting backend
+    # Wait for MariaDB to be healthy before starting backend
     depends_on:
-      mysql:
+      mariadb:
         condition: service_healthy
     
     # Health check
@@ -161,9 +161,9 @@ services:
 # ============================================================================
 # Named volumes for data persistence
 volumes:
-  # MySQL data volume
+  # MariaDB data volume
   # Data persists even when container is removed
-  mysql-data:
+  mariadb-data:
     driver: local
 
 # ============================================================================
@@ -184,7 +184,7 @@ networks:
 # View logs:
 #   docker-compose logs -f
 #   docker-compose logs -f backend
-#   docker-compose logs -f mysql
+#   docker-compose logs -f mariadb
 #
 # Stop all services:
 #   docker-compose down
@@ -196,13 +196,13 @@ networks:
 #   docker-compose up -d --build
 #
 # Access the application:
-#   Frontend: http://localhost:8080
-#   Backend API: http://localhost:3000/api
-#   MySQL: localhost:3307
+#   Frontend: http://localhost:8082
+#   Backend API: http://localhost:3001/api
+#   MariaDB: localhost:3307
 #
 # Access from other devices on network:
-#   Frontend: http://<your-ip>:8080
-#   Backend API: http://<your-ip>:3000/api
+#   Frontend: http://<your-ip>:8082
+#   Backend API: http://<your-ip>:3001/api
 #
 # ============================================================================
 
