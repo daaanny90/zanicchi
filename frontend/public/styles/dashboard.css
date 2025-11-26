@@ -172,7 +172,33 @@
   font-size: var(--font-size-3xl);
   font-weight: 700;
   color: var(--color-text-primary);
-  margin: 0;
+  margin: 0 0 var(--space-xl) 0;
+  letter-spacing: -0.02em;
+}
+
+/* ============================================================================
+   Component Spacing
+   ============================================================================ */
+
+/* Ensure consistent spacing between web components */
+.view > * {
+  margin-bottom: var(--space-xl);
+}
+
+.view > *:last-child {
+  margin-bottom: 0;
+}
+
+/* Specific spacing for dashboard components */
+#dashboard-view > dashboard-summary,
+#dashboard-view > annual-limit-indicator,
+#dashboard-view > monthly-estimate {
+  margin-bottom: var(--space-xl);
+}
+
+#dashboard-view > .charts-container {
+  margin-top: var(--space-xl);
+  margin-bottom: 0;
 }
 
 /* ============================================================================
@@ -185,6 +211,12 @@
   grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
   gap: var(--space-xl);
   margin-top: var(--space-xl);
+  margin-bottom: 0;
+}
+
+/* Remove bottom margin from last chart in container */
+.charts-container > *:last-child {
+  margin-bottom: 0;
 }
 
 /* ============================================================================

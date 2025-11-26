@@ -94,7 +94,7 @@ class AppHeader extends HTMLElement {
           display: inline-flex;
           align-items: center;
           gap: 0.4rem;
-          box-shadow: 0 10px 15px -3px rgb(37 99 235 / 0.35);
+          box-shadow: 0 2px 4px 0 rgb(30 64 175 / 0.15);
           transition: background-color var(--transition-fast), border-color var(--transition-fast);
         }
 

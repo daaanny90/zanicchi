@@ -133,7 +133,7 @@ class ExpenseForm extends HTMLElement {
     this.shadowRoot.innerHTML = `
       <style>
         .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: var(--color-overlay); z-index: 1000; justify-content: center; align-items: center; padding: 1rem; }
-        .modal-content { background: var(--color-bg); border: 1px solid var(--color-border); border-radius: 0.75rem; width: 90%; max-width: 600px; max-height: 90vh; overflow-y: auto; box-shadow: var(--shadow-lg); color: var(--color-text-primary); }
+        .modal-content { background: var(--color-bg); border: 1px solid var(--color-border); border-radius: 0.375rem; width: 90%; max-width: 600px; max-height: 90vh; overflow-y: auto; box-shadow: var(--shadow-lg); color: var(--color-text-primary); }
         .modal-header { padding: 1.5rem; border-bottom: 1px solid var(--color-border); display: flex; justify-content: space-between; align-items: center; }
         .modal-title { font-size: 1.25rem; font-weight: 600; margin: 0; }
         .close-btn { background: none; border: none; font-size: 1.5rem; cursor: pointer; color: var(--color-text-secondary); }

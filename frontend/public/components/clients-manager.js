@@ -161,7 +161,7 @@ class ClientsManager extends HTMLElement {
           max-width: 720px;
           background: var(--color-bg);
           color: var(--color-text-primary);
-          border-radius: 0.75rem;
+          border-radius: 0.375rem;
           box-shadow: var(--shadow-xl);
           overflow: hidden;
           display: flex;

@@ -97,7 +97,7 @@ class CategoryManager extends HTMLElement {
           max-width: 540px;
           background: var(--color-bg);
           color: var(--color-text-primary);
-          border-radius: 0.75rem;
+          border-radius: 0.375rem;
           box-shadow: var(--shadow-xl);
           overflow: hidden;
           border: 1px solid var(--color-border);

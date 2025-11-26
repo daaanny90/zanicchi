@@ -116,13 +116,14 @@ class MonthlyWorkedSummary extends HTMLElement {
       <style>
         :host {
           display: block;
-          margin-top: 1.5rem;
+          margin-top: var(--space-xl);
+          margin-bottom: var(--space-xl);
           color: var(--color-text-primary);
         }
         .card {
           background: var(--color-bg);
           border: 1px solid var(--color-border);
-          border-radius: 0.75rem;
+          border-radius: 0.375rem;
           padding: 1.5rem;
           box-shadow: var(--shadow-md);
         }
@@ -239,7 +240,7 @@ class MonthlyWorkedSummary extends HTMLElement {
         .empty-state, .error {
           padding: 1rem;
           background: var(--color-bg-secondary);
-          border-radius: 0.5rem;
+          border-radius: 0.25rem;
           text-align: center;
           color: var(--color-text-secondary);
         }

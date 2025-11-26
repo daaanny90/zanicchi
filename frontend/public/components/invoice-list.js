@@ -70,8 +70,11 @@ class InvoiceList extends HTMLElement {
     
     this.shadowRoot.innerHTML = `
       <style>
-        :host { display: block; }
-        .table-container { overflow-x: auto; border-radius: 0.75rem; border: 1px solid var(--color-border); }
+        :host { 
+          display: block;
+          margin-top: var(--space-lg);
+        }
+        .table-container { overflow-x: auto; border-radius: 0.375rem; border: 1px solid var(--color-border); }
         .table { width: 100%; border-collapse: collapse; background-color: var(--color-bg); }
         .table thead { background-color: var(--color-bg-tertiary); border-bottom: 2px solid var(--color-border); }
         .table th { padding: 1rem; text-align: left; font-size: 0.75rem; font-weight: 600; color: var(--color-text-secondary); text-transform: uppercase; }

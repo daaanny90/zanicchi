@@ -133,7 +133,7 @@ class WorkedHoursModal extends HTMLElement {
           max-width: 480px;
           background: var(--color-bg);
           color: var(--color-text-primary);
-          border-radius: 0.75rem;
+          border-radius: 0.375rem;
           box-shadow: var(--shadow-xl);
           overflow: hidden;
           border: 1px solid var(--color-border);
@@ -215,7 +215,7 @@ class WorkedHoursModal extends HTMLElement {
           background: var(--color-bg-secondary);
           border: 1px dashed var(--color-border);
           padding: 1rem;
-          border-radius: 0.5rem;
+          border-radius: 0.25rem;
           text-align: center;
           font-size: 0.95rem;
           color: var(--color-text-secondary);

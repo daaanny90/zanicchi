@@ -107,6 +107,7 @@ class SettingsPanel extends HTMLElement {
       <style>
         :host {
           display: block;
+          margin-bottom: var(--space-xl);
         }
         
         .settings-container {
@@ -116,7 +117,7 @@ class SettingsPanel extends HTMLElement {
         .card {
           background-color: #ffffff;
           border: 1px solid #e5e7eb;
-          border-radius: 0.5rem;
+          border-radius: 0.25rem;
           padding: 1.5rem;
           box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05);
         }

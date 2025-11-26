@@ -52,6 +52,7 @@ class DashboardSummary extends HTMLElement {
       <style>
         :host {
           display: block;
+          margin-bottom: var(--space-xl);
         }
         
         .summary-grid {
@@ -64,14 +65,14 @@ class DashboardSummary extends HTMLElement {
         .summary-card {
           background-color: var(--color-bg);
           border: 1px solid var(--color-border);
-          border-radius: 0.5rem;
+          border-radius: 0.25rem;
           padding: 1.5rem;
           box-shadow: var(--shadow-sm);
           transition: box-shadow 0.2s;
         }
         
         .summary-card:hover {
-          box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+          box-shadow: 0 2px 4px 0 rgb(0 0 0 / 0.06);
         }
         
         .summary-header {
