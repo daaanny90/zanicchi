@@ -21,8 +21,8 @@ services:
   # --------------------------------------------------------------------------
   # Stores all application data (invoices, expenses, categories, settings)
   mariadb:
-    # Official MariaDB image supports linux/arm/v7 (Raspberry Pi)
-    image: mariadb:10.11
+    # MariaDB 10.6 LTS ships multi-arch images including linux/arm/v7
+    image: mariadb:10.6
     
     # Container name for easy reference
     container_name: freelancer-finance-db
