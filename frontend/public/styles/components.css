@@ -49,8 +49,9 @@
 /* Primary button - main CTA */
 .btn-primary {
   background-color: var(--color-primary);
-  color: white;
+  color: #272e33;
   border-color: var(--color-primary);
+  font-weight: 600;
 }
 
 .btn-primary:hover:not(:disabled) {
@@ -61,23 +62,23 @@
 /* Success button - confirm actions */
 .btn-success {
   background-color: var(--color-success);
-  color: white;
+  color: #272e33;
   border-color: var(--color-success);
 }
 
 .btn-success:hover:not(:disabled) {
-  background-color: #059669;
+  background-color: #a3d4a3;
 }
 
 /* Danger button - destructive actions */
 .btn-danger {
   background-color: var(--color-danger);
-  color: white;
+  color: #272e33;
   border-color: var(--color-danger);
 }
 
 .btn-danger:hover:not(:disabled) {
-  background-color: #dc2626;
+  background-color: #f09090;
 }
 
 /* Secondary button - alternative actions */
@@ -297,28 +298,33 @@
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.05em;
-  border-radius: var(--radius-full);
+  border-radius: var(--radius-sm);
   white-space: nowrap;
+  border: 1px solid;
 }
 
 .badge-draft {
-  background-color: #f3f4f6;
-  color: #374151;
+  background-color: rgba(122, 132, 120, 0.15);
+  color: #859289;
+  border-color: #3d484d;
 }
 
 .badge-sent {
-  background-color: #dbeafe;
-  color: #1e40af;
+  background-color: rgba(127, 187, 179, 0.15);
+  color: #7fbbb3;
+  border-color: #4a555b;
 }
 
 .badge-paid {
-  background-color: #d1fae5;
-  color: #065f46;
+  background-color: rgba(131, 192, 146, 0.15);
+  color: #83c092;
+  border-color: #4a555b;
 }
 
 .badge-overdue {
-  background-color: #fee2e2;
-  color: #991b1b;
+  background-color: rgba(230, 126, 128, 0.15);
+  color: #e67e80;
+  border-color: #4a555b;
 }
 
 /* ============================================================================

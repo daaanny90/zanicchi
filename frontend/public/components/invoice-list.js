@@ -74,7 +74,7 @@ class InvoiceList extends HTMLElement {
           display: block;
           margin-top: var(--space-lg);
         }
-        .table-container { overflow-x: auto; border-radius: 0.375rem; border: 1px solid var(--color-border); }
+        .table-container { overflow-x: auto; border-radius: 0.125rem; border: 1px solid var(--color-border); }
         .table { width: 100%; border-collapse: collapse; background-color: var(--color-bg); }
         .table thead { background-color: var(--color-bg-tertiary); border-bottom: 2px solid var(--color-border); }
         .table th { padding: 1rem; text-align: left; font-size: 0.75rem; font-weight: 600; color: var(--color-text-secondary); text-transform: uppercase; }
@@ -87,7 +87,7 @@ class InvoiceList extends HTMLElement {
         .badge-paid { background-color: #d1fae5; color: #065f46; }
         .badge-overdue { background-color: #fee2e2; color: #991b1b; }
         .actions { display: flex; gap: 0.5rem; }
-        .btn { padding: 0.25rem 0.75rem; font-size: 0.75rem; border: none; border-radius: 0.375rem; cursor: pointer; }
+        .btn { padding: 0.25rem 0.75rem; font-size: 0.75rem; border: none; border-radius: 0.125rem; cursor: pointer; }
         .btn-sm { font-size: 0.75rem; padding: 0.25rem 0.5rem; }
         .btn-primary { background-color: var(--color-primary); color: white; }
         .btn-success { background-color: var(--color-success); color: white; }

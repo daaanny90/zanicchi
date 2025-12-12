@@ -97,7 +97,7 @@ class CategoryManager extends HTMLElement {
           max-width: 540px;
           background: var(--color-bg);
           color: var(--color-text-primary);
-          border-radius: 0.375rem;
+          border-radius: 0.125rem;
           box-shadow: var(--shadow-xl);
           overflow: hidden;
           border: 1px solid var(--color-border);
@@ -148,7 +148,7 @@ class CategoryManager extends HTMLElement {
         input,
         select {
           border: 1px solid var(--color-border);
-          border-radius: 0.375rem;
+          border-radius: 0.125rem;
           padding: 0.5rem 0.75rem;
           font-size: 1rem;
           background: var(--color-bg);
@@ -180,7 +180,7 @@ class CategoryManager extends HTMLElement {
           color: var(--color-text-secondary);
         }
         .btn {
-          border-radius: 0.375rem;
+          border-radius: 0.125rem;
           padding: 0.45rem 1rem;
           font-size: 0.9rem;
           font-weight: 500;

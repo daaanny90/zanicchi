@@ -62,7 +62,7 @@ class ExpenseList extends HTMLElement {
           display: block;
           margin-top: var(--space-lg);
         }
-        .table-container { overflow-x: auto; border-radius: 0.375rem; border: 1px solid var(--color-border); }
+        .table-container { overflow-x: auto; border-radius: 0.125rem; border: 1px solid var(--color-border); }
         .table { width: 100%; border-collapse: collapse; background-color: var(--color-bg); }
         .table thead { background-color: var(--color-bg-tertiary); border-bottom: 2px solid var(--color-border); }
         .table th { padding: 1rem; text-align: left; font-size: 0.75rem; font-weight: 600; color: var(--color-text-secondary); text-transform: uppercase; }
@@ -72,7 +72,7 @@ class ExpenseList extends HTMLElement {
         .category-badge { display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.25rem 0.75rem; border-radius: 9999px; background-color: var(--color-bg-tertiary); font-size: 0.75rem; }
         .category-color { width: 12px; height: 12px; border-radius: 50%; }
         .actions { display: flex; gap: 0.5rem; }
-        .btn { padding: 0.25rem 0.75rem; font-size: 0.75rem; border: none; border-radius: 0.375rem; cursor: pointer; }
+        .btn { padding: 0.25rem 0.75rem; font-size: 0.75rem; border: none; border-radius: 0.125rem; cursor: pointer; }
         .btn-primary { background-color: var(--color-primary); color: white; }
         .btn-danger { background-color: var(--color-danger); color: white; }
         .empty { text-align: center; padding: 3rem; color: var(--color-text-secondary); }

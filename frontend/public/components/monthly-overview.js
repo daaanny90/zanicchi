@@ -425,7 +425,7 @@ class MonthlyOverview extends HTMLElement {
         <!-- Summary Formula -->
         <div class="formula-box">
           <h4 class="formula-title">Formula di Calcolo (Regime Forfettario):</h4>
-          <div class="formula-text" style="font-size: 0.875rem; margin-bottom: 0.5rem; background: rgba(59, 130, 246, 0.1); padding: 0.5rem; border-radius: 0.375rem;">
+          <div class="formula-text" style="font-size: 0.875rem; margin-bottom: 0.5rem; background: rgba(59, 130, 246, 0.1); padding: 0.5rem; border-radius: 0.125rem;">
             <strong>Entrate da Ore Lavorate:</strong> Ore registrate × Tariffa oraria
           </div>
           <div class="formula-text" style="font-size: 0.875rem; margin-bottom: 0.5rem;">
@@ -497,7 +497,7 @@ class MonthlyOverview extends HTMLElement {
           margin-bottom: 2rem;
           padding: 1.5rem;
           background: linear-gradient(135deg, var(--gradient-primary-start) 0%, var(--gradient-primary-end) 100%);
-          border-radius: 0.375rem;
+          border-radius: 0.125rem;
           box-shadow: 0 2px 4px 0 rgb(0 0 0 / 0.06);
         }
         
@@ -523,7 +523,7 @@ class MonthlyOverview extends HTMLElement {
           font-size: 1.125rem;
           font-weight: 600;
           border: 2px solid rgba(255, 255, 255, 0.3);
-          border-radius: 0.25rem;
+          border-radius: 0;
           background-color: var(--color-bg);
           color: var(--color-text-primary);
           cursor: pointer;
@@ -551,7 +551,7 @@ class MonthlyOverview extends HTMLElement {
         .overview-card {
           background: var(--color-bg);
           border: 1px solid var(--color-border);
-          border-radius: 0.375rem;
+          border-radius: 0.125rem;
           padding: 1.5rem;
           box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1);
           transition: transform 0.2s, box-shadow 0.2s;
@@ -605,7 +605,7 @@ class MonthlyOverview extends HTMLElement {
         .salary-breakdown {
           background: var(--color-bg);
           border: 1px solid var(--color-border);
-          border-radius: 0.375rem;
+          border-radius: 0.125rem;
           padding: 2rem;
           box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1);
         }
@@ -630,7 +630,7 @@ class MonthlyOverview extends HTMLElement {
           padding: 1.25rem;
           background: var(--color-bg-secondary);
           border: 1px solid var(--color-border);
-          border-radius: 0.25rem;
+          border-radius: 0;
           transition: background-color 0.2s;
         }
         
@@ -675,7 +675,7 @@ class MonthlyOverview extends HTMLElement {
           padding: 1.5rem;
           background: var(--color-bg-secondary);
           border: 1px solid var(--color-border);
-          border-radius: 0.25rem;
+          border-radius: 0;
           margin-top: 1.5rem;
         }
         
@@ -699,7 +699,7 @@ class MonthlyOverview extends HTMLElement {
           font-family: 'Courier New', monospace;
           background: var(--color-bg);
           padding: 0.5rem;
-          border-radius: 0.25rem;
+          border-radius: 0;
           border: 1px solid var(--color-border);
         }
         
@@ -717,14 +717,14 @@ class MonthlyOverview extends HTMLElement {
           font-size: 1.125rem;
           background: rgba(239, 68, 68, 0.1);
           border: 1px solid rgba(239, 68, 68, 0.4);
-          border-radius: 0.25rem;
+          border-radius: 0;
         }
         
         /* Goal Tracker Styles */
         .goal-tracker {
           background: var(--color-bg);
           border: 1px solid var(--color-border);
-          border-radius: 0.375rem;
+          border-radius: 0.125rem;
           padding: 1.5rem;
           margin-bottom: 2rem;
           box-shadow: var(--shadow-md);
@@ -757,7 +757,7 @@ class MonthlyOverview extends HTMLElement {
           font-size: 0.875rem;
           font-weight: 600;
           padding: 0.375rem 0.75rem;
-          border-radius: 0.375rem;
+          border-radius: 0.125rem;
           background: rgba(255, 255, 255, 0.1);
         }
         
@@ -776,7 +776,7 @@ class MonthlyOverview extends HTMLElement {
         .goal-metric {
           background: var(--color-bg-secondary);
           padding: 1rem;
-          border-radius: 0.25rem;
+          border-radius: 0;
           border: 1px solid var(--color-border);
         }
         
@@ -853,7 +853,7 @@ class MonthlyOverview extends HTMLElement {
           align-items: center;
           gap: 0.75rem;
           padding: 1rem;
-          border-radius: 0.25rem;
+          border-radius: 0;
           font-size: 0.875rem;
         }
         

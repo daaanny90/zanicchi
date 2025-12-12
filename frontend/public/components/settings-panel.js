@@ -117,7 +117,7 @@ class SettingsPanel extends HTMLElement {
         .card {
           background-color: #ffffff;
           border: 1px solid #e5e7eb;
-          border-radius: 0.25rem;
+          border-radius: 0;
           padding: 1.5rem;
           box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05);
         }
@@ -155,7 +155,7 @@ class SettingsPanel extends HTMLElement {
           color: #111827;
           background-color: #ffffff;
           border: 1px solid #d1d5db;
-          border-radius: 0.375rem;
+          border-radius: 0.125rem;
           transition: border-color 0.15s;
         }
         
@@ -175,7 +175,7 @@ class SettingsPanel extends HTMLElement {
           color: white;
           background-color: #2563eb;
           border: none;
-          border-radius: 0.375rem;
+          border-radius: 0.125rem;
           cursor: pointer;
           transition: background-color 0.15s;
         }

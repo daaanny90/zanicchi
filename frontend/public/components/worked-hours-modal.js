@@ -133,7 +133,7 @@ class WorkedHoursModal extends HTMLElement {
           max-width: 480px;
           background: var(--color-bg);
           color: var(--color-text-primary);
-          border-radius: 0.375rem;
+          border-radius: 0.125rem;
           box-shadow: var(--shadow-xl);
           overflow: hidden;
           border: 1px solid var(--color-border);
@@ -177,7 +177,7 @@ class WorkedHoursModal extends HTMLElement {
           width: 100%;
           padding: 0.5rem 0.75rem;
           border: 1px solid var(--color-border);
-          border-radius: 0.375rem;
+          border-radius: 0.125rem;
           font-size: 1rem;
           font-family: inherit;
           background: var(--color-bg);
@@ -196,7 +196,7 @@ class WorkedHoursModal extends HTMLElement {
         }
         .btn {
           border: none;
-          border-radius: 0.375rem;
+          border-radius: 0.125rem;
           padding: 0.5rem 1.25rem;
           font-size: 0.95rem;
           font-weight: 500;
@@ -215,7 +215,7 @@ class WorkedHoursModal extends HTMLElement {
           background: var(--color-bg-secondary);
           border: 1px dashed var(--color-border);
           padding: 1rem;
-          border-radius: 0.25rem;
+          border-radius: 0;
           text-align: center;
           font-size: 0.95rem;
           color: var(--color-text-secondary);
@@ -223,7 +223,7 @@ class WorkedHoursModal extends HTMLElement {
         .empty-state button {
           margin-top: 0.75rem;
           padding: 0.4rem 1rem;
-          border-radius: 999px;
+          border-radius: 0.125rem;
           border: none;
           background: var(--color-primary);
           color: #fff;

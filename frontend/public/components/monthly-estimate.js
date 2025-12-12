@@ -83,7 +83,7 @@ class MonthlyEstimate extends HTMLElement {
         }
         
         .estimate-card {
-          border-radius: 0.375rem;
+          border-radius: 0.125rem;
           padding: 2rem;
           color: #fff;
           box-shadow: 0 4px 8px 0 rgb(0 0 0 / 0.08);
@@ -138,7 +138,7 @@ class MonthlyEstimate extends HTMLElement {
         .estimate-item {
           background: rgba(255, 255, 255, 0.15);
           padding: 1rem;
-          border-radius: 0.25rem;
+          border-radius: 0;
           backdrop-filter: blur(10px);
         }
         

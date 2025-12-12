@@ -161,7 +161,7 @@ class ClientsManager extends HTMLElement {
           max-width: 720px;
           background: var(--color-bg);
           color: var(--color-text-primary);
-          border-radius: 0.375rem;
+          border-radius: 0.125rem;
           box-shadow: var(--shadow-xl);
           overflow: hidden;
           display: flex;
@@ -219,7 +219,7 @@ class ClientsManager extends HTMLElement {
         input,
         textarea {
           border: 1px solid var(--color-border);
-          border-radius: 0.375rem;
+          border-radius: 0.125rem;
           padding: 0.5rem 0.75rem;
           font-size: 1rem;
           background: var(--color-bg);
@@ -250,7 +250,7 @@ class ClientsManager extends HTMLElement {
         }
         .btn {
           border: none;
-          border-radius: 0.375rem;
+          border-radius: 0.125rem;
           padding: 0.4rem 0.95rem;
           font-size: 0.9rem;
           cursor: pointer;

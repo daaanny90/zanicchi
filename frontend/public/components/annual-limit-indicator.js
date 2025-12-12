@@ -117,7 +117,7 @@ class AnnualLimitIndicator extends HTMLElement {
         .limit-card {
           background: var(--color-bg);
           border: 2px solid ${statusConfig.borderColor};
-          border-radius: 0.375rem;
+          border-radius: 0.125rem;
           padding: 2rem;
           box-shadow: 0 2px 4px 0 rgb(0 0 0 / 0.06);
           position: relative;
@@ -172,7 +172,7 @@ class AnnualLimitIndicator extends HTMLElement {
           border: 1px solid ${statusConfig.borderColor};
           color: ${statusConfig.color};
           padding: 0.5rem 1rem;
-          border-radius: 0.25rem;
+          border-radius: 0;
           font-size: 0.875rem;
           font-weight: 600;
           display: flex;
@@ -190,7 +190,7 @@ class AnnualLimitIndicator extends HTMLElement {
         .metric-card {
           background: var(--color-bg-secondary);
           border: 1px solid var(--color-border);
-          border-radius: 0.25rem;
+          border-radius: 0;
           padding: 1rem;
         }
         
@@ -279,7 +279,7 @@ class AnnualLimitIndicator extends HTMLElement {
         .status-message {
           background: ${statusConfig.bgColor};
           border: 1px solid ${statusConfig.borderColor};
-          border-radius: 0.25rem;
+          border-radius: 0;
           padding: 1rem;
           display: flex;
           align-items: flex-start;

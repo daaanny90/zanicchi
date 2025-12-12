@@ -83,28 +83,29 @@ class AppHeader extends HTMLElement {
         }
         
         .actions button {
-          border: none;
+          border: 1px solid var(--color-primary);
           background: var(--color-primary);
-          color: #fff;
+          color: #272e33;
           padding: 0.55rem 1.25rem;
-          border-radius: 999px;
+          border-radius: var(--radius-sm);
           font-size: 0.95rem;
-          font-weight: 500;
+          font-weight: 600;
           cursor: pointer;
           display: inline-flex;
           align-items: center;
           gap: 0.4rem;
-          box-shadow: 0 2px 4px 0 rgb(30 64 175 / 0.15);
+          box-shadow: none;
           transition: background-color var(--transition-fast), border-color var(--transition-fast);
         }
 
         .actions button:focus-visible {
-          outline: 2px solid var(--color-primary-light);
+          outline: 1px solid var(--color-primary-hover);
           outline-offset: 2px;
         }
 
         .actions button:hover {
           background: var(--color-primary-hover);
+          border-color: var(--color-primary-hover);
         }
 
         .theme-toggle {
@@ -116,7 +117,8 @@ class AppHeader extends HTMLElement {
         }
 
         .theme-toggle:hover {
-          background: var(--color-bg-secondary);
+          background: var(--color-border);
+          border-color: var(--color-border-hover);
         }
 
         @media (max-width: 768px) {

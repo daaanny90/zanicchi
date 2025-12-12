@@ -123,7 +123,7 @@ class MonthlyWorkedSummary extends HTMLElement {
         .card {
           background: var(--color-bg);
           border: 1px solid var(--color-border);
-          border-radius: 0.375rem;
+          border-radius: 0.125rem;
           padding: 1.5rem;
           box-shadow: var(--shadow-md);
         }
@@ -159,7 +159,7 @@ class MonthlyWorkedSummary extends HTMLElement {
         select {
           padding: 0.5rem 0.75rem;
           border: 1px solid var(--color-border);
-          border-radius: 0.375rem;
+          border-radius: 0.125rem;
           background: var(--color-bg);
           color: var(--color-text-primary);
           font-size: 0.9rem;
@@ -175,7 +175,7 @@ class MonthlyWorkedSummary extends HTMLElement {
           box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
         }
         .btn {
-          border-radius: 0.375rem;
+          border-radius: 0.125rem;
           padding: 0.45rem 1rem;
           font-size: 0.9rem;
           font-weight: 500;
@@ -233,14 +233,14 @@ class MonthlyWorkedSummary extends HTMLElement {
         .filter-active {
           background: rgba(59, 130, 246, 0.1);
           padding: 0.5rem 0.75rem;
-          border-radius: 0.375rem;
+          border-radius: 0.125rem;
           font-size: 0.85rem;
           color: var(--color-primary);
         }
         .empty-state, .error {
           padding: 1rem;
           background: var(--color-bg-secondary);
-          border-radius: 0.25rem;
+          border-radius: 0;
           text-align: center;
           color: var(--color-text-secondary);
         }
