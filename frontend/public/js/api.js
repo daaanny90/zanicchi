@@ -309,7 +309,28 @@ const API = {
         method: 'DELETE'
       }),
     getMonthlySummary: (year, month) =>
-      apiRequest(`/worked-hours/summary/monthly?year=${year}&month=${month}`)
+      apiRequest(`/worked-hours/summary/monthly?year=${year}&month=${month}`),
+    getMonthlyReportDetails: (year, month, clientId) => {
+      const params = new URLSearchParams({
+        year: `${year}`,
+        month: `${month}`,
+        clientId: `${clientId}`
+      });
+      return apiRequest(`/worked-hours/reports/monthly?${params.toString()}`);
+    },
+    downloadMonthlyReportPdf: async (year, month, clientId) => {
+      const params = new URLSearchParams({
+        year: `${year}`,
+        month: `${month}`,
+        clientId: `${clientId}`
+      });
+      const response = await fetch(`${API_BASE_URL}/worked-hours/reports/monthly/pdf?${params.toString()}`);
+      if (!response.ok) {
+        throw new Error('Impossibile scaricare il PDF');
+      }
+      const blob = await response.blob();
+      return blob;
+    }
   }
 };
 

@@ -58,6 +58,7 @@ COPY --from=builder /app/dist ./dist
 # Copy database initialization scripts
 # These may be needed if running migrations from the container
 COPY src/database ./src/database
+COPY src/assets ./dist/assets
 
 # Create a non-root user for security
 # Running as root is a security risk in production

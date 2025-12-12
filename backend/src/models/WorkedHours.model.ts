@@ -45,3 +45,40 @@ export interface WorkedHoursSummaryResponse {
   };
 }
 
+export interface WorkedHoursReportEntry {
+  id: number;
+  worked_date: string;
+  hours: number;
+  amount: number;
+  note: string | null;
+}
+
+export interface WorkedHoursGroupedEntry {
+  worked_date: string;
+  hours: number;
+  amount: number;
+  notes: string[];
+  records: WorkedHoursReportEntry[];
+}
+
+export interface WorkedHoursMonthlyReport {
+  client: {
+    id: number;
+    name: string;
+    hourly_rate: number;
+  };
+  period: {
+    year: number;
+    month: number;
+    label: string;
+    start_date: string;
+    end_date: string;
+  };
+  entries: WorkedHoursReportEntry[];
+  grouped_entries: WorkedHoursGroupedEntry[];
+  totals: {
+    hours: number;
+    amount: number;
+  };
+}
+
