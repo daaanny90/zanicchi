@@ -12,8 +12,78 @@ USE freelancer_finance;
 -- Step 1: Ensure all base tables exist first
 -- ============================================================================
 -- Create tables if they don't exist (safe, idempotent)
--- Must be done BEFORE any ALTER operations
+-- Must be done BEFORE any ALTER operations or INSERT operations
 -- ============================================================================
+
+-- Ensure categories table exists
+CREATE TABLE IF NOT EXISTS categories (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(100) NOT NULL UNIQUE,
+    type ENUM('expense', 'income') NOT NULL DEFAULT 'expense',
+    color VARCHAR(7) NOT NULL DEFAULT '#3498db',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    INDEX idx_category_type (type)
+) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_unicode_ci;
+
+-- Ensure settings table exists
+CREATE TABLE IF NOT EXISTS settings (
+    setting_key VARCHAR(100) PRIMARY KEY,
+    setting_value TEXT NOT NULL,
+    description TEXT NULL,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_unicode_ci;
+
+-- Ensure invoices table exists
+CREATE TABLE IF NOT EXISTS invoices (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    invoice_number VARCHAR(50) NOT NULL UNIQUE,
+    client_name VARCHAR(200) NOT NULL,
+    description TEXT,
+    amount DECIMAL(10, 2) NOT NULL,
+    tax_rate DECIMAL(5, 2) NOT NULL DEFAULT 22.00,
+    tax_amount DECIMAL(10, 2) NOT NULL,
+    total_amount DECIMAL(10, 2) NOT NULL,
+    status ENUM('draft', 'sent', 'paid', 'overdue') NOT NULL DEFAULT 'draft',
+    issue_date DATE NOT NULL,
+    due_date DATE NOT NULL,
+    paid_date DATE NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    INDEX idx_invoice_status (status),
+    INDEX idx_invoice_issue_date (issue_date),
+    INDEX idx_invoice_due_date (due_date),
+    INDEX idx_invoice_paid_date (paid_date),
+    INDEX idx_invoice_dates (issue_date, status)
+) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_unicode_ci;
+
+-- Ensure expenses table exists
+CREATE TABLE IF NOT EXISTS expenses (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    description VARCHAR(500) NOT NULL,
+    amount DECIMAL(10, 2) NOT NULL,
+    category_id INT NOT NULL,
+    expense_date DATE NOT NULL,
+    notes TEXT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    INDEX idx_expense_date (expense_date),
+    INDEX idx_expense_category (category_id),
+    INDEX idx_expense_category_date (category_id, expense_date)
+) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_unicode_ci;
+
+-- Add foreign key for expenses if it doesn't exist
+SET @fk_expense_exists = (SELECT COUNT(*) FROM INFORMATION_SCHEMA.KEY_COLUMN_USAGE 
+    WHERE TABLE_SCHEMA = DATABASE() 
+    AND TABLE_NAME = 'expenses' 
+    AND CONSTRAINT_NAME = 'fk_expense_category');
+
+SET @add_expense_fk = IF(@fk_expense_exists = 0, 
+    'ALTER TABLE expenses ADD CONSTRAINT fk_expense_category FOREIGN KEY (category_id) REFERENCES categories(id) ON DELETE RESTRICT ON UPDATE CASCADE;',
+    'SELECT "Expense foreign key already exists" AS Info;');
+
+PREPARE add_expense_fk_stmt FROM @add_expense_fk;
+EXECUTE add_expense_fk_stmt;
+DEALLOCATE PREPARE add_expense_fk_stmt;
 
 -- Ensure clients table exists with all required fields
 CREATE TABLE IF NOT EXISTS clients (
