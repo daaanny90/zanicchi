@@ -21,8 +21,8 @@ services:
   # --------------------------------------------------------------------------
   # Stores all application data (invoices, expenses, categories, settings)
   mysql:
-    # MariaDB Alpine image for ARM architecture support
-    image: linuxserver/mariadb:alpine 
+    # Official MySQL 8.0 image
+    image: mysql:8.0
     
     # Container name for easy reference
     container_name: freelancer-finance-db
@@ -32,19 +32,23 @@ services:
     
     # Environment variables for MySQL configuration
     environment:
-      PUID: 1000
-      PGID: 1000
+      # Root password for MySQL admin user
       MYSQL_ROOT_PASSWORD: root_password_change_me
+      
+      # Create this database on first run
       MYSQL_DATABASE: freelancer_finance
+      
+      # Create this user on first run
       MYSQL_USER: freelancer
+      
+      # Password for the created user
       MYSQL_PASSWORD: freelancer_password_change_me
-      TZ: Europe/Rome
     
     # Persistent volume for database data
     # This ensures data survives container restarts
     volumes:
-      # MariaDB data directory (linuxserver/mariadb uses /config not /var/lib/mysql)
-      - mysql-data:/config
+      # MySQL data directory (persists across container rebuilds)
+      - mysql-data:/var/lib/mysql
       
       # Database initialization script
       # Automatically runs on first startup to create schema
