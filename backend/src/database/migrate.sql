@@ -9,69 +9,10 @@
 USE freelancer_finance;
 
 -- ============================================================================
--- Migration: Add description field to worked_hours (if not exists)
+-- Step 1: Ensure all base tables exist first
 -- ============================================================================
--- Check and add 'note' column if it doesn't exist
--- This supports the worked hours description feature
--- ============================================================================
-
-SET @dbname = DATABASE();
-SET @tablename = 'worked_hours';
-SET @columnname = 'note';
-SET @preparedStatement = (SELECT IF(
-  (
-    SELECT COUNT(*) FROM INFORMATION_SCHEMA.COLUMNS
-    WHERE
-      (table_name = @tablename)
-      AND (table_schema = @dbname)
-      AND (column_name = @columnname)
-  ) > 0,
-  'SELECT 1;',
-  CONCAT('ALTER TABLE ', @tablename, ' ADD COLUMN ', @columnname, ' TEXT NULL AFTER amount_cached;')
-));
-PREPARE alterIfNotExists FROM @preparedStatement;
-EXECUTE alterIfNotExists;
-DEALLOCATE PREPARE alterIfNotExists;
-
--- ============================================================================
--- Migration: Update settings table with any new settings
--- ============================================================================
--- Insert new settings if they don't exist (using INSERT IGNORE)
--- ============================================================================
-
-INSERT IGNORE INTO settings (setting_key, setting_value, description)
-VALUES
-    ('default_vat_rate', '22', 'Default VAT/IVA rate percentage for new invoices (not income tax)'),
-    ('currency', 'EUR', 'Currency code used throughout the application (EUR, USD, GBP, etc.)'),
-    ('currency_symbol', '€', 'Currency symbol for display purposes'),
-    ('target_salary', '3000', 'Target monthly salary (net amount to take home after taxes and savings)'),
-    ('taxable_percentage', '67', 'Percentage of income that is taxable (regime forfettario coefficient)'),
-    ('income_tax_rate', '15', 'Income tax rate percentage (regime forfettario flat tax - 15% standard, 5% first 5 years)'),
-    ('health_insurance_rate', '26.07', 'Health insurance (INPS Gestione Separata) contribution rate percentage');
-
--- ============================================================================
--- Migration: Ensure all default categories exist
--- ============================================================================
--- Insert default categories if they don't exist
--- ============================================================================
-
-INSERT IGNORE INTO categories (name, type, color)
-VALUES
-    ('Software e Abbonamenti', 'expense', '#3498db'),
-    ('Attrezzature e Hardware', 'expense', '#e74c3c'),
-    ('Forniture Ufficio', 'expense', '#2ecc71'),
-    ('Viaggi e Trasporti', 'expense', '#f39c12'),
-    ('Marketing e Pubblicità', 'expense', '#9b59b6'),
-    ('Servizi Professionali', 'expense', '#1abc9c'),
-    ('Formazione e Istruzione', 'expense', '#34495e'),
-    ('Assicurazioni', 'expense', '#e67e22'),
-    ('Utenze e Internet', 'expense', '#95a5a6'),
-    ('Varie', 'expense', '#7f8c8d');
-
--- ============================================================================
--- Migration: Verify table structures and indexes
--- ============================================================================
--- These operations use CREATE IF NOT EXISTS or are no-ops if already present
+-- Create tables if they don't exist (safe, idempotent)
+-- Must be done BEFORE any ALTER operations
 -- ============================================================================
 
 -- Ensure clients table exists with all required fields
@@ -94,10 +35,83 @@ CREATE TABLE IF NOT EXISTS worked_hours (
     note TEXT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    CONSTRAINT fk_worked_hours_client FOREIGN KEY (client_id) REFERENCES clients(id) ON DELETE RESTRICT ON UPDATE CASCADE,
     INDEX idx_worked_date (worked_date),
     INDEX idx_worked_client_date (client_id, worked_date)
 ) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_unicode_ci;
+
+-- Add foreign key constraint if it doesn't exist
+-- (MariaDB/MySQL will ignore if already exists)
+SET @fk_exists = (SELECT COUNT(*) FROM INFORMATION_SCHEMA.KEY_COLUMN_USAGE 
+    WHERE TABLE_SCHEMA = DATABASE() 
+    AND TABLE_NAME = 'worked_hours' 
+    AND CONSTRAINT_NAME = 'fk_worked_hours_client');
+
+SET @add_fk = IF(@fk_exists = 0, 
+    'ALTER TABLE worked_hours ADD CONSTRAINT fk_worked_hours_client FOREIGN KEY (client_id) REFERENCES clients(id) ON DELETE RESTRICT ON UPDATE CASCADE;',
+    'SELECT "Foreign key already exists" AS Info;');
+
+PREPARE add_fk_stmt FROM @add_fk;
+EXECUTE add_fk_stmt;
+DEALLOCATE PREPARE add_fk_stmt;
+
+-- ============================================================================
+-- Step 2: Add any missing columns to existing tables
+-- ============================================================================
+-- Check and add 'note' column if it doesn't exist
+-- ============================================================================
+
+SET @dbname = DATABASE();
+SET @tablename = 'worked_hours';
+SET @columnname = 'note';
+SET @preparedStatement = (SELECT IF(
+  (
+    SELECT COUNT(*) FROM INFORMATION_SCHEMA.COLUMNS
+    WHERE
+      (table_name = @tablename)
+      AND (table_schema = @dbname)
+      AND (column_name = @columnname)
+  ) > 0,
+  'SELECT "Column note already exists" AS Info;',
+  'ALTER TABLE worked_hours ADD COLUMN note TEXT NULL AFTER amount_cached;'
+));
+PREPARE alterIfNotExists FROM @preparedStatement;
+EXECUTE alterIfNotExists;
+DEALLOCATE PREPARE alterIfNotExists;
+
+-- ============================================================================
+-- Step 3: Ensure all default settings exist
+-- ============================================================================
+-- Insert new settings if they don't exist (using INSERT IGNORE)
+-- ============================================================================
+
+INSERT IGNORE INTO settings (setting_key, setting_value, description)
+VALUES
+    ('default_vat_rate', '22', 'Default VAT/IVA rate percentage for new invoices (not income tax)'),
+    ('currency', 'EUR', 'Currency code used throughout the application (EUR, USD, GBP, etc.)'),
+    ('currency_symbol', '€', 'Currency symbol for display purposes'),
+    ('target_salary', '3000', 'Target monthly salary (net amount to take home after taxes and savings)'),
+    ('taxable_percentage', '67', 'Percentage of income that is taxable (regime forfettario coefficient)'),
+    ('income_tax_rate', '15', 'Income tax rate percentage (regime forfettario flat tax - 15% standard, 5% first 5 years)'),
+    ('health_insurance_rate', '26.07', 'Health insurance (INPS Gestione Separata) contribution rate percentage');
+
+-- ============================================================================
+-- Step 4: Ensure all default categories exist
+-- ============================================================================
+-- Insert default categories if they don't exist
+-- ============================================================================
+
+INSERT IGNORE INTO categories (name, type, color)
+VALUES
+    ('Software e Abbonamenti', 'expense', '#3498db'),
+    ('Attrezzature e Hardware', 'expense', '#e74c3c'),
+    ('Forniture Ufficio', 'expense', '#2ecc71'),
+    ('Viaggi e Trasporti', 'expense', '#f39c12'),
+    ('Marketing e Pubblicità', 'expense', '#9b59b6'),
+    ('Servizi Professionali', 'expense', '#1abc9c'),
+    ('Formazione e Istruzione', 'expense', '#34495e'),
+    ('Assicurazioni', 'expense', '#e67e22'),
+    ('Utenze e Internet', 'expense', '#95a5a6'),
+    ('Varie', 'expense', '#7f8c8d');
 
 -- ============================================================================
 -- Migration Complete
