@@ -43,8 +43,8 @@ services:
     # Persistent volume for database data
     # This ensures data survives container restarts
     volumes:
-      # MySQL data directory
-      - mysql-data:/var/lib/mysql
+      # MariaDB data directory (linuxserver/mariadb uses /config not /var/lib/mysql)
+      - mysql-data:/config
       
       # Database initialization script
       # Automatically runs on first startup to create schema

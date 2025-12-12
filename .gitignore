@@ -27,4 +27,5 @@ docker-compose.override.yml
 # Database
 *.sql.backup
 mysql-data/
+backups/
 

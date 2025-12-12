@@ -20,8 +20,26 @@ git clone <repo>
 cd zanicchi
 docker-compose up -d --build
 ```
-Visit `http://localhost:8080` (frontend) and `http://localhost:3000/api` (API).  
-Stop with `docker-compose down`. Remove volumes with `docker-compose down -v`.
+Visit `http://localhost:8082` (frontend) and `http://localhost:3001/api` (API).  
+Stop with `docker-compose down`.
+
+⚠️ **Important**: Never use `docker-compose down -v` as it deletes your database! See [Backup & Update Guide](BACKUP_AND_UPDATE.md) for safe update procedures.
+
+## 🔄 Updating & Backups
+
+**Safe Update (Recommended)**
+```bash
+./safe-update.sh        # Automatically backs up, pulls code, rebuilds, and migrates
+```
+
+**Manual Operations**
+```bash
+./backup-db.sh          # Create database backup
+./restore-db.sh <file>  # Restore from backup
+./update-db.sh          # Apply database migrations
+```
+
+📖 **Full documentation**: [BACKUP_AND_UPDATE.md](BACKUP_AND_UPDATE.md) - Comprehensive guide to backups, restores, and safe updates.
 
 ## Local Development
 ```bash
