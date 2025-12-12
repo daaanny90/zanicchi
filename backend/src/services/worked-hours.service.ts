@@ -6,7 +6,15 @@
 
 import { RowDataPacket, ResultSetHeader } from 'mysql2';
 import db from '../config/database';
-import { CreateWorkedHourDTO, UpdateWorkedHourDTO, WorkedHour, WorkedHoursSummaryResponse } from '../models/WorkedHours.model';
+import {
+  CreateWorkedHourDTO,
+  UpdateWorkedHourDTO,
+  WorkedHour,
+  WorkedHoursSummaryResponse,
+  WorkedHoursMonthlyReport,
+  WorkedHoursReportEntry,
+  WorkedHoursGroupedEntry
+} from '../models/WorkedHours.model';
 import { Client } from '../models/Client.model';
 import { getLastDayOfSpecificMonth } from '../utils/date.utils';
 
@@ -19,7 +27,13 @@ async function getClientById(clientId: number): Promise<Client | null> {
     [clientId]
   );
   if (!rows.length) return null;
-  return rows[0] as Client;
+  const clientRow = rows[0] as Client & RowDataPacket;
+  return {
+    ...clientRow,
+    hourly_rate: typeof clientRow.hourly_rate === 'number'
+      ? clientRow.hourly_rate
+      : parseFloat(clientRow.hourly_rate as unknown as string)
+  };
 }
 
 /**
@@ -196,5 +210,113 @@ export async function getWorkedHoursSummary(year: number, month: number): Promis
       total_amount: Math.round(totals.total_amount * 100) / 100
     }
   };
+}
+
+/**
+ * Detailed monthly report for a specific client.
+ */
+export async function getWorkedHoursMonthlyReport(
+  year: number,
+  month: number,
+  clientId: number
+): Promise<WorkedHoursMonthlyReport> {
+  const client = await getClientById(clientId);
+  if (!client) {
+    throw new Error('Cliente non trovato');
+  }
+
+  const startDate = `${year}-${String(month).padStart(2, '0')}-01`;
+  const endDate = getLastDayOfSpecificMonth(year, month);
+  const periodLabel = new Date(year, month - 1, 1).toLocaleDateString('it-IT', {
+    year: 'numeric',
+    month: 'long'
+  });
+
+  const [rows] = await db.query<RowDataPacket[]>(
+    `SELECT 
+        wh.id,
+        wh.worked_date,
+        wh.hours,
+        wh.amount_cached,
+        wh.note
+     FROM worked_hours wh
+     WHERE wh.client_id = ?
+       AND wh.worked_date BETWEEN ? AND ?
+     ORDER BY wh.worked_date ASC, wh.created_at ASC`,
+    [clientId, startDate, endDate]
+  );
+
+  const entries: WorkedHoursReportEntry[] = rows.map((row) => ({
+    id: row.id,
+    worked_date: row.worked_date,
+    hours: parseFloat(row.hours),
+    amount: parseFloat(row.amount_cached),
+    note: row.note ?? null
+  }));
+
+  const groupedEntries = groupEntriesByDay(entries);
+
+  const totals = entries.reduce(
+    (acc, item) => {
+      acc.hours += item.hours;
+      acc.amount += item.amount;
+      return acc;
+    },
+    { hours: 0, amount: 0 }
+  );
+
+  return {
+    client: {
+      id: client.id,
+      name: client.name,
+      hourly_rate: client.hourly_rate
+    },
+    period: {
+      year,
+      month,
+      label: periodLabel,
+      start_date: startDate,
+      end_date: endDate
+    },
+    entries,
+    grouped_entries: groupedEntries,
+    totals: {
+      hours: Math.round(totals.hours * 100) / 100,
+      amount: Math.round(totals.amount * 100) / 100
+    }
+  };
+}
+
+function groupEntriesByDay(entries: WorkedHoursReportEntry[]): WorkedHoursGroupedEntry[] {
+  const groups = new Map<string, WorkedHoursGroupedEntry>();
+
+  entries.forEach((entry) => {
+    const key = entry.worked_date;
+    if (!groups.has(key)) {
+      groups.set(key, {
+        worked_date: key,
+        hours: 0,
+        amount: 0,
+        notes: [],
+        records: []
+      });
+    }
+
+    const group = groups.get(key)!;
+    group.hours += entry.hours;
+    group.amount += entry.amount;
+    if (entry.note && entry.note.trim().length) {
+      group.notes.push(entry.note.trim());
+    }
+    group.records.push(entry);
+  });
+
+  return Array.from(groups.values())
+    .map((group) => ({
+      ...group,
+      hours: Math.round(group.hours * 100) / 100,
+      amount: Math.round(group.amount * 100) / 100
+    }))
+    .sort((a, b) => (a.worked_date < b.worked_date ? -1 : 1));
 }
 

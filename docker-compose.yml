@@ -21,7 +21,7 @@ services:
   # --------------------------------------------------------------------------
   # Stores all application data (invoices, expenses, categories, settings)
   mysql:
-    # Official MySQL 8.0 image
+    # MariaDB Alpine image for ARM architecture support
     image: linuxserver/mariadb:alpine 
     
     # Container name for easy reference

@@ -7,6 +7,8 @@ class WorkedHoursModal extends HTMLElement {
     this.defaultDate = getTodayDate();
     this.loading = false;
     this.prefill = {};
+    this.mode = 'create';
+    this.recordId = null;
     this.handleExternalOpen = this.handleExternalOpen.bind(this);
   }
 
@@ -47,6 +49,8 @@ class WorkedHoursModal extends HTMLElement {
     }
     this.defaultDate = options.defaultDate || getTodayDate();
     this.prefill = options.prefill || {};
+    this.mode = options.mode || (this.prefill.id ? 'edit' : 'create');
+    this.recordId = this.prefill.id || null;
     this.isOpen = true;
     this.render();
   }
@@ -54,6 +58,8 @@ class WorkedHoursModal extends HTMLElement {
   close() {
     this.isOpen = false;
     this.prefill = {};
+    this.mode = 'create';
+    this.recordId = null;
     this.render();
   }
 
@@ -87,19 +93,26 @@ class WorkedHoursModal extends HTMLElement {
     this.loading = true;
     this.render();
 
-    try {
-      await API.workedHours.create({
-        client_id: parseInt(clientId),
-        worked_date: workedDate,
-        hours,
-        note: note || ''
-      });
+    const payload = {
+      client_id: parseInt(clientId, 10),
+      worked_date: workedDate,
+      hours,
+      note: note || ''
+    };
 
-      showNotification('Ore registrate con successo', 'success');
+    try {
+      if (this.mode === 'edit' && this.recordId) {
+        await API.workedHours.update(this.recordId, payload);
+        showNotification('Ore aggiornate con successo', 'success');
+      } else {
+        await API.workedHours.create(payload);
+        showNotification('Ore registrate con successo', 'success');
+      }
+
       window.dispatchEvent(new CustomEvent('worked-hours:updated'));
       this.close();
     } catch (error) {
-      showNotification(error.message || 'Impossibile registrare le ore', 'error');
+      showNotification(error.message || 'Operazione non riuscita', 'error');
       console.error(error);
     } finally {
       this.loading = false;
@@ -234,7 +247,7 @@ class WorkedHoursModal extends HTMLElement {
       <div class="modal">
         <div class="modal-content">
           <div class="modal-header">
-            <h2>Registra Ore Lavorate</h2>
+            <h2>${this.mode === 'edit' ? 'Modifica Ore Lavorate' : 'Registra Ore Lavorate'}</h2>
             <button class="close-btn" aria-label="Chiudi" id="close-modal">&times;</button>
           </div>
           <div class="modal-body">
@@ -250,7 +263,9 @@ class WorkedHoursModal extends HTMLElement {
                   <select name="client_id" id="client_id" required>
                     <option value="">Seleziona cliente</option>
                     ${this.clients.map(client => `
-                      <option value="${client.id}">${client.name} (${client.hourly_rate.toFixed(2)} €/h)</option>
+                      <option value="${client.id}" ${this.prefill.client_id === client.id ? 'selected' : ''}>
+                        ${client.name} (${client.hourly_rate.toFixed(2)} €/h)
+                      </option>
                     `).join('')}
                   </select>
                 </div>
@@ -260,7 +275,7 @@ class WorkedHoursModal extends HTMLElement {
                 </div>
                 <div class="form-group">
                   <label for="hours">Ore Lavorate</label>
-                  <input type="number" step="0.25" min="0.25" name="hours" id="hours" value="${this.prefill.hours || ''}" placeholder="es. 2,5" required>
+                  <input type="number" step="0.25" min="0.25" name="hours" id="hours" value="${this.prefill.hours ?? ''}" placeholder="es. 2,5" required>
                 </div>
                 <div class="form-group">
                   <label for="note">Nota (opzionale)</label>
@@ -271,7 +286,9 @@ class WorkedHoursModal extends HTMLElement {
           </div>
           <div class="modal-footer">
             <button class="btn btn-secondary" id="cancel-btn">Annulla</button>
-            ${this.clients.length ? `<button class="btn btn-primary" id="save-btn" ${this.loading ? 'disabled' : ''}>${this.loading ? 'Salvataggio...' : 'Salva'}</button>` : ''}
+            ${this.clients.length ? `<button class="btn btn-primary" id="save-btn" ${this.loading ? 'disabled' : ''}>
+              ${this.loading ? 'Salvataggio...' : this.mode === 'edit' ? 'Salva modifiche' : 'Salva'}
+            </button>` : ''}
           </div>
         </div>
       </div>
