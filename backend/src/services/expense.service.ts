@@ -91,6 +91,10 @@ export async function getExpenseById(id: number): Promise<ExpenseWithCategory | 
  * Creates a new expense record in the database.
  * Validates that the category exists before creating.
  * 
+ * IVA Calculation:
+ * - If iva_included = true: iva_amount = 0 (IVA already in the amount)
+ * - If iva_included = false: iva_amount = amount × (iva_rate / 100)
+ * 
  * @param data - Expense data
  * @returns Promise resolving to created expense
  * @throws Error if validation fails
@@ -117,16 +121,28 @@ export async function createExpense(data: CreateExpenseDTO): Promise<ExpenseWith
     throw new Error('Amount must be greater than 0');
   }
   
+  // Set defaults for IVA fields
+  const ivaIncluded = data.iva_included !== undefined ? data.iva_included : true;
+  const ivaRate = data.iva_rate !== undefined ? data.iva_rate : 22;
+  
+  // Calculate IVA amount
+  // If IVA is included, iva_amount = 0 (already paid)
+  // If IVA is not included, calculate it: amount × (rate / 100)
+  const ivaAmount = ivaIncluded ? 0 : Math.round(data.amount * (ivaRate / 100) * 100) / 100;
+  
   // Insert expense
   const [result] = await db.query<ResultSetHeader>(
-    `INSERT INTO expenses (description, amount, category_id, expense_date, notes)
-     VALUES (?, ?, ?, ?, ?)`,
+    `INSERT INTO expenses (description, amount, category_id, expense_date, notes, iva_included, iva_rate, iva_amount)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
     [
       data.description,
       data.amount,
       data.category_id,
       data.expense_date,
-      data.notes || null
+      data.notes || null,
+      ivaIncluded,
+      ivaRate,
+      ivaAmount
     ]
   );
   
@@ -208,10 +224,30 @@ export async function updateExpense(
     values.push(data.notes);
   }
   
+  if (data.iva_included !== undefined) {
+    updates.push('iva_included = ?');
+    values.push(data.iva_included);
+  }
+  
+  if (data.iva_rate !== undefined) {
+    updates.push('iva_rate = ?');
+    values.push(data.iva_rate);
+  }
+  
   // If no updates, return existing expense
   if (updates.length === 0) {
     return expense;
   }
+  
+  // Recalculate IVA amount if relevant fields changed
+  const newAmount = data.amount !== undefined ? data.amount : expense.amount;
+  const newIvaIncluded = data.iva_included !== undefined ? data.iva_included : expense.iva_included;
+  const newIvaRate = data.iva_rate !== undefined ? data.iva_rate : expense.iva_rate;
+  
+  const newIvaAmount = newIvaIncluded ? 0 : Math.round(newAmount * (newIvaRate / 100) * 100) / 100;
+  
+  updates.push('iva_amount = ?');
+  values.push(newIvaAmount);
   
   // Execute update
   values.push(id);
@@ -256,27 +292,30 @@ export async function deleteExpense(id: number): Promise<boolean> {
  * Includes breakdown by category with percentages.
  * Used in dashboard displays and reports.
  * 
+ * IMPORTANT: Total amount includes IVA for expenses where iva_included = false
+ * (amount + iva_amount = actual total cost)
+ * 
  * @returns Promise resolving to expense summary
  */
 export async function getExpenseSummary(): Promise<ExpenseSummary> {
-  // Get total expenses
+  // Get total expenses including IVA amounts
   const [totalRows] = await db.query<RowDataPacket[]>(
     `SELECT 
       COUNT(*) as total_expenses,
-      COALESCE(SUM(amount), 0) as total_amount
+      COALESCE(SUM(amount + iva_amount), 0) as total_amount
     FROM expenses`
   );
   
   const totalExpenses = totalRows[0].total_expenses;
   const totalAmount = totalRows[0].total_amount;
   
-  // Get expenses by category
+  // Get expenses by category (including IVA)
   const [categoryRows] = await db.query<RowDataPacket[]>(
     `SELECT 
       c.id as category_id,
       c.name as category_name,
       c.color as category_color,
-      COALESCE(SUM(e.amount), 0) as total_amount,
+      COALESCE(SUM(e.amount + e.iva_amount), 0) as total_amount,
       COUNT(e.id) as expense_count
     FROM categories c
     LEFT JOIN expenses e ON c.id = e.category_id

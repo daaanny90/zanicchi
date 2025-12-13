@@ -184,6 +184,59 @@ VALUES
     ('Varie', 'expense', '#7f8c8d');
 
 -- ============================================================================
+-- Step 7: Add IVA tracking fields to expenses table
+-- ============================================================================
+-- Add support for tracking IVA (VAT) on expenses.
+-- This is needed for B2B purchases from other EU countries where reverse
+-- charge applies - the seller doesn't charge IVA, but you need to pay it.
+-- ============================================================================
+
+-- Add iva_included field (whether IVA is already in the amount)
+SET @sql = (SELECT IF(
+    EXISTS(
+        SELECT * FROM information_schema.COLUMNS
+        WHERE TABLE_SCHEMA = 'freelancer_finance'
+        AND TABLE_NAME = 'expenses'
+        AND COLUMN_NAME = 'iva_included'
+    ),
+    'SELECT "Column iva_included already exists" AS Info;',
+    'ALTER TABLE expenses ADD COLUMN iva_included BOOLEAN NOT NULL DEFAULT TRUE COMMENT "Whether IVA is already included in the amount";'
+));
+PREPARE stmt FROM @sql;
+EXECUTE stmt;
+DEALLOCATE PREPARE stmt;
+
+-- Add iva_rate field (IVA percentage to apply)
+SET @sql = (SELECT IF(
+    EXISTS(
+        SELECT * FROM information_schema.COLUMNS
+        WHERE TABLE_SCHEMA = 'freelancer_finance'
+        AND TABLE_NAME = 'expenses'
+        AND COLUMN_NAME = 'iva_rate'
+    ),
+    'SELECT "Column iva_rate already exists" AS Info;',
+    'ALTER TABLE expenses ADD COLUMN iva_rate DECIMAL(5, 2) NOT NULL DEFAULT 22.00 COMMENT "IVA rate percentage (e.g., 22.00 for 22%)";'
+));
+PREPARE stmt FROM @sql;
+EXECUTE stmt;
+DEALLOCATE PREPARE stmt;
+
+-- Add iva_amount field (calculated IVA amount)
+SET @sql = (SELECT IF(
+    EXISTS(
+        SELECT * FROM information_schema.COLUMNS
+        WHERE TABLE_SCHEMA = 'freelancer_finance'
+        AND TABLE_NAME = 'expenses'
+        AND COLUMN_NAME = 'iva_amount'
+    ),
+    'SELECT "Column iva_amount already exists" AS Info;',
+    'ALTER TABLE expenses ADD COLUMN iva_amount DECIMAL(10, 2) NOT NULL DEFAULT 0.00 COMMENT "IVA amount to pay (if not included)";'
+));
+PREPARE stmt FROM @sql;
+EXECUTE stmt;
+DEALLOCATE PREPARE stmt;
+
+-- ============================================================================
 -- Migration Complete
 -- ============================================================================
 

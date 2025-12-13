@@ -77,7 +77,7 @@ CREATE TABLE IF NOT EXISTS expenses (
     id INT AUTO_INCREMENT PRIMARY KEY,
     -- Description of what was purchased or paid for
     description VARCHAR(500) NOT NULL,
-    -- Expense amount in the app's configured currency
+    -- Expense amount in the app's configured currency (net amount)
     amount DECIMAL(10, 2) NOT NULL,
     -- Foreign key to categories table
     category_id INT NOT NULL,
@@ -85,6 +85,12 @@ CREATE TABLE IF NOT EXISTS expenses (
     expense_date DATE NOT NULL,
     -- Optional notes for additional context
     notes TEXT NULL,
+    -- IVA (VAT) tracking fields for B2B purchases with reverse charge
+    -- When buying from EU companies with Partita IVA, they don't charge IVA
+    -- but you need to pay it yourself in Italy
+    iva_included BOOLEAN NOT NULL DEFAULT TRUE COMMENT 'Whether IVA is already included in the amount',
+    iva_rate DECIMAL(5, 2) NOT NULL DEFAULT 22.00 COMMENT 'IVA rate percentage (e.g., 22.00 for 22%)',
+    iva_amount DECIMAL(10, 2) NOT NULL DEFAULT 0.00 COMMENT 'IVA amount to pay (if not included)',
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     -- Foreign key constraint to ensure referential integrity

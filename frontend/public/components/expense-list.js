@@ -92,31 +92,43 @@ class ExpenseList extends HTMLElement {
             <tr>
               <th>Descrizione</th>
               <th>Categoria</th>
-              <th>Importo</th>
+              <th>Importo Netto</th>
+              <th>IVA</th>
+              <th>Totale</th>
               <th>Data</th>
               <th>Azioni</th>
             </tr>
           </thead>
           <tbody>
-            ${this.expenses.map(exp => `
-              <tr>
-                <td>${exp.description}</td>
-                <td>
-                  <span class="category-badge">
-                    <span class="category-color" style="background-color: ${exp.category_color}"></span>
-                    ${exp.category_name}
-                  </span>
-                </td>
-                <td>${formatCurrency(exp.amount, currency)}</td>
-                <td>${formatDate(exp.expense_date, 'short')}</td>
-                <td>
-                  <div class="actions">
-                    <button class="btn btn-primary" data-action="edit" data-id="${exp.id}">Modifica</button>
-                    <button class="btn btn-danger" data-action="delete" data-id="${exp.id}">Elimina</button>
-                  </div>
-                </td>
-              </tr>
-            `).join('')}
+            ${this.expenses.map(exp => {
+              const ivaAmount = exp.iva_amount || 0;
+              const total = exp.amount + ivaAmount;
+              const ivaDisplay = exp.iva_included 
+                ? '<span style="color: var(--color-text-secondary); font-size: 0.75rem;">Inclusa</span>'
+                : `${formatCurrency(ivaAmount, currency)}<br><small style="color: var(--color-text-secondary); font-size: 0.65rem;">${exp.iva_rate}%</small>`;
+              
+              return `
+                <tr>
+                  <td>${exp.description}</td>
+                  <td>
+                    <span class="category-badge">
+                      <span class="category-color" style="background-color: ${exp.category_color}"></span>
+                      ${exp.category_name}
+                    </span>
+                  </td>
+                  <td>${formatCurrency(exp.amount, currency)}</td>
+                  <td>${ivaDisplay}</td>
+                  <td><strong>${formatCurrency(total, currency)}</strong></td>
+                  <td>${formatDate(exp.expense_date, 'short')}</td>
+                  <td>
+                    <div class="actions">
+                      <button class="btn btn-primary" data-action="edit" data-id="${exp.id}">Modifica</button>
+                      <button class="btn btn-danger" data-action="delete" data-id="${exp.id}">Elimina</button>
+                    </div>
+                  </td>
+                </tr>
+              `;
+            }).join('')}
           </tbody>
         </table>
       </div>

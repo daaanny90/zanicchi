@@ -16,14 +16,21 @@
  * 
  * Represents a complete expense record as stored in the database.
  * Each expense must be associated with a category for reporting purposes.
+ * 
+ * IVA (VAT) Tracking:
+ * - iva_included: true = amount already includes IVA (normal purchase)
+ * - iva_included: false = need to add IVA on top (B2B EU reverse charge)
  */
 export interface Expense {
   id: number;
   description: string;          // What was purchased or paid for
-  amount: number;               // Expense amount in configured currency
+  amount: number;               // Expense amount (net if IVA not included)
   category_id: number;          // Foreign key to categories table
   expense_date: string;         // Date of expense (YYYY-MM-DD)
   notes: string | null;         // Optional additional notes
+  iva_included: boolean;        // Whether IVA is already included in amount
+  iva_rate: number;             // IVA rate percentage (e.g., 22 for 22%)
+  iva_amount: number;           // IVA amount to pay (if not included)
   created_at: string;           // Record creation timestamp
   updated_at: string;           // Last update timestamp
 }
@@ -33,13 +40,17 @@ export interface Expense {
  * 
  * Used when creating a new expense via API.
  * Excludes auto-generated fields (id, timestamps).
+ * 
+ * IVA fields are optional - defaults to IVA included if not specified.
  */
 export interface CreateExpenseDTO {
   description: string;
-  amount: number;
+  amount: number;               // Net amount (without IVA if iva_included=false)
   category_id: number;          // Must reference an existing category
   expense_date: string;         // Required: YYYY-MM-DD format
   notes?: string;               // Optional notes
+  iva_included?: boolean;       // Default: true (IVA already in amount)
+  iva_rate?: number;            // Default: 22 (22%)
 }
 
 /**
@@ -54,6 +65,8 @@ export interface UpdateExpenseDTO {
   category_id?: number;
   expense_date?: string;
   notes?: string;
+  iva_included?: boolean;
+  iva_rate?: number;
 }
 
 /**

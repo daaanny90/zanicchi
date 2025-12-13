@@ -76,7 +76,9 @@ class ExpenseForm extends HTMLElement {
       amount: parseFloat(formData.get('amount')),
       category_id: parseInt(formData.get('category_id')),
       expense_date: formData.get('expense_date'),
-      notes: formData.get('notes')
+      notes: formData.get('notes'),
+      iva_included: formData.get('iva_included') === 'on',
+      iva_rate: parseFloat(formData.get('iva_rate') || 22)
     };
     
     try {
@@ -107,6 +109,8 @@ class ExpenseForm extends HTMLElement {
     const closeBtn = this.shadowRoot.querySelector('.close-btn');
     const cancelBtn = this.shadowRoot.querySelector('[data-action="cancel"]');
     const categoryBtn = this.shadowRoot.querySelector('#open-category-manager');
+    const ivaCheckbox = this.shadowRoot.querySelector('#iva-included');
+    const ivaRateGroup = this.shadowRoot.querySelector('#iva-rate-group');
     
     if (form) {
       form.addEventListener('submit', (e) => this.submitForm(e));
@@ -123,6 +127,13 @@ class ExpenseForm extends HTMLElement {
     if (categoryBtn) {
       categoryBtn.addEventListener('click', () => {
         window.dispatchEvent(new CustomEvent('categories:open-manager'));
+      });
+    }
+    
+    // Toggle IVA rate field visibility
+    if (ivaCheckbox && ivaRateGroup) {
+      ivaCheckbox.addEventListener('change', (e) => {
+        ivaRateGroup.style.display = e.target.checked ? 'none' : 'block';
       });
     }
   }
@@ -186,6 +197,22 @@ class ExpenseForm extends HTMLElement {
                 <div class="form-group">
                   <label class="form-label">Data *</label>
                   <input type="date" name="expense_date" class="form-input" value="${this.expense?.expense_date ? formatDateForInput(this.expense.expense_date) : getTodayDate()}" required>
+                </div>
+                <div class="form-group full" style="border-top: 1px solid var(--color-border); padding-top: 1rem; margin-top: 0.5rem;">
+                  <label class="form-label" style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
+                    <input type="checkbox" id="iva-included" name="iva_included" ${this.expense?.iva_included !== false ? 'checked' : ''} style="cursor: pointer;">
+                    <span>IVA Inclusa nell'importo</span>
+                  </label>
+                  <small style="display: block; margin-top: 0.25rem; color: var(--color-text-secondary); margin-left: 1.5rem;">
+                    Seleziona se hai già pagato l'IVA (acquisto privato/retail). Deseleziona per acquisti B2B da UE dove devi pagare l'IVA separatamente.
+                  </small>
+                </div>
+                <div class="form-group" id="iva-rate-group" style="${this.expense?.iva_included !== false ? 'display: none;' : ''}">
+                  <label class="form-label">Aliquota IVA (%) *</label>
+                  <input type="number" name="iva_rate" class="form-input" value="${this.expense?.iva_rate || 22}" step="0.01" min="0" max="100">
+                  <small style="display: block; margin-top: 0.25rem; color: var(--color-text-secondary);">
+                    Solitamente 22% in Italia
+                  </small>
                 </div>
                 <div class="form-group full">
                   <label class="form-label">Note</label>
