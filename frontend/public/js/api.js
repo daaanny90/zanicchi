@@ -127,9 +127,13 @@ const API = {
    * Expense API Methods
    */
   expenses: {
-    // Get all expenses
-    getAll: (categoryId = null) => {
-      const query = categoryId ? `?category_id=${categoryId}` : '';
+    // Get all expenses with optional filters
+    getAll: (filters = {}) => {
+      const params = new URLSearchParams();
+      if (filters.categoryId) params.append('category_id', filters.categoryId);
+      if (filters.startDate) params.append('start_date', filters.startDate);
+      if (filters.endDate) params.append('end_date', filters.endDate);
+      const query = params.toString() ? `?${params}` : '';
       return apiRequest(`/expenses${query}`);
     },
     
@@ -206,8 +210,9 @@ const API = {
    */
   dashboard: {
     // Get overall summary
-    getSummary: () => {
-      return apiRequest('/dashboard/summary');
+    getSummary: (year = null) => {
+      const query = year ? `?year=${year}` : '';
+      return apiRequest(`/dashboard/summary${query}`);
     },
     
     // Get monthly estimate
@@ -216,13 +221,16 @@ const API = {
     },
     
     // Get income vs expense chart data
-    getIncomeExpenseChart: (months = 6) => {
-      return apiRequest(`/dashboard/income-expense-chart?months=${months}`);
+    getIncomeExpenseChart: (months = 6, year = null) => {
+      const params = new URLSearchParams({ months: months.toString() });
+      if (year) params.append('year', year.toString());
+      return apiRequest(`/dashboard/income-expense-chart?${params}`);
     },
     
     // Get expense by category data
-    getExpenseByCategory: () => {
-      return apiRequest('/dashboard/expense-by-category');
+    getExpenseByCategory: (year = null) => {
+      const query = year ? `?year=${year}` : '';
+      return apiRequest(`/dashboard/expense-by-category${query}`);
     },
     
     // Get annual revenue limit status
