@@ -319,7 +319,6 @@ export async function getExpenseSummary(): Promise<ExpenseSummary> {
       COUNT(e.id) as expense_count
     FROM categories c
     LEFT JOIN expenses e ON c.id = e.category_id
-    WHERE c.type = 'expense'
     GROUP BY c.id, c.name, c.color
     HAVING expense_count > 0
     ORDER BY total_amount DESC`
