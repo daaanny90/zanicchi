@@ -297,10 +297,10 @@ class MonthlyOverview extends HTMLElement {
         <div class="overview-card income-card">
           <div class="card-header">
             <span class="card-icon">💰</span>
-            <h3 class="card-title">Entrate Lorde (da Ore)</h3>
+            <h3 class="card-title">Entrate Lorde</h3>
           </div>
           <div class="card-value positive">${formatCurrency(this.overview.total_income, currency)}</div>
-          <div class="card-detail">${this.overview.invoice_count} registrazione/i ore</div>
+          <div class="card-detail">${this.overview.invoice_count} ore registrate</div>
         </div>
         
         <!-- Expenses Section -->
@@ -313,31 +313,36 @@ class MonthlyOverview extends HTMLElement {
           <div class="card-detail">${this.overview.expense_count} spesa/e</div>
         </div>
         
-        <!-- VAT Collected Section -->
-        <div class="overview-card vat-card">
+        <!-- Tax Reserve Section -->
+        <div class="overview-card tax-reserve-card" style="background-color: var(--color-warning-bg, #fff3cd); border-color: var(--color-warning, #ffc107);">
           <div class="card-header">
             <span class="card-icon">🏛️</span>
-            <h3 class="card-title">IVA Riscossa</h3>
+            <h3 class="card-title" style="color: var(--color-warning-dark, #856404);">Da Accantonare (Tasse)</h3>
           </div>
-          <div class="card-value">${formatCurrency(this.overview.total_vat, currency)}</div>
-          <div class="card-detail">Da versare allo Stato</div>
+          <div class="card-value" style="color: var(--color-warning-dark, #856404);">${formatCurrency(this.overview.total_tax_burden, currency)}</div>
+          <div class="card-detail" style="color: var(--color-text-secondary);">NON TOCCARE</div>
         </div>
         
-        <!-- Taxable Income Section -->
-        <div class="overview-card taxable-card">
+        <!-- Net Income Section -->
+        <div class="overview-card net-card">
           <div class="card-header">
-            <span class="card-icon">📐</span>
-            <h3 class="card-title">Reddito Imponibile</h3>
+            <span class="card-icon">📊</span>
+            <h3 class="card-title">Reddito Netto</h3>
           </div>
-          <div class="card-value">${formatCurrency(this.overview.taxable_income, currency)}</div>
-          <div class="card-detail">${this.settings.taxable_percentage}% delle entrate</div>
+          <div class="card-value ${this.overview.net_income >= 0 ? 'positive' : 'negative'}">${formatCurrency(this.overview.net_income, currency)}</div>
+          <div class="card-detail">Dopo spese e tasse</div>
         </div>
       </div>
       
-      <!-- Italian Tax Breakdown -->
+      <!-- Italian Tax Breakdown - COLLAPSIBLE -->
       <div class="salary-breakdown">
-        <h3 class="breakdown-title">Imposte e Contributi (Regime Forfettario)</h3>
-        <div class="breakdown-grid">
+        <div class="accordion-header" data-accordion="taxes">
+          <h3 class="breakdown-title">
+            <span class="accordion-icon">▶</span>
+            Imposte e Contributi (Regime Forfettario)
+          </h3>
+        </div>
+        <div class="breakdown-grid accordion-content" id="taxes-content" style="display: none;">
           <!-- Health Insurance (INPS) - DEDUCTIBLE -->
           <div class="breakdown-item inps-item">
             <div class="breakdown-label">
@@ -368,26 +373,31 @@ class MonthlyOverview extends HTMLElement {
             <div class="breakdown-note">${this.settings.income_tax_rate}% del reddito per imposte</div>
           </div>
           
-          <!-- Total Tax Burden - HIGHLIGHTED -->
-          <div class="breakdown-item total-tax-item" style="background-color: var(--color-warning-bg, #fff3cd); border: 2px solid var(--color-warning, #ffc107); grid-column: 1 / -1;">
+          <!-- Total Tax Burden -->
+          <div class="breakdown-item total-tax-item" style="grid-column: 1 / -1;">
             <div class="breakdown-label">
               <span class="breakdown-icon">🏛️</span>
-              <span style="font-weight: 700; font-size: 1.1rem;">💼 DA ACCANTONARE PER LE TASSE</span>
+              <span style="font-weight: 700;">Totale Imposte</span>
             </div>
-            <div class="breakdown-value" style="font-size: 2rem; font-weight: 800; color: var(--color-warning-dark, #856404);">
+            <div class="breakdown-value" style="font-weight: 700;">
               ${formatCurrency(this.overview.total_tax_burden, currency)}
             </div>
-            <div class="breakdown-note" style="color: var(--color-warning-dark, #856404); font-weight: 600;">
-              Soldi da tenere sul conto per INPS (${formatCurrency(this.overview.health_insurance, currency)}) + Imposta Sostitutiva (${formatCurrency(this.overview.income_tax, currency)})
+            <div class="breakdown-note">
+              INPS + Imposta Sostitutiva
             </div>
           </div>
         </div>
       </div>
       
-      <!-- Net Income and Savings -->
+      <!-- Net Income and Savings - COLLAPSIBLE -->
       <div class="salary-breakdown">
-        <h3 class="breakdown-title">Reddito Netto e Risparmi</h3>
-        <div class="breakdown-grid">
+        <div class="accordion-header" data-accordion="savings">
+          <h3 class="breakdown-title">
+            <span class="accordion-icon">▶</span>
+            Reddito Netto e Risparmi
+          </h3>
+        </div>
+        <div class="breakdown-grid accordion-content" id="savings-content" style="display: none;">
           <!-- Net Income -->
           <div class="breakdown-item net-item">
             <div class="breakdown-label">
@@ -422,45 +432,61 @@ class MonthlyOverview extends HTMLElement {
             <div class="breakdown-note">Reddito netto - Stipendio</div>
           </div>
         </div>
-        
-        <!-- Goal Progress Tracker -->
-        ${this.renderGoalProgress()}
-        
-        <!-- Summary Formula -->
-        <div class="formula-box">
-          <h4 class="formula-title">Formula di Calcolo (Regime Forfettario):</h4>
-          <div class="formula-text" style="font-size: 0.875rem; margin-bottom: 0.5rem; background: rgba(59, 130, 246, 0.1); padding: 0.5rem; border-radius: 0.375rem;">
-            <strong>Entrate da Ore Lavorate:</strong> Ore registrate × Tariffa oraria
+        </div>
+      </div>
+      
+      <!-- Goal Progress Tracker - ALWAYS VISIBLE -->
+      ${this.renderGoalProgress()}
+      
+      <!-- Formula Modal Trigger -->
+      <div style="text-align: center; margin-top: 2rem;">
+        <button class="help-button" id="show-formula-btn">
+          <span style="font-size: 1.2rem; margin-right: 0.5rem;">❓</span>
+          Come vengono calcolate le tasse?
+        </button>
+      </div>
+      
+      <!-- Formula Modal -->
+      <div class="modal" id="formula-modal" style="display: none;">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h3>Formula di Calcolo (Regime Forfettario)</h3>
+            <button class="modal-close" id="close-formula-btn">×</button>
           </div>
-          <div class="formula-text" style="font-size: 0.875rem; margin-bottom: 0.5rem;">
-            1. Reddito Imponibile = Entrate × ${this.settings.taxable_percentage}%
-          </div>
-          <div class="formula-text" style="font-size: 0.875rem; margin-bottom: 0.5rem;">
-            2. INPS = Reddito Imponibile × ${this.settings.health_insurance_rate}% = ${formatCurrency(this.overview.health_insurance, currency)}
-          </div>
-          <div class="formula-text" style="font-size: 0.875rem; margin-bottom: 0.5rem;">
-            3. Reddito per Imposte = Reddito Imponibile − INPS = ${formatCurrency(this.overview.income_for_tax, currency)}
-          </div>
-          <div class="formula-text" style="font-size: 0.875rem; margin-bottom: 0.5rem;">
-            4. Imposta Sostitutiva = Reddito per Imposte × ${this.settings.income_tax_rate}% = ${formatCurrency(this.overview.income_tax, currency)}
-          </div>
-          <div class="formula-text" style="font-weight: 600; margin-top: 1rem;">
-            Reddito Netto = Entrate (da ore) − Spese − INPS − Imposta Sostitutiva
-          </div>
-          <div class="formula-calculation">
-            ${formatCurrency(this.overview.net_income, currency)} = 
-            ${formatCurrency(this.overview.total_income, currency)} − 
-            ${formatCurrency(this.overview.total_expenses, currency)} − 
-            ${formatCurrency(this.overview.health_insurance, currency)} − 
-            ${formatCurrency(this.overview.income_tax, currency)}
-          </div>
-          <div class="formula-text" style="margin-top: 1rem;">
-            Risparmi = Reddito Netto − Stipendio Desiderato
-          </div>
-          <div class="formula-calculation">
-            ${formatCurrency(this.overview.savings, currency)} = 
-            ${formatCurrency(this.overview.net_income, currency)} − 
-            ${formatCurrency(this.overview.target_salary, currency)}
+          <div class="modal-body">
+            <div class="formula-text" style="font-size: 0.875rem; margin-bottom: 0.75rem; background: rgba(59, 130, 246, 0.1); padding: 0.75rem; border-radius: 0.375rem;">
+              <strong>Entrate da Ore Lavorate:</strong> Ore registrate × Tariffa oraria
+            </div>
+            <div class="formula-text" style="font-size: 0.875rem; margin-bottom: 0.5rem;">
+              <strong>1.</strong> Reddito Imponibile = Entrate × ${this.settings.taxable_percentage}%
+            </div>
+            <div class="formula-text" style="font-size: 0.875rem; margin-bottom: 0.5rem;">
+              <strong>2.</strong> INPS = Reddito Imponibile × ${this.settings.health_insurance_rate}% = ${formatCurrency(this.overview.health_insurance, currency)}
+            </div>
+            <div class="formula-text" style="font-size: 0.875rem; margin-bottom: 0.5rem;">
+              <strong>3.</strong> Reddito per Imposte = Reddito Imponibile − INPS = ${formatCurrency(this.overview.income_for_tax, currency)}
+            </div>
+            <div class="formula-text" style="font-size: 0.875rem; margin-bottom: 0.5rem;">
+              <strong>4.</strong> Imposta Sostitutiva = Reddito per Imposte × ${this.settings.income_tax_rate}% = ${formatCurrency(this.overview.income_tax, currency)}
+            </div>
+            <div class="formula-text" style="font-weight: 600; margin-top: 1rem; padding-top: 1rem; border-top: 2px solid var(--color-border);">
+              Reddito Netto = Entrate (da ore) − Spese − INPS − Imposta Sostitutiva
+            </div>
+            <div class="formula-calculation" style="background: var(--color-bg-secondary); padding: 0.75rem; border-radius: 0.375rem; margin-top: 0.5rem;">
+              ${formatCurrency(this.overview.net_income, currency)} = 
+              ${formatCurrency(this.overview.total_income, currency)} − 
+              ${formatCurrency(this.overview.total_expenses, currency)} − 
+              ${formatCurrency(this.overview.health_insurance, currency)} − 
+              ${formatCurrency(this.overview.income_tax, currency)}
+            </div>
+            <div class="formula-text" style="margin-top: 1rem; font-weight: 600;">
+              Risparmi = Reddito Netto − Stipendio Desiderato
+            </div>
+            <div class="formula-calculation" style="background: var(--color-bg-secondary); padding: 0.75rem; border-radius: 0.375rem; margin-top: 0.5rem;">
+              ${formatCurrency(this.overview.savings, currency)} = 
+              ${formatCurrency(this.overview.net_income, currency)} − 
+              ${formatCurrency(this.overview.target_salary, currency)}
+            </div>
           </div>
         </div>
       </div>
@@ -479,6 +505,50 @@ class MonthlyOverview extends HTMLElement {
         this.selectedMonth = parseInt(month);
         this.notifyMonthChange();
         this.loadOverview();
+      });
+    }
+    
+    // Accordion functionality
+    const accordionHeaders = this.shadowRoot.querySelectorAll('.accordion-header');
+    accordionHeaders.forEach(header => {
+      header.addEventListener('click', () => {
+        const accordion = header.getAttribute('data-accordion');
+        const content = this.shadowRoot.querySelector(`#${accordion}-content`);
+        const icon = header.querySelector('.accordion-icon');
+        
+        if (content.style.display === 'none') {
+          content.style.display = 'grid';
+          icon.textContent = '▼';
+        } else {
+          content.style.display = 'none';
+          icon.textContent = '▶';
+        }
+      });
+    });
+    
+    // Formula modal functionality
+    const showFormulaBtn = this.shadowRoot.querySelector('#show-formula-btn');
+    const closeFormulaBtn = this.shadowRoot.querySelector('#close-formula-btn');
+    const formulaModal = this.shadowRoot.querySelector('#formula-modal');
+    
+    if (showFormulaBtn) {
+      showFormulaBtn.addEventListener('click', () => {
+        formulaModal.style.display = 'flex';
+      });
+    }
+    
+    if (closeFormulaBtn) {
+      closeFormulaBtn.addEventListener('click', () => {
+        formulaModal.style.display = 'none';
+      });
+    }
+    
+    // Close modal on outside click
+    if (formulaModal) {
+      formulaModal.addEventListener('click', (e) => {
+        if (e.target === formulaModal) {
+          formulaModal.style.display = 'none';
+        }
       });
     }
   }
@@ -885,6 +955,123 @@ class MonthlyOverview extends HTMLElement {
           line-height: 1.5;
         }
         
+        /* Accordion styles */
+        .accordion-header {
+          cursor: pointer;
+          user-select: none;
+          transition: background-color 0.2s;
+          padding: 0.5rem;
+          border-radius: 0.25rem;
+        }
+        
+        .accordion-header:hover {
+          background-color: var(--color-bg-secondary);
+        }
+        
+        .accordion-header .breakdown-title {
+          display: flex;
+          align-items: center;
+          gap: 0.75rem;
+          margin: 0;
+        }
+        
+        .accordion-icon {
+          font-size: 0.875rem;
+          transition: transform 0.2s;
+          display: inline-block;
+        }
+        
+        .accordion-content {
+          transition: all 0.3s ease-in-out;
+          overflow: hidden;
+        }
+        
+        /* Help button styles */
+        .help-button {
+          background: linear-gradient(135deg, var(--gradient-primary-start) 0%, var(--gradient-primary-end) 100%);
+          color: white;
+          border: none;
+          padding: 0.75rem 1.5rem;
+          border-radius: 0.375rem;
+          font-size: 0.9375rem;
+          font-weight: 600;
+          cursor: pointer;
+          transition: transform 0.2s, box-shadow 0.2s;
+          box-shadow: 0 2px 4px 0 rgb(0 0 0 / 0.1);
+        }
+        
+        .help-button:hover {
+          transform: translateY(-2px);
+          box-shadow: 0 4px 8px 0 rgb(0 0 0 / 0.15);
+        }
+        
+        .help-button:active {
+          transform: translateY(0);
+        }
+        
+        /* Modal styles */
+        .modal {
+          display: none;
+          position: fixed;
+          top: 0;
+          left: 0;
+          width: 100%;
+          height: 100%;
+          background-color: rgba(0, 0, 0, 0.5);
+          z-index: 1000;
+          justify-content: center;
+          align-items: center;
+          padding: 1rem;
+        }
+        
+        .modal-content {
+          background: var(--color-bg);
+          border-radius: 0.375rem;
+          width: 90%;
+          max-width: 600px;
+          max-height: 90vh;
+          overflow-y: auto;
+          box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
+        }
+        
+        .modal-header {
+          padding: 1.5rem;
+          border-bottom: 1px solid var(--color-border);
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+        }
+        
+        .modal-header h3 {
+          margin: 0;
+          font-size: 1.125rem;
+          font-weight: 700;
+          color: var(--color-text-primary);
+        }
+        
+        .modal-close {
+          background: none;
+          border: none;
+          font-size: 2rem;
+          cursor: pointer;
+          color: var(--color-text-secondary);
+          width: 2rem;
+          height: 2rem;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          border-radius: 0.25rem;
+          transition: background-color 0.2s;
+        }
+        
+        .modal-close:hover {
+          background-color: var(--color-bg-secondary);
+        }
+        
+        .modal-body {
+          padding: 1.5rem;
+        }
+        
         @media (max-width: 768px) {
           .overview-grid {
             grid-template-columns: 1fr;
@@ -898,6 +1085,11 @@ class MonthlyOverview extends HTMLElement {
           
           .breakdown-note {
             text-align: left;
+          }
+          
+          .modal-content {
+            width: 95%;
+            max-height: 85vh;
           }
         }
       </style>
