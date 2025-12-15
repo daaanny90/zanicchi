@@ -14,29 +14,19 @@
 
 import { RowDataPacket, ResultSetHeader } from 'mysql2';
 import db from '../config/database';
-import { Category, CreateCategoryDTO, UpdateCategoryDTO, CategoryType } from '../models/Category.model';
+import { Category, CreateCategoryDTO, UpdateCategoryDTO } from '../models/Category.model';
 
 /**
  * Get all categories
  * 
- * Retrieves all categories from the database, optionally filtered by type.
+ * Retrieves all categories from the database ordered by name.
  * 
- * @param type - Optional category type filter ('expense' or 'income')
  * @returns Promise resolving to array of categories
  */
-export async function getAllCategories(type?: CategoryType): Promise<Category[]> {
-  let query = 'SELECT * FROM categories';
-  const params: any[] = [];
-  
-  // Add type filter if provided
-  if (type) {
-    query += ' WHERE type = ?';
-    params.push(type);
-  }
-  
-  query += ' ORDER BY name ASC';
-  
-  const [rows] = await db.query<RowDataPacket[]>(query, params);
+export async function getAllCategories(): Promise<Category[]> {
+  const [rows] = await db.query<RowDataPacket[]>(
+    'SELECT * FROM categories ORDER BY name ASC'
+  );
   return rows as Category[];
 }
 
@@ -83,13 +73,12 @@ export async function createCategory(data: CreateCategoryDTO): Promise<Category>
   }
   
   // Set defaults
-  const type = data.type || CategoryType.EXPENSE;
   const color = data.color || '#3498db';
   
   // Insert new category
   const [result] = await db.query<ResultSetHeader>(
-    'INSERT INTO categories (name, type, color) VALUES (?, ?, ?)',
-    [data.name, type, color]
+    'INSERT INTO categories (name, color) VALUES (?, ?)',
+    [data.name, color]
   );
   
   // Retrieve and return the created category
@@ -144,11 +133,6 @@ export async function updateCategory(
     values.push(data.name);
   }
   
-  if (data.type !== undefined) {
-    updates.push('type = ?');
-    values.push(data.type);
-  }
-  
   if (data.color !== undefined) {
     updates.push('color = ?');
     values.push(data.color);
@@ -177,15 +161,50 @@ export async function updateCategory(
 }
 
 /**
+ * Get or create "Senza Categoria" (Uncategorized) category
+ * 
+ * Ensures the uncategorized category exists and returns it.
+ * This category is used when a category is deleted and has associated expenses.
+ * 
+ * @returns Promise resolving to the uncategorized category
+ */
+async function getOrCreateUncategorizedCategory(): Promise<Category> {
+  const uncategorizedName = 'Senza Categoria';
+  
+  // Check if it exists
+  const [rows] = await db.query<RowDataPacket[]>(
+    'SELECT * FROM categories WHERE name = ?',
+    [uncategorizedName]
+  );
+  
+  if (rows.length > 0) {
+    return rows[0] as Category;
+  }
+  
+  // Create it if it doesn't exist
+  const [result] = await db.query<ResultSetHeader>(
+    'INSERT INTO categories (name, color) VALUES (?, ?)',
+    [uncategorizedName, '#95a5a6']
+  );
+  
+  const category = await getCategoryById(result.insertId);
+  if (!category) {
+    throw new Error('Failed to create uncategorized category');
+  }
+  
+  return category;
+}
+
+/**
  * Delete category
  * 
  * Deletes a category from the database.
- * Note: This will fail if there are expenses associated with this category
- * due to foreign key constraints.
+ * If there are expenses associated with this category, they will be 
+ * reassigned to the "Senza Categoria" (Uncategorized) category.
  * 
  * @param id - Category ID to delete
  * @returns Promise resolving to true if deleted
- * @throws Error if category not found or has associated expenses
+ * @throws Error if category not found or is the uncategorized category
  */
 export async function deleteCategory(id: number): Promise<boolean> {
   // Check if category exists
@@ -194,16 +213,33 @@ export async function deleteCategory(id: number): Promise<boolean> {
     throw new Error('Category not found');
   }
   
-  try {
-    // Attempt to delete - will fail if there are associated expenses
-    await db.query('DELETE FROM categories WHERE id = ?', [id]);
-    return true;
-  } catch (error: any) {
-    // Foreign key constraint violation
-    if (error.code === 'ER_ROW_IS_REFERENCED_2') {
-      throw new Error('Cannot delete category that has associated expenses');
-    }
-    throw error;
+  // Prevent deletion of "Senza Categoria"
+  if (category.name === 'Senza Categoria') {
+    throw new Error('Cannot delete the uncategorized category');
   }
+  
+  // Get or create the uncategorized category
+  const uncategorized = await getOrCreateUncategorizedCategory();
+  
+  // Count expenses using this category
+  const [countRows] = await db.query<RowDataPacket[]>(
+    'SELECT COUNT(*) as count FROM expenses WHERE category_id = ?',
+    [id]
+  );
+  
+  const expenseCount = countRows[0].count;
+  
+  // Reassign all expenses to uncategorized category
+  if (expenseCount > 0) {
+    await db.query(
+      'UPDATE expenses SET category_id = ? WHERE category_id = ?',
+      [uncategorized.id, id]
+    );
+  }
+  
+  // Now delete the category
+  await db.query('DELETE FROM categories WHERE id = ?', [id]);
+  
+  return true;
 }
 

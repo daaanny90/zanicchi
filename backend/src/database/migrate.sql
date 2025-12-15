@@ -170,8 +170,15 @@ VALUES
 -- Insert default categories if they don't exist
 -- ============================================================================
 
-INSERT IGNORE INTO categories (name, type, color)
-VALUES
+-- First ensure type column exists before inserting (for backwards compatibility)
+SET @sql = (SELECT IF(
+    EXISTS(
+        SELECT * FROM information_schema.COLUMNS
+        WHERE TABLE_SCHEMA = 'freelancer_finance'
+        AND TABLE_NAME = 'categories'
+        AND COLUMN_NAME = 'type'
+    ),
+    "INSERT IGNORE INTO categories (name, type, color) VALUES
     ('Software e Abbonamenti', 'expense', '#3498db'),
     ('Attrezzature e Hardware', 'expense', '#e74c3c'),
     ('Forniture Ufficio', 'expense', '#2ecc71'),
@@ -181,7 +188,22 @@ VALUES
     ('Formazione e Istruzione', 'expense', '#34495e'),
     ('Assicurazioni', 'expense', '#e67e22'),
     ('Utenze e Internet', 'expense', '#95a5a6'),
-    ('Varie', 'expense', '#7f8c8d');
+    ('Varie', 'expense', '#7f8c8d');",
+    "INSERT IGNORE INTO categories (name, color) VALUES
+    ('Software e Abbonamenti', '#3498db'),
+    ('Attrezzature e Hardware', '#e74c3c'),
+    ('Forniture Ufficio', '#2ecc71'),
+    ('Viaggi e Trasporti', '#f39c12'),
+    ('Marketing e Pubblicità', '#9b59b6'),
+    ('Servizi Professionali', '#1abc9c'),
+    ('Formazione e Istruzione', '#34495e'),
+    ('Assicurazioni', '#e67e22'),
+    ('Utenze e Internet', '#95a5a6'),
+    ('Varie', '#7f8c8d');"
+));
+PREPARE stmt FROM @sql;
+EXECUTE stmt;
+DEALLOCATE PREPARE stmt;
 
 -- ============================================================================
 -- Step 7: Add IVA tracking fields to expenses table
@@ -235,6 +257,31 @@ SET @sql = (SELECT IF(
 PREPARE stmt FROM @sql;
 EXECUTE stmt;
 DEALLOCATE PREPARE stmt;
+
+-- ============================================================================
+-- Step 8: Remove type field from categories table
+-- ============================================================================
+-- Categories are only for expenses now. An expense is an expense.
+-- ============================================================================
+
+-- Remove type column from categories if it exists
+SET @sql = (SELECT IF(
+    EXISTS(
+        SELECT * FROM information_schema.COLUMNS
+        WHERE TABLE_SCHEMA = 'freelancer_finance'
+        AND TABLE_NAME = 'categories'
+        AND COLUMN_NAME = 'type'
+    ),
+    'ALTER TABLE categories DROP COLUMN type;',
+    'SELECT "Column type already removed" AS Info;'
+));
+PREPARE stmt FROM @sql;
+EXECUTE stmt;
+DEALLOCATE PREPARE stmt;
+
+-- Ensure "Senza Categoria" exists for uncategorized expenses
+INSERT IGNORE INTO categories (name, color)
+VALUES ('Senza Categoria', '#95a5a6');
 
 -- ============================================================================
 -- Migration Complete
