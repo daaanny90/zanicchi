@@ -31,10 +31,14 @@ import { getCategoryById } from './category.service';
  * Retrieves all expenses from the database joined with category information.
  * Returns expenses with category name and color for display purposes.
  * 
- * @param categoryId - Optional category filter
+ * @param filters - Optional filters (category_id, start_date, end_date)
  * @returns Promise resolving to array of expenses with category data
  */
-export async function getAllExpenses(categoryId?: number): Promise<ExpenseWithCategory[]> {
+export async function getAllExpenses(filters?: {
+  categoryId?: number;
+  startDate?: string;
+  endDate?: string;
+}): Promise<ExpenseWithCategory[]> {
   let query = `
     SELECT 
       e.*,
@@ -45,11 +49,29 @@ export async function getAllExpenses(categoryId?: number): Promise<ExpenseWithCa
   `;
   
   const params: any[] = [];
+  const conditions: string[] = [];
   
   // Add category filter if provided
-  if (categoryId) {
-    query += ' WHERE e.category_id = ?';
-    params.push(categoryId);
+  if (filters?.categoryId) {
+    conditions.push('e.category_id = ?');
+    params.push(filters.categoryId);
+  }
+  
+  // Add date range filter if provided
+  if (filters?.startDate && filters?.endDate) {
+    conditions.push('e.expense_date BETWEEN ? AND ?');
+    params.push(filters.startDate, filters.endDate);
+  } else if (filters?.startDate) {
+    conditions.push('e.expense_date >= ?');
+    params.push(filters.startDate);
+  } else if (filters?.endDate) {
+    conditions.push('e.expense_date <= ?');
+    params.push(filters.endDate);
+  }
+  
+  // Apply WHERE clause if we have conditions
+  if (conditions.length > 0) {
+    query += ' WHERE ' + conditions.join(' AND ');
   }
   
   query += ' ORDER BY e.expense_date DESC';

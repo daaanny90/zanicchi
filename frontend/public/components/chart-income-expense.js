@@ -27,6 +27,9 @@ class ChartIncomeExpense extends HTMLElement {
   connectedCallback() {
     this.render();
     this.loadChart();
+    
+    // Listen for year changes
+    window.addEventListener('dashboardYearChanged', () => this.loadChart());
   }
   
   /**
@@ -37,6 +40,7 @@ class ChartIncomeExpense extends HTMLElement {
     if (this.chart) {
       this.chart.destroy();
     }
+    window.removeEventListener('dashboardYearChanged', () => this.loadChart());
   }
   
   /**
@@ -44,7 +48,9 @@ class ChartIncomeExpense extends HTMLElement {
    */
   async loadChart() {
     try {
-      this.data = await API.dashboard.getIncomeExpenseChart(6);
+      const year = window.AppState?.dashboardYear;
+      const params = year ? `?months=12&year=${year}` : '?months=6';
+      this.data = await API.get(`/dashboard/income-expense-chart${params}`);
       this.renderChart();
     } catch (error) {
       console.error('Failed to load chart data:', error);

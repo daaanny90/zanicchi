@@ -13,11 +13,19 @@ import { sendSuccess, sendError, sendValidationError } from '../utils/response.u
  * Get dashboard summary
  * 
  * GET /api/dashboard/summary
+ * Query params: year (optional, defaults to current year)
  * Returns overall financial summary with key metrics
  */
-export async function getDashboardSummary(_req: Request, res: Response): Promise<void> {
+export async function getDashboardSummary(req: Request, res: Response): Promise<void> {
   try {
-    const summary = await dashboardService.getDashboardSummary();
+    const year = req.query.year ? parseInt(req.query.year as string) : undefined;
+    
+    if (year !== undefined && (isNaN(year) || year < 2000 || year > 2100)) {
+      sendValidationError(res, 'Invalid year');
+      return;
+    }
+    
+    const summary = await dashboardService.getDashboardSummary(year);
     sendSuccess(res, summary);
   } catch (error) {
     console.error('Error fetching dashboard summary:', error);
@@ -45,7 +53,7 @@ export async function getMonthlyEstimate(_req: Request, res: Response): Promise<
  * Get income vs expense chart data
  * 
  * GET /api/dashboard/income-expense-chart
- * Query params: months (optional, default: 6)
+ * Query params: months (optional, default: 6), year (optional)
  * Returns time-series data for income vs expenses chart
  */
 export async function getIncomeExpenseChart(req: Request, res: Response): Promise<void> {
@@ -60,7 +68,14 @@ export async function getIncomeExpenseChart(req: Request, res: Response): Promis
       }
     }
     
-    const chartData = await dashboardService.getIncomeExpenseChartData(months);
+    const year = req.query.year ? parseInt(req.query.year as string) : undefined;
+    
+    if (year !== undefined && (isNaN(year) || year < 2000 || year > 2100)) {
+      sendValidationError(res, 'Invalid year');
+      return;
+    }
+    
+    const chartData = await dashboardService.getIncomeExpenseChartData(months, year);
     sendSuccess(res, chartData);
   } catch (error) {
     console.error('Error fetching chart data:', error);
@@ -72,11 +87,19 @@ export async function getIncomeExpenseChart(req: Request, res: Response): Promis
  * Get expense by category chart data
  * 
  * GET /api/dashboard/expense-by-category
+ * Query params: year (optional)
  * Returns expense breakdown by category for pie chart
  */
-export async function getExpenseByCategory(_req: Request, res: Response): Promise<void> {
+export async function getExpenseByCategory(req: Request, res: Response): Promise<void> {
   try {
-    const data = await dashboardService.getExpenseByCategoryChartData();
+    const year = req.query.year ? parseInt(req.query.year as string) : undefined;
+    
+    if (year !== undefined && (isNaN(year) || year < 2000 || year > 2100)) {
+      sendValidationError(res, 'Invalid year');
+      return;
+    }
+    
+    const data = await dashboardService.getExpenseByCategoryChartData(year);
     sendSuccess(res, data);
   } catch (error) {
     console.error('Error fetching expense by category:', error);

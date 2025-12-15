@@ -23,7 +23,7 @@ import {
  * Get all expenses
  * 
  * GET /api/expenses
- * Query params: category_id (optional)
+ * Query params: category_id (optional), start_date (optional), end_date (optional)
  */
 export async function getAllExpenses(req: Request, res: Response): Promise<void> {
   try {
@@ -31,12 +31,19 @@ export async function getAllExpenses(req: Request, res: Response): Promise<void>
       parseInt(req.query.category_id as string) : 
       undefined;
     
+    const startDate = req.query.start_date as string | undefined;
+    const endDate = req.query.end_date as string | undefined;
+    
     if (categoryId !== undefined && isNaN(categoryId)) {
       sendValidationError(res, 'Invalid category ID');
       return;
     }
     
-    const expenses = await expenseService.getAllExpenses(categoryId);
+    const expenses = await expenseService.getAllExpenses({
+      categoryId,
+      startDate,
+      endDate
+    });
     sendSuccess(res, expenses);
   } catch (error) {
     console.error('Error fetching expenses:', error);

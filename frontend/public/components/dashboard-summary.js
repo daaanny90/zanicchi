@@ -25,6 +25,16 @@ class DashboardSummary extends HTMLElement {
   connectedCallback() {
     this.render();
     this.loadSummary();
+    
+    // Listen for year changes
+    window.addEventListener('dashboardYearChanged', () => this.loadSummary());
+  }
+  
+  /**
+   * Disconnected Callback
+   */
+  disconnectedCallback() {
+    window.removeEventListener('dashboardYearChanged', () => this.loadSummary());
   }
   
   /**
@@ -33,7 +43,9 @@ class DashboardSummary extends HTMLElement {
    */
   async loadSummary() {
     try {
-      this.data = await API.dashboard.getSummary();
+      const year = window.AppState?.dashboardYear;
+      const url = year ? `/dashboard/summary?year=${year}` : '/dashboard/summary';
+      this.data = await API.get(url);
       this.render();
     } catch (error) {
       console.error('Failed to load dashboard summary:', error);

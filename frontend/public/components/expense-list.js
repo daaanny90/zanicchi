@@ -12,6 +12,11 @@ class ExpenseList extends HTMLElement {
     super();
     this.attachShadow({ mode: 'open' });
     this.expenses = [];
+    this.filters = {
+      categoryId: null,
+      startDate: null,
+      endDate: null
+    };
   }
   
   connectedCallback() {
@@ -21,12 +26,48 @@ class ExpenseList extends HTMLElement {
   
   async loadExpenses() {
     try {
-      this.expenses = await API.expenses.getAll();
+      // Build query params based on filters
+      const params = new URLSearchParams();
+      if (this.filters.categoryId) {
+        params.append('category_id', this.filters.categoryId);
+      }
+      if (this.filters.startDate) {
+        params.append('start_date', this.filters.startDate);
+      }
+      if (this.filters.endDate) {
+        params.append('end_date', this.filters.endDate);
+      }
+      
+      const queryString = params.toString();
+      const url = queryString ? `/expenses?${queryString}` : '/expenses';
+      
+      this.expenses = await API.get(url);
       this.render();
     } catch (error) {
       console.error('Failed to load expenses:', error);
       showNotification('Impossibile caricare le spese', 'error');
     }
+  }
+  
+  applyFilters() {
+    const categorySelect = this.shadowRoot.querySelector('#filter-category');
+    const startDateInput = this.shadowRoot.querySelector('#filter-start-date');
+    const endDateInput = this.shadowRoot.querySelector('#filter-end-date');
+    
+    this.filters.categoryId = categorySelect?.value || null;
+    this.filters.startDate = startDateInput?.value || null;
+    this.filters.endDate = endDateInput?.value || null;
+    
+    this.loadExpenses();
+  }
+  
+  clearFilters() {
+    this.filters = {
+      categoryId: null,
+      startDate: null,
+      endDate: null
+    };
+    this.loadExpenses();
   }
   
   async deleteExpense(id) {
@@ -55,12 +96,48 @@ class ExpenseList extends HTMLElement {
   render() {
     const settings = window.AppState?.settings;
     const currency = settings?.currency || 'EUR';
+    const categories = window.AppState?.categories || [];
     
     this.shadowRoot.innerHTML = `
       <style>
         :host { 
           display: block;
           margin-top: var(--space-lg);
+        }
+        .filters-bar {
+          display: flex;
+          gap: 1rem;
+          padding: 1rem;
+          background-color: var(--color-bg-secondary);
+          border-radius: 0.375rem;
+          margin-bottom: 1rem;
+          flex-wrap: wrap;
+          align-items: end;
+        }
+        .filter-group {
+          display: flex;
+          flex-direction: column;
+          gap: 0.25rem;
+          min-width: 150px;
+        }
+        .filter-group label {
+          font-size: 0.75rem;
+          font-weight: 600;
+          color: var(--color-text-secondary);
+          text-transform: uppercase;
+        }
+        .filter-group select,
+        .filter-group input {
+          padding: 0.5rem;
+          border: 1px solid var(--color-border);
+          border-radius: 0.375rem;
+          background-color: var(--color-bg);
+          color: var(--color-text-primary);
+          font-size: 0.875rem;
+        }
+        .filter-actions {
+          display: flex;
+          gap: 0.5rem;
         }
         .table-container { overflow-x: auto; border-radius: 0.375rem; border: 1px solid var(--color-border); }
         .table { width: 100%; border-collapse: collapse; background-color: var(--color-bg); }
@@ -72,13 +149,45 @@ class ExpenseList extends HTMLElement {
         .category-badge { display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.25rem 0.75rem; border-radius: 9999px; background-color: var(--color-bg-tertiary); font-size: 0.75rem; }
         .category-color { width: 12px; height: 12px; border-radius: 50%; }
         .actions { display: flex; gap: 0.5rem; }
-        .btn { padding: 0.25rem 0.75rem; font-size: 0.75rem; border: none; border-radius: 0.375rem; cursor: pointer; }
+        .btn { padding: 0.5rem 1rem; font-size: 0.875rem; border: none; border-radius: 0.375rem; cursor: pointer; transition: opacity 0.2s; }
+        .btn:hover { opacity: 0.9; }
         .btn-primary { background-color: var(--color-primary); color: white; }
+        .btn-secondary { background-color: var(--color-bg-tertiary); color: var(--color-text-primary); }
         .btn-danger { background-color: var(--color-danger); color: white; }
+        .btn-sm { padding: 0.25rem 0.75rem; font-size: 0.75rem; }
         .empty { text-align: center; padding: 3rem; color: var(--color-text-secondary); }
       </style>
       
-      ${this.expenses.length > 0 ? this.renderTable(currency) : '<div class="empty">Nessuna spesa ancora. Clicca "Nuova Spesa" per crearne una.</div>'}
+      <div class="filters-bar">
+        <div class="filter-group">
+          <label for="filter-category">Categoria</label>
+          <select id="filter-category">
+            <option value="">Tutte le categorie</option>
+            ${categories.map(cat => `
+              <option value="${cat.id}" ${this.filters.categoryId == cat.id ? 'selected' : ''}>
+                ${cat.name}
+              </option>
+            `).join('')}
+          </select>
+        </div>
+        
+        <div class="filter-group">
+          <label for="filter-start-date">Da</label>
+          <input type="date" id="filter-start-date" value="${this.filters.startDate || ''}">
+        </div>
+        
+        <div class="filter-group">
+          <label for="filter-end-date">A</label>
+          <input type="date" id="filter-end-date" value="${this.filters.endDate || ''}">
+        </div>
+        
+        <div class="filter-actions">
+          <button class="btn btn-primary" id="apply-filters">Filtra</button>
+          <button class="btn btn-secondary" id="clear-filters">Reset</button>
+        </div>
+      </div>
+      
+      ${this.expenses.length > 0 ? this.renderTable(currency) : '<div class="empty">Nessuna spesa trovata con questi filtri.</div>'}
     `;
     
     this.attachEventListeners();
@@ -124,8 +233,8 @@ class ExpenseList extends HTMLElement {
                   <td>${formatDate(exp.expense_date, 'short')}</td>
                   <td>
                     <div class="actions">
-                      <button class="btn btn-primary" data-action="edit" data-id="${exp.id}">Modifica</button>
-                      <button class="btn btn-danger" data-action="delete" data-id="${exp.id}">Elimina</button>
+                      <button class="btn btn-primary btn-sm" data-action="edit" data-id="${exp.id}">Modifica</button>
+                      <button class="btn btn-danger btn-sm" data-action="delete" data-id="${exp.id}">Elimina</button>
                     </div>
                   </td>
                 </tr>
@@ -138,6 +247,19 @@ class ExpenseList extends HTMLElement {
   }
   
   attachEventListeners() {
+    // Filter buttons
+    const applyBtn = this.shadowRoot.querySelector('#apply-filters');
+    const clearBtn = this.shadowRoot.querySelector('#clear-filters');
+    
+    if (applyBtn) {
+      applyBtn.addEventListener('click', () => this.applyFilters());
+    }
+    
+    if (clearBtn) {
+      clearBtn.addEventListener('click', () => this.clearFilters());
+    }
+    
+    // Action buttons
     this.shadowRoot.querySelectorAll('[data-action]').forEach(btn => {
       btn.addEventListener('click', () => {
         const action = btn.dataset.action;
