@@ -165,6 +165,19 @@ class DashboardSummary extends HTMLElement {
         <p class="summary-value">${formatCurrency(this.data.total_expenses, currency)}</p>
       </div>
       
+      <div class="summary-card" style="background-color: var(--color-warning-bg, #fff3cd); border-color: var(--color-warning, #ffc107);">
+        <div class="summary-header">
+          <span class="summary-title" style="color: var(--color-warning-dark, #856404);">💼 Da Accantonare (Tasse)</span>
+          <span class="summary-icon">🏛️</span>
+        </div>
+        <p class="summary-value" style="color: var(--color-warning-dark, #856404);">
+          ${formatCurrency(this.data.total_tax_burden, currency)}
+        </p>
+        <p style="font-size: 0.75rem; color: var(--color-text-secondary); margin: 0.5rem 0 0 0;">
+          INPS + Imposta Sostitutiva
+        </p>
+      </div>
+      
       <div class="summary-card">
         <div class="summary-header">
           <span class="summary-title">Reddito Netto</span>

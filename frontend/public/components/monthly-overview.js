@@ -368,14 +368,18 @@ class MonthlyOverview extends HTMLElement {
             <div class="breakdown-note">${this.settings.income_tax_rate}% del reddito per imposte</div>
           </div>
           
-          <!-- Total Tax Burden -->
-          <div class="breakdown-item total-tax-item">
+          <!-- Total Tax Burden - HIGHLIGHTED -->
+          <div class="breakdown-item total-tax-item" style="background-color: var(--color-warning-bg, #fff3cd); border: 2px solid var(--color-warning, #ffc107); grid-column: 1 / -1;">
             <div class="breakdown-label">
-              <span class="breakdown-icon">🔢</span>
-              <span>Totale Imposte</span>
+              <span class="breakdown-icon">🏛️</span>
+              <span style="font-weight: 700; font-size: 1.1rem;">💼 DA ACCANTONARE PER LE TASSE</span>
             </div>
-            <div class="breakdown-value">${formatCurrency(this.overview.total_tax_burden, currency)}</div>
-            <div class="breakdown-note">INPS + Imposta Sostitutiva</div>
+            <div class="breakdown-value" style="font-size: 2rem; font-weight: 800; color: var(--color-warning-dark, #856404);">
+              ${formatCurrency(this.overview.total_tax_burden, currency)}
+            </div>
+            <div class="breakdown-note" style="color: var(--color-warning-dark, #856404); font-weight: 600;">
+              Soldi da tenere sul conto per INPS (${formatCurrency(this.overview.health_insurance, currency)}) + Imposta Sostitutiva (${formatCurrency(this.overview.income_tax, currency)})
+            </div>
           </div>
         </div>
       </div>

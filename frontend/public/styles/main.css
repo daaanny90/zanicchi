@@ -28,7 +28,9 @@
   --color-overlay: rgba(0, 0, 0, 0.5);
   
   --color-success: #059669;           /* Muted green for positive states */
-  --color-warning: #d97706;            /* Muted orange for warnings */
+  --color-warning: #ffc107;            /* Yellow/amber for warnings */
+  --color-warning-bg: #fff3cd;         /* Light yellow background */
+  --color-warning-dark: #856404;       /* Dark yellow/brown for text */
   --color-danger: #dc2626;             /* Muted red for errors/delete actions */
   --color-info: #1e40af;               /* Professional blue for info */
   
