@@ -2,12 +2,11 @@
  * Category Controller
  * 
  * HTTP request handlers for category-related endpoints.
- * Categories are used to organize expenses and income.
+ * Categories are used to organize expenses.
  */
 
 import { Request, Response } from 'express';
 import * as categoryService from '../services/category.service';
-import { CategoryType } from '../models/Category.model';
 import {
   sendSuccess,
   sendError,
@@ -20,19 +19,10 @@ import {
  * Get all categories
  * 
  * GET /api/categories
- * Query params: type (optional - 'expense' or 'income')
  */
-export async function getAllCategories(req: Request, res: Response): Promise<void> {
+export async function getAllCategories(_req: Request, res: Response): Promise<void> {
   try {
-    const { type } = req.query;
-    
-    // Validate type if provided
-    if (type && !Object.values(CategoryType).includes(type as CategoryType)) {
-      sendValidationError(res, 'Invalid type value');
-      return;
-    }
-    
-    const categories = await categoryService.getAllCategories(type as CategoryType);
+    const categories = await categoryService.getAllCategories();
     sendSuccess(res, categories);
   } catch (error) {
     console.error('Error fetching categories:', error);

@@ -5,6 +5,7 @@ class CategoryManager extends HTMLElement {
     this.categories = [];
     this.isOpen = false;
     this.loading = false;
+    this.editingCategory = null; // Track which category is being edited
     this.handleExternalOpen = this.handleExternalOpen.bind(this);
   }
 
@@ -50,7 +51,6 @@ class CategoryManager extends HTMLElement {
     const formData = new FormData(form);
 
     const name = formData.get('name').trim();
-    const type = formData.get('type');
     const color = formData.get('color');
 
     if (!name) {
@@ -62,14 +62,67 @@ class CategoryManager extends HTMLElement {
     this.render();
 
     try {
-      await API.categories.create({ name, type, color });
-      showNotification('Categoria creata', 'success');
+      if (this.editingCategory) {
+        // Update existing category
+        await API.categories.update(this.editingCategory.id, { name, color });
+        showNotification('Categoria aggiornata', 'success');
+        this.editingCategory = null;
+      } else {
+        // Create new category
+        await API.categories.create({ name, color });
+        showNotification('Categoria creata', 'success');
+      }
       await window.reloadCategories?.();
       this.loadCategories();
       form.reset();
     } catch (error) {
       console.error('Errore salvataggio categoria:', error);
-      showNotification(error.message || 'Impossibile creare la categoria', 'error');
+      showNotification(error.message || 'Impossibile salvare la categoria', 'error');
+    } finally {
+      this.loading = false;
+      this.render();
+    }
+  }
+
+  editCategory(category) {
+    this.editingCategory = category;
+    this.render();
+    // Populate form with category data
+    const form = this.shadowRoot.querySelector('#category-form');
+    if (form) {
+      form.querySelector('[name="name"]').value = category.name;
+      form.querySelector('[name="color"]').value = category.color || '#2563eb';
+    }
+  }
+
+  cancelEdit() {
+    this.editingCategory = null;
+    const form = this.shadowRoot.querySelector('#category-form');
+    if (form) form.reset();
+    this.render();
+  }
+
+  async deleteCategory(category) {
+    if (category.name === 'Senza Categoria') {
+      showNotification('Non puoi eliminare la categoria "Senza Categoria"', 'warning');
+      return;
+    }
+
+    if (!confirm(`Sei sicuro di voler eliminare la categoria "${category.name}"?\n\nLe spese con questa categoria saranno spostate in "Senza Categoria".`)) {
+      return;
+    }
+
+    this.loading = true;
+    this.render();
+
+    try {
+      await API.categories.delete(category.id);
+      showNotification('Categoria eliminata', 'success');
+      await window.reloadCategories?.();
+      this.loadCategories();
+    } catch (error) {
+      console.error('Errore eliminazione categoria:', error);
+      showNotification(error.message || 'Impossibile eliminare la categoria', 'error');
     } finally {
       this.loading = false;
       this.render();
@@ -195,12 +248,29 @@ class CategoryManager extends HTMLElement {
           opacity: 0.7;
           cursor: not-allowed;
         }
+        .btn-secondary {
+          background: var(--color-bg-tertiary);
+          color: var(--color-text-primary);
+        }
+        .btn-small {
+          padding: 0.25rem 0.5rem;
+          font-size: 0.75rem;
+          margin-right: 0.25rem;
+        }
+        .btn-edit {
+          background: var(--color-primary);
+          color: white;
+        }
+        .btn-delete {
+          background: var(--color-danger);
+          color: white;
+        }
       </style>
 
       <div class="modal">
         <div class="modal-content">
           <div class="modal-header">
-            <h2>Nuova Categoria Spesa</h2>
+            <h2>${this.editingCategory ? 'Modifica Categoria' : 'Nuova Categoria Spesa'}</h2>
             <button class="close-btn" id="close-category">&times;</button>
           </div>
           <div class="modal-body">
@@ -210,19 +280,12 @@ class CategoryManager extends HTMLElement {
                 <input type="text" name="name" placeholder="Es. Software" required>
               </div>
               <div>
-                <label>Tipo</label>
-                <select name="type">
-                  <option value="expense">Spesa</option>
-                  <option value="income">Entrata</option>
-                </select>
-              </div>
-              <div>
                 <label>Colore</label>
                 <input type="color" name="color" value="#2563eb">
               </div>
             </form>
 
-            <section>
+            <section style="margin-top: 1.5rem;">
               <h3 style="margin:0 0 0.5rem 0;font-size:1rem;">Categorie esistenti</h3>
               ${this.categories.length === 0 ? `
                 <div class="list-empty">Nessuna categoria presente.</div>
@@ -231,16 +294,19 @@ class CategoryManager extends HTMLElement {
                   <thead>
                     <tr>
                       <th>Categoria</th>
-                      <th>Tipo</th>
                       <th>Colore</th>
+                      <th style="text-align: right;">Azioni</th>
                     </tr>
                   </thead>
                   <tbody>
                     ${this.categories.map(cat => `
                       <tr>
                         <td>${cat.name}</td>
-                        <td>${cat.type === 'income' ? 'Entrata' : 'Spesa'}</td>
                         <td><span class="color-dot" style="background:${cat.color || '#2563eb'}"></span></td>
+                        <td style="text-align: right;">
+                          <button class="btn btn-small btn-edit" data-action="edit" data-id="${cat.id}">Modifica</button>
+                          <button class="btn btn-small btn-delete" data-action="delete" data-id="${cat.id}" ${cat.name === 'Senza Categoria' ? 'disabled style="opacity:0.5;"' : ''}>Elimina</button>
+                        </td>
                       </tr>
                     `).join('')}
                   </tbody>
@@ -249,8 +315,11 @@ class CategoryManager extends HTMLElement {
             </section>
           </div>
           <div class="modal-footer">
+            ${this.editingCategory ? `
+              <button class="btn btn-secondary" id="cancel-edit">Annulla</button>
+            ` : ''}
             <button class="btn btn-primary" id="save-category" ${this.loading ? 'disabled' : ''}>
-              ${this.loading ? 'Salvataggio...' : 'Salva categoria'}
+              ${this.loading ? 'Salvataggio...' : (this.editingCategory ? 'Aggiorna categoria' : 'Salva categoria')}
             </button>
           </div>
         </div>
@@ -262,6 +331,24 @@ class CategoryManager extends HTMLElement {
 
     const saveBtn = this.shadowRoot.querySelector('#save-category');
     if (saveBtn) saveBtn.addEventListener('click', (e) => this.handleSubmit(e));
+
+    const cancelBtn = this.shadowRoot.querySelector('#cancel-edit');
+    if (cancelBtn) cancelBtn.addEventListener('click', () => this.cancelEdit());
+
+    // Add event listeners for edit and delete buttons
+    this.shadowRoot.querySelectorAll('[data-action]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const action = btn.getAttribute('data-action');
+        const id = parseInt(btn.getAttribute('data-id'));
+        const category = this.categories.find(c => c.id === id);
+        
+        if (action === 'edit' && category) {
+          this.editCategory(category);
+        } else if (action === 'delete' && category) {
+          this.deleteCategory(category);
+        }
+      });
+    });
   }
 }
 
