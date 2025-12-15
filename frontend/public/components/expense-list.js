@@ -101,8 +101,10 @@ class ExpenseList extends HTMLElement {
           </thead>
           <tbody>
             ${this.expenses.map(exp => {
-              const ivaAmount = exp.iva_amount || 0;
-              const total = exp.amount + ivaAmount;
+              // Convert strings to numbers for calculation
+              const amount = parseFloat(exp.amount) || 0;
+              const ivaAmount = parseFloat(exp.iva_amount) || 0;
+              const total = amount + ivaAmount;
               const ivaDisplay = exp.iva_included 
                 ? '<span style="color: var(--color-text-secondary); font-size: 0.75rem;">Inclusa</span>'
                 : `${formatCurrency(ivaAmount, currency)}<br><small style="color: var(--color-text-secondary); font-size: 0.65rem;">${exp.iva_rate}%</small>`;
@@ -116,7 +118,7 @@ class ExpenseList extends HTMLElement {
                       ${exp.category_name}
                     </span>
                   </td>
-                  <td>${formatCurrency(exp.amount, currency)}</td>
+                  <td>${formatCurrency(amount, currency)}</td>
                   <td>${ivaDisplay}</td>
                   <td><strong>${formatCurrency(total, currency)}</strong></td>
                   <td>${formatDate(exp.expense_date, 'short')}</td>
