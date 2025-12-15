@@ -44,8 +44,7 @@ class DashboardSummary extends HTMLElement {
   async loadSummary() {
     try {
       const year = window.AppState?.dashboardYear;
-      const url = year ? `/dashboard/summary?year=${year}` : '/dashboard/summary';
-      this.data = await API.get(url);
+      this.data = await API.dashboard.getSummary(year);
       this.render();
     } catch (error) {
       console.error('Failed to load dashboard summary:', error);

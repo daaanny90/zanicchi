@@ -26,22 +26,19 @@ class ExpenseList extends HTMLElement {
   
   async loadExpenses() {
     try {
-      // Build query params based on filters
-      const params = new URLSearchParams();
+      // Build filters object
+      const filters = {};
       if (this.filters.categoryId) {
-        params.append('category_id', this.filters.categoryId);
+        filters.categoryId = this.filters.categoryId;
       }
       if (this.filters.startDate) {
-        params.append('start_date', this.filters.startDate);
+        filters.startDate = this.filters.startDate;
       }
       if (this.filters.endDate) {
-        params.append('end_date', this.filters.endDate);
+        filters.endDate = this.filters.endDate;
       }
       
-      const queryString = params.toString();
-      const url = queryString ? `/expenses?${queryString}` : '/expenses';
-      
-      this.expenses = await API.get(url);
+      this.expenses = await API.expenses.getAll(filters);
       this.render();
     } catch (error) {
       console.error('Failed to load expenses:', error);

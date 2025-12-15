@@ -49,8 +49,8 @@ class ChartIncomeExpense extends HTMLElement {
   async loadChart() {
     try {
       const year = window.AppState?.dashboardYear;
-      const params = year ? `?months=12&year=${year}` : '?months=6';
-      this.data = await API.get(`/dashboard/income-expense-chart${params}`);
+      const months = year ? 12 : 6;
+      this.data = await API.dashboard.getIncomeExpenseChart(months, year);
       this.renderChart();
     } catch (error) {
       console.error('Failed to load chart data:', error);

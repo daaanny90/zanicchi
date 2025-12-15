@@ -48,8 +48,7 @@ class ChartExpenseCategory extends HTMLElement {
   async loadChart() {
     try {
       const year = window.AppState?.dashboardYear;
-      const params = year ? `?year=${year}` : '';
-      this.data = await API.get(`/dashboard/expense-by-category${params}`);
+      this.data = await API.dashboard.getExpenseByCategory(year);
       this.renderChart();
     } catch (error) {
       console.error('Failed to load chart data:', error);
