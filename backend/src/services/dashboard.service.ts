@@ -14,9 +14,9 @@
 
 import { RowDataPacket } from 'mysql2';
 import db from '../config/database';
-import { getInvoiceSummary, updateOverdueInvoices } from './invoice.service';
+import { updateOverdueInvoices } from './invoice.service';
 import { getExpenseSummary } from './expense.service';
-import { calculateItalianTaxes } from '../utils/calc.utils';
+import { calculateItalianTaxes, calculatePercentage } from '../utils/calc.utils';
 import { getFirstDayOfMonth, getLastDayOfMonth, getLastDayOfSpecificMonth } from '../utils/date.utils';
 
 /**
@@ -80,11 +80,17 @@ export interface MonthlyDataPoint {
  * Updates overdue invoices before calculating to ensure accuracy.
  * Uses Italian "regime forfettario" tax calculation.
  * 
+ * @param year - Optional year filter (defaults to current year)
  * @returns Promise resolving to dashboard summary
  */
-export async function getDashboardSummary(): Promise<DashboardSummary> {
+export async function getDashboardSummary(year?: number): Promise<DashboardSummary> {
   // Update overdue invoices first
   await updateOverdueInvoices();
+  
+  // Use current year if not specified
+  const targetYear = year || new Date().getFullYear();
+  const startDate = `${targetYear}-01-01`;
+  const endDate = `${targetYear}-12-31`;
   
   // Get tax settings
   const [settingsRows] = await db.query<RowDataPacket[]>(
@@ -101,23 +107,43 @@ export async function getDashboardSummary(): Promise<DashboardSummary> {
   const incomeTaxRate = settings['income_tax_rate'] || 15;
   const healthInsuranceRate = settings['health_insurance_rate'] || 27;
   
-  // Get invoice summary
-  const invoiceSummary = await getInvoiceSummary();
+  // Get invoice summary for the year
+  const [invoiceRows] = await db.query<RowDataPacket[]>(
+    `SELECT 
+      COALESCE(SUM(CASE WHEN status = 'paid' THEN amount ELSE 0 END), 0) as total_paid,
+      COALESCE(SUM(CASE WHEN status = 'sent' THEN amount ELSE 0 END), 0) as total_pending,
+      COALESCE(SUM(CASE WHEN status = 'overdue' THEN amount ELSE 0 END), 0) as total_overdue
+    FROM invoices
+    WHERE issue_date BETWEEN ? AND ?`,
+    [startDate, endDate]
+  );
   
-  // Get expense summary
-  const expenseSummary = await getExpenseSummary();
+  const totalPaid = invoiceRows[0].total_paid;
+  const totalPending = invoiceRows[0].total_pending;
+  const totalOverdue = invoiceRows[0].total_overdue;
+  
+  // Get expense summary for the year
+  const [expenseRows] = await db.query<RowDataPacket[]>(
+    `SELECT COALESCE(SUM(amount + iva_amount), 0) as total_amount
+    FROM expenses
+    WHERE expense_date BETWEEN ? AND ?`,
+    [startDate, endDate]
+  );
+  
+  const totalExpenses = expenseRows[0].total_amount;
   
   // Calculate total VAT collected from paid invoices (this goes to government)
   const [vatRows] = await db.query<RowDataPacket[]>(
     `SELECT COALESCE(SUM(tax_amount), 0) as total_vat
      FROM invoices
-     WHERE status = 'paid'`
+     WHERE status = 'paid' AND issue_date BETWEEN ? AND ?`,
+    [startDate, endDate]
   );
   
   const totalVat = vatRows[0].total_vat;
   
   // Calculate Italian taxes using the forfettario regime
-  const grossIncome = invoiceSummary.total_paid; // Total from paid invoices (excl. VAT)
+  const grossIncome = totalPaid; // Total from paid invoices (excl. VAT)
   const taxes = calculateItalianTaxes(
     grossIncome,
     taxablePercentage,
@@ -126,11 +152,11 @@ export async function getDashboardSummary(): Promise<DashboardSummary> {
   );
   
   // Calculate net income: Gross Income - Expenses - Income Tax - Health Insurance
-  const netIncome = grossIncome - expenseSummary.total_amount - taxes.totalTaxBurden;
+  const netIncome = grossIncome - totalExpenses - taxes.totalTaxBurden;
   
   return {
     total_income: grossIncome,
-    total_expenses: expenseSummary.total_amount,
+    total_expenses: totalExpenses,
     total_vat: totalVat,
     taxable_income: taxes.taxableIncome,
     health_insurance: taxes.healthInsurance,
@@ -138,8 +164,8 @@ export async function getDashboardSummary(): Promise<DashboardSummary> {
     income_tax: taxes.incomeTax,
     total_tax_burden: taxes.totalTaxBurden,
     net_income: Math.round(netIncome * 100) / 100,
-    pending_invoices: invoiceSummary.total_pending,
-    overdue_invoices: invoiceSummary.total_overdue
+    pending_invoices: totalPending,
+    overdue_invoices: totalOverdue
   };
 }
 
@@ -243,9 +269,10 @@ export async function getMonthlyEstimate(): Promise<MonthlyEstimate> {
  * - Net: Income - Expenses - Italian Taxes (INPS + Income Tax)
  * 
  * @param months - Number of months to include (default: 6)
+ * @param year - Optional year filter (if provided, shows months for that year only)
  * @returns Promise resolving to array of monthly data points
  */
-export async function getIncomeExpenseChartData(months: number = 6): Promise<MonthlyDataPoint[]> {
+export async function getIncomeExpenseChartData(months: number = 6, year?: number): Promise<MonthlyDataPoint[]> {
   // Get tax settings for Italian tax calculation
   const [settingsRows] = await db.query<RowDataPacket[]>(
     `SELECT setting_key, setting_value FROM settings 
@@ -262,16 +289,26 @@ export async function getIncomeExpenseChartData(months: number = 6): Promise<Mon
   const healthInsuranceRate = settings['health_insurance_rate'] || 26.07;
   
   // Get all unique months from both invoices and expenses
-  const [monthsRows] = await db.query<RowDataPacket[]>(
-    `SELECT DISTINCT month FROM (
+  let monthQuery = `
+    SELECT DISTINCT month FROM (
       SELECT DATE_FORMAT(issue_date, '%Y-%m') as month FROM invoices
       UNION
       SELECT DATE_FORMAT(expense_date, '%Y-%m') as month FROM expenses
     ) AS all_months
-    ORDER BY month DESC
-    LIMIT ?`,
-    [months]
-  );
+  `;
+  
+  const params: any[] = [];
+  
+  // Filter by year if specified
+  if (year) {
+    monthQuery += ` WHERE month LIKE ?`;
+    params.push(`${year}-%`);
+  }
+  
+  monthQuery += ` ORDER BY month DESC LIMIT ?`;
+  params.push(months);
+  
+  const [monthsRows] = await db.query<RowDataPacket[]>(monthQuery, params);
   
   const result: MonthlyDataPoint[] = [];
   
@@ -330,10 +367,62 @@ export async function getIncomeExpenseChartData(months: number = 6): Promise<Mon
  * Retrieves expense breakdown by category for pie/donut charts.
  * Includes only categories that have expenses.
  * 
+ * @param year - Optional year filter (defaults to all time)
  * @returns Promise resolving to expense summary with category breakdown
  */
-export async function getExpenseByCategoryChartData() {
-  return getExpenseSummary();
+export async function getExpenseByCategoryChartData(year?: number) {
+  if (!year) {
+    return getExpenseSummary();
+  }
+  
+  // Year-filtered version
+  const startDate = `${year}-01-01`;
+  const endDate = `${year}-12-31`;
+  
+  // Get total expenses including IVA amounts for the year
+  const [totalRows] = await db.query<RowDataPacket[]>(
+    `SELECT 
+      COUNT(*) as total_expenses,
+      COALESCE(SUM(amount + iva_amount), 0) as total_amount
+    FROM expenses
+    WHERE expense_date BETWEEN ? AND ?`,
+    [startDate, endDate]
+  );
+  
+  const totalExpenses = totalRows[0].total_expenses;
+  const totalAmount = totalRows[0].total_amount;
+  
+  // Get expenses by category (including IVA) for the year
+  const [categoryRows] = await db.query<RowDataPacket[]>(
+    `SELECT 
+      c.id as category_id,
+      c.name as category_name,
+      c.color as category_color,
+      COALESCE(SUM(e.amount + e.iva_amount), 0) as total_amount,
+      COUNT(e.id) as expense_count
+    FROM categories c
+    LEFT JOIN expenses e ON c.id = e.category_id AND e.expense_date BETWEEN ? AND ?
+    GROUP BY c.id, c.name, c.color
+    HAVING expense_count > 0
+    ORDER BY total_amount DESC`,
+    [startDate, endDate]
+  );
+  
+  // Calculate percentages
+  const byCategory = categoryRows.map((row: any) => ({
+    category_id: row.category_id,
+    category_name: row.category_name,
+    category_color: row.category_color,
+    total_amount: row.total_amount,
+    expense_count: row.expense_count,
+    percentage: calculatePercentage(row.total_amount, totalAmount)
+  }));
+  
+  return {
+    total_expenses: totalExpenses,
+    total_amount: totalAmount,
+    by_category: byCategory
+  };
 }
 
 /**

@@ -60,7 +60,15 @@
             <main class="content">
                 <!-- Dashboard View (default) -->
                 <div id="dashboard-view" class="view active">
-                    <h1 class="page-title">Cruscotto</h1>
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+                        <h1 class="page-title">Cruscotto</h1>
+                        <div style="display: flex; gap: 0.5rem; align-items: center;">
+                            <label for="dashboard-year-select" style="font-size: 0.875rem; font-weight: 600; color: var(--color-text-secondary);">Anno:</label>
+                            <select id="dashboard-year-select" style="padding: 0.5rem 1rem; border: 1px solid var(--color-border); border-radius: 0.375rem; background-color: var(--color-bg); color: var(--color-text-primary); font-size: 0.875rem; cursor: pointer;">
+                                <!-- Years will be populated by JavaScript -->
+                            </select>
+                        </div>
+                    </div>
                     
                     <!-- Summary cards showing key metrics -->
                     <dashboard-summary></dashboard-summary>

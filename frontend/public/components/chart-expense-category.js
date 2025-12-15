@@ -27,6 +27,9 @@ class ChartExpenseCategory extends HTMLElement {
   connectedCallback() {
     this.render();
     this.loadChart();
+    
+    // Listen for year changes
+    window.addEventListener('dashboardYearChanged', () => this.loadChart());
   }
   
   /**
@@ -36,6 +39,7 @@ class ChartExpenseCategory extends HTMLElement {
     if (this.chart) {
       this.chart.destroy();
     }
+    window.removeEventListener('dashboardYearChanged', () => this.loadChart());
   }
   
   /**
@@ -43,7 +47,9 @@ class ChartExpenseCategory extends HTMLElement {
    */
   async loadChart() {
     try {
-      this.data = await API.dashboard.getExpenseByCategory();
+      const year = window.AppState?.dashboardYear;
+      const params = year ? `?year=${year}` : '';
+      this.data = await API.get(`/dashboard/expense-by-category${params}`);
       this.renderChart();
     } catch (error) {
       console.error('Failed to load chart data:', error);
