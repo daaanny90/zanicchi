@@ -182,13 +182,13 @@ class ExpenseForm extends HTMLElement {
                   <label class="form-label">Categoria *</label>
                   <select name="category_id" class="form-select" required>
                     <option value="">Seleziona categoria...</option>
-                    ${categories.filter(c => c.type === 'expense').map(cat => `
+                    ${categories.map(cat => `
                       <option value="${cat.id}" ${this.expense?.category_id === cat.id ? 'selected' : ''}>
                         ${cat.name}
                       </option>
                     `).join('')}
                   </select>
-                  ${categories.filter(c => c.type === 'expense').length === 0 ? `
+                  ${categories.length === 0 ? `
                     <small style="display:block;margin-top:0.35rem;color:var(--color-text-secondary);">
                       Nessuna categoria disponibile. <button type="button" id="open-category-manager" style="color:var(--color-primary);background:none;border:none;cursor:pointer;padding:0;">Crea categoria</button>
                     </small>
