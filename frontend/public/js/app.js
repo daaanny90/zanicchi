@@ -18,7 +18,8 @@
 const AppState = {
   currentView: 'dashboard',
   settings: null,
-  categories: []
+  categories: [],
+  dashboardYear: null  // null means current year
 };
 
 const ThemeState = {
@@ -38,6 +39,7 @@ async function initApp() {
   
   initializeTheme();
   setupNavigation();
+  setupDashboardYearSelector();
   await loadAppData();
   showView('dashboard');
   
@@ -75,6 +77,45 @@ function applyTheme(theme) {
 function toggleTheme() {
   const next = ThemeState.current === 'dark' ? 'light' : 'dark';
   applyTheme(next);
+}
+
+/**
+ * Setup Dashboard Year Selector
+ * 
+ * Initializes the year selector dropdown in the dashboard view.
+ * Populates it with years and handles year changes.
+ */
+function setupDashboardYearSelector() {
+  const yearSelect = document.getElementById('dashboard-year-select');
+  if (!yearSelect) return;
+  
+  // Get current year
+  const currentYear = new Date().getFullYear();
+  
+  // Populate with years (current year and 5 years back, plus 1 year forward)
+  const years = [];
+  for (let i = 1; i >= -5; i--) {
+    years.push(currentYear - i);
+  }
+  
+  // Add options
+  yearSelect.innerHTML = years.map(year => 
+    `<option value="${year}" ${year === currentYear ? 'selected' : ''}>${year}</option>`
+  ).join('');
+  
+  // Set initial year (current year)
+  AppState.dashboardYear = currentYear;
+  
+  // Handle year changes
+  yearSelect.addEventListener('change', (e) => {
+    const selectedYear = parseInt(e.target.value);
+    AppState.dashboardYear = selectedYear;
+    
+    // Dispatch event to notify all dashboard components
+    window.dispatchEvent(new CustomEvent('dashboardYearChanged', {
+      detail: { year: selectedYear }
+    }));
+  });
 }
 
 /**
