@@ -108,14 +108,15 @@ export async function getDashboardSummary(year?: number): Promise<DashboardSumma
   const healthInsuranceRate = settings['health_insurance_rate'] || 27;
   
   // Get invoice summary for the year
+  // For paid invoices, use paid_date (cassa basis for regime forfettario)
+  // For pending/overdue, use issue_date (as they're not paid yet)
   const [invoiceRows] = await db.query<RowDataPacket[]>(
     `SELECT 
-      COALESCE(SUM(CASE WHEN status = 'paid' THEN amount ELSE 0 END), 0) as total_paid,
-      COALESCE(SUM(CASE WHEN status = 'sent' THEN amount ELSE 0 END), 0) as total_pending,
-      COALESCE(SUM(CASE WHEN status = 'overdue' THEN amount ELSE 0 END), 0) as total_overdue
-    FROM invoices
-    WHERE issue_date BETWEEN ? AND ?`,
-    [startDate, endDate]
+      COALESCE(SUM(CASE WHEN status = 'paid' AND paid_date BETWEEN ? AND ? THEN amount ELSE 0 END), 0) as total_paid,
+      COALESCE(SUM(CASE WHEN status = 'sent' AND issue_date BETWEEN ? AND ? THEN amount ELSE 0 END), 0) as total_pending,
+      COALESCE(SUM(CASE WHEN status = 'overdue' AND issue_date BETWEEN ? AND ? THEN amount ELSE 0 END), 0) as total_overdue
+    FROM invoices`,
+    [startDate, endDate, startDate, endDate, startDate, endDate]
   );
   
   const totalPaid = invoiceRows[0].total_paid;
@@ -133,10 +134,11 @@ export async function getDashboardSummary(year?: number): Promise<DashboardSumma
   const totalExpenses = expenseRows[0].total_amount;
   
   // Calculate total VAT collected from paid invoices (this goes to government)
+  // Use paid_date for cassa basis (regime forfettario)
   const [vatRows] = await db.query<RowDataPacket[]>(
     `SELECT COALESCE(SUM(tax_amount), 0) as total_vat
      FROM invoices
-     WHERE status = 'paid' AND issue_date BETWEEN ? AND ?`,
+     WHERE status = 'paid' AND paid_date BETWEEN ? AND ?`,
     [startDate, endDate]
   );
   
@@ -319,11 +321,11 @@ export async function getIncomeExpenseChartData(months: number = 6, year?: numbe
     const [year, monthNum] = month.split('-');
     const endDate = getLastDayOfSpecificMonth(parseInt(year), parseInt(monthNum));
     
-    // Get income for this month (only paid invoices)
+    // Get income for this month (only paid invoices, using paid_date for cassa basis)
     const [incomeRows] = await db.query<RowDataPacket[]>(
       `SELECT COALESCE(SUM(CASE WHEN status = 'paid' THEN amount ELSE 0 END), 0) as income
        FROM invoices
-       WHERE issue_date >= ? AND issue_date <= ?`,
+       WHERE status = 'paid' AND paid_date >= ? AND paid_date <= ?`,
       [startDate, endDate]
     );
     
@@ -566,11 +568,14 @@ export interface AnnualRevenueLimit {
 /**
  * Get annual revenue limit status
  * 
- * Calculates total invoiced revenue for the current calendar year
+ * Calculates total PAID revenue for the current calendar year
  * and compares it to the Italian flat-tax regime limit of 85,000 €.
  * 
- * Note: This uses invoice ISSUE dates and total_amount (including VAT if applicable)
- * as this represents what has been officially invoiced to clients.
+ * **IMPORTANT: For "Regime Forfettario" this uses PAID_DATE (cassa basis), 
+ * NOT issue_date (competenza basis). What counts is when you receive the money,
+ * not when you issue the invoice.**
+ * 
+ * Example: Invoice issued Dec 2025 but paid Jan 2026 → counts towards 2026 limit
  * 
  * @returns Promise resolving to annual revenue limit data
  */
@@ -579,15 +584,16 @@ export async function getAnnualRevenueLimit(): Promise<AnnualRevenueLimit> {
   const startDate = `${currentYear}-01-01`;
   const endDate = `${currentYear}-12-31`;
   
-  // Get all invoices issued this year (regardless of payment status)
-  // Use total_amount to include the full invoiced amount
+  // Get all invoices PAID this year (using paid_date, not issue_date)
+  // This is correct for "Regime Forfettario" which uses cash basis accounting
   const [invoiceRows] = await db.query<RowDataPacket[]>(
     `SELECT 
        COUNT(*) as invoice_count,
        COALESCE(SUM(total_amount), 0) as total_invoiced
      FROM invoices 
-     WHERE issue_date >= ? 
-       AND issue_date <= ?`,
+     WHERE status = 'paid'
+       AND paid_date >= ? 
+       AND paid_date <= ?`,
     [startDate, endDate]
   );
   
