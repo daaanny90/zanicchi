@@ -90,6 +90,14 @@ class ExpenseList extends HTMLElement {
     }
   }
   
+  calculateTotal() {
+    return this.expenses.reduce((sum, exp) => {
+      const amount = parseFloat(exp.amount) || 0;
+      const ivaAmount = parseFloat(exp.iva_amount) || 0;
+      return sum + amount + ivaAmount;
+    }, 0);
+  }
+  
   render() {
     const settings = window.AppState?.settings;
     const currency = settings?.currency || 'EUR';
