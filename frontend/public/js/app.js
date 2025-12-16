@@ -27,6 +27,49 @@ const ThemeState = {
 };
 
 const THEME_STORAGE_KEY = 'ff_theme';
+const VIEW_STORAGE_KEY = 'ff_current_view';
+
+/**
+ * Event System for Reactivity
+ * 
+ * Centralized event names for data changes.
+ * Components listen to these events to update automatically.
+ */
+const AppEvents = {
+  // Data change events
+  INVOICES_CHANGED: 'data:invoices:changed',
+  EXPENSES_CHANGED: 'data:expenses:changed',
+  CATEGORIES_CHANGED: 'data:categories:changed',
+  WORKED_HOURS_CHANGED: 'data:worked-hours:changed',
+  CLIENTS_CHANGED: 'data:clients:changed',
+  SETTINGS_CHANGED: 'data:settings:changed',
+  
+  // Dashboard specific
+  DASHBOARD_REFRESH: 'dashboard:refresh',
+  DASHBOARD_YEAR_CHANGED: 'dashboardYearChanged'
+};
+
+/**
+ * Emit a data change event
+ * 
+ * Notifies all listening components that data has changed.
+ * 
+ * @param {string} eventName - Event name from AppEvents
+ * @param {Object} detail - Optional event detail data
+ */
+function emitDataChange(eventName, detail = {}) {
+  console.log(`[Event] Emitting: ${eventName}`, detail);
+  window.dispatchEvent(new CustomEvent(eventName, { detail }));
+  
+  // Also emit a general dashboard refresh for dashboard-specific components
+  if (eventName !== AppEvents.DASHBOARD_REFRESH) {
+    window.dispatchEvent(new CustomEvent(AppEvents.DASHBOARD_REFRESH));
+  }
+}
+
+// Make event system globally available
+window.AppEvents = AppEvents;
+window.emitDataChange = emitDataChange;
 
 /**
  * Initialize Application
@@ -41,9 +84,13 @@ async function initApp() {
   setupNavigation();
   setupDashboardYearSelector();
   await loadAppData();
-  showView('dashboard');
+  
+  // Restore last viewed page or default to dashboard
+  const lastView = localStorage.getItem(VIEW_STORAGE_KEY) || 'dashboard';
+  showView(lastView);
   
   console.log('Application initialized successfully');
+  console.log('Reactivity system active - all changes will update automatically');
 }
 
 function initializeTheme() {
@@ -197,12 +244,16 @@ function handleNavigationAction(action) {
  * 
  * Switches between different views (dashboard, invoices, expenses, settings).
  * Updates navigation state and shows appropriate content.
+ * Persists view selection to localStorage.
  * 
  * @param {string} viewName - Name of view to show
  */
 function showView(viewName) {
   // Update state
   AppState.currentView = viewName;
+  
+  // Persist view selection
+  localStorage.setItem(VIEW_STORAGE_KEY, viewName);
   
   // Hide all views
   document.querySelectorAll('.view').forEach(view => {
@@ -342,12 +393,14 @@ function getCategories() {
 /**
  * Reload Categories
  * 
- * Reloads categories from API.
+ * Reloads categories from API and emits change event.
  * Useful after creating/updating categories.
  */
 async function reloadCategories() {
   try {
     AppState.categories = await API.categories.getAll();
+    emitDataChange(AppEvents.CATEGORIES_CHANGED);
+    // Keep legacy event for backward compatibility
     window.dispatchEvent(new CustomEvent('categories:updated'));
   } catch (error) {
     console.error('Failed to reload categories:', error);

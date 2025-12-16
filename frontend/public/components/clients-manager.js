@@ -100,6 +100,9 @@ class ClientsManager extends HTMLElement {
         });
         showNotification('Cliente creato', 'success');
       }
+      
+      // Emit event for reactive updates
+      window.emitDataChange?.(window.AppEvents?.CLIENTS_CHANGED || 'data:clients:changed');
 
       window.dispatchEvent(new CustomEvent('clients:updated'));
       await this.loadClients();
@@ -125,6 +128,9 @@ class ClientsManager extends HTMLElement {
     try {
       const result = await API.clients.delete(clientId);
       const deletedHours = result.data?.deletedHours || 0;
+      
+      // Emit event for reactive updates
+      window.emitDataChange?.(window.AppEvents?.CLIENTS_CHANGED || 'data:clients:changed');
       
       if (deletedHours > 0) {
         showNotification(`Cliente eliminato (${deletedHours} registrazioni ore eliminate)`, 'success');

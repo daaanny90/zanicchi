@@ -27,14 +27,24 @@ class DashboardSummary extends HTMLElement {
     this.loadSummary();
     
     // Listen for year changes
-    window.addEventListener('dashboardYearChanged', () => this.loadSummary());
+    this.boundYearChange = () => this.loadSummary();
+    window.addEventListener('dashboardYearChanged', this.boundYearChange);
+    
+    // Listen for data changes for reactive updates
+    this.boundRefresh = () => this.loadSummary();
+    window.addEventListener(window.AppEvents?.DASHBOARD_REFRESH || 'dashboard:refresh', this.boundRefresh);
   }
   
   /**
    * Disconnected Callback
    */
   disconnectedCallback() {
-    window.removeEventListener('dashboardYearChanged', () => this.loadSummary());
+    if (this.boundYearChange) {
+      window.removeEventListener('dashboardYearChanged', this.boundYearChange);
+    }
+    if (this.boundRefresh) {
+      window.removeEventListener(window.AppEvents?.DASHBOARD_REFRESH || 'dashboard:refresh', this.boundRefresh);
+    }
   }
   
   /**
