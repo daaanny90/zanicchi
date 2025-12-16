@@ -60,8 +60,15 @@ class ExpenseList extends HTMLElement {
       
       this.expenses = await API.expenses.getAll(filters);
       
-      // Ensure categories are loaded before rendering
-      if (!window.AppState?.categories || window.AppState.categories.length === 0) {
+      // Ensure AppState exists and categories are loaded before rendering
+      if (!window.AppState) {
+        console.warn('Expense list: AppState not yet initialized, waiting...');
+        // AppState will be initialized soon, just render without categories for now
+        this.render();
+        return;
+      }
+      
+      if (!window.AppState.categories || window.AppState.categories.length === 0) {
         console.log('Expense list: Loading categories before render...');
         try {
           window.AppState.categories = await API.categories.getAll();
