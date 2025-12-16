@@ -13,6 +13,12 @@ class InvoiceList extends HTMLElement {
     super();
     this.attachShadow({ mode: 'open' });
     this.invoices = [];
+    this.filters = {
+      status: null,
+      clientName: null,
+      startDate: null,
+      endDate: null
+    };
   }
   
   connectedCallback() {
@@ -22,12 +28,51 @@ class InvoiceList extends HTMLElement {
   
   async loadInvoices() {
     try {
-      this.invoices = await API.invoices.getAll();
+      // Build filters object
+      const filters = {};
+      if (this.filters.status) {
+        filters.status = this.filters.status;
+      }
+      if (this.filters.clientName) {
+        filters.clientName = this.filters.clientName;
+      }
+      if (this.filters.startDate) {
+        filters.startDate = this.filters.startDate;
+      }
+      if (this.filters.endDate) {
+        filters.endDate = this.filters.endDate;
+      }
+      
+      this.invoices = await API.invoices.getAll(filters);
       this.render();
     } catch (error) {
       console.error('Failed to load invoices:', error);
       showNotification('Impossibile caricare le fatture', 'error');
     }
+  }
+  
+  applyFilters() {
+    const statusSelect = this.shadowRoot.querySelector('#filter-status');
+    const clientInput = this.shadowRoot.querySelector('#filter-client');
+    const startDateInput = this.shadowRoot.querySelector('#filter-start-date');
+    const endDateInput = this.shadowRoot.querySelector('#filter-end-date');
+    
+    this.filters.status = statusSelect?.value || null;
+    this.filters.clientName = clientInput?.value || null;
+    this.filters.startDate = startDateInput?.value || null;
+    this.filters.endDate = endDateInput?.value || null;
+    
+    this.loadInvoices();
+  }
+  
+  clearFilters() {
+    this.filters = {
+      status: null,
+      clientName: null,
+      startDate: null,
+      endDate: null
+    };
+    this.loadInvoices();
   }
   
   async deleteInvoice(id) {
@@ -65,14 +110,73 @@ class InvoiceList extends HTMLElement {
     }
   }
   
+  calculateTotal() {
+    return this.invoices.reduce((sum, inv) => sum + parseFloat(inv.total_amount || 0), 0);
+  }
+  
   render() {
     const currency = window.AppState?.settings?.currency || 'EUR';
+    const total = this.calculateTotal();
     
     this.shadowRoot.innerHTML = `
       <style>
         :host { 
           display: block;
           margin-top: var(--space-lg);
+        }
+        .filters-bar {
+          display: flex;
+          gap: 1rem;
+          padding: 1rem;
+          background-color: var(--color-bg-secondary);
+          border-radius: 0.375rem;
+          margin-bottom: 1rem;
+          flex-wrap: wrap;
+          align-items: end;
+        }
+        .filter-group {
+          display: flex;
+          flex-direction: column;
+          gap: 0.25rem;
+          min-width: 150px;
+        }
+        .filter-group label {
+          font-size: 0.75rem;
+          font-weight: 600;
+          color: var(--color-text-secondary);
+          text-transform: uppercase;
+        }
+        .filter-group select,
+        .filter-group input {
+          padding: 0.5rem;
+          border: 1px solid var(--color-border);
+          border-radius: 0.375rem;
+          background-color: var(--color-bg);
+          color: var(--color-text-primary);
+          font-size: 0.875rem;
+        }
+        .filter-actions {
+          display: flex;
+          gap: 0.5rem;
+        }
+        .total-banner {
+          padding: 1rem;
+          background-color: var(--color-primary);
+          color: white;
+          border-radius: 0.375rem;
+          margin-bottom: 1rem;
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          font-weight: 600;
+        }
+        .total-banner .total-label {
+          font-size: 0.875rem;
+          text-transform: uppercase;
+          letter-spacing: 0.05em;
+        }
+        .total-banner .total-amount {
+          font-size: 1.5rem;
         }
         .table-container { overflow-x: auto; border-radius: 0.375rem; border: 1px solid var(--color-border); }
         .table { width: 100%; border-collapse: collapse; background-color: var(--color-bg); }
@@ -87,15 +191,56 @@ class InvoiceList extends HTMLElement {
         .badge-paid { background-color: #d1fae5; color: #065f46; }
         .badge-overdue { background-color: #fee2e2; color: #991b1b; }
         .actions { display: flex; gap: 0.5rem; }
-        .btn { padding: 0.25rem 0.75rem; font-size: 0.75rem; border: none; border-radius: 0.375rem; cursor: pointer; }
+        .btn { padding: 0.5rem 1rem; font-size: 0.875rem; border: none; border-radius: 0.375rem; cursor: pointer; transition: opacity 0.2s; }
+        .btn:hover { opacity: 0.9; }
         .btn-sm { font-size: 0.75rem; padding: 0.25rem 0.5rem; }
         .btn-primary { background-color: var(--color-primary); color: white; }
+        .btn-secondary { background-color: var(--color-bg-tertiary); color: var(--color-text-primary); }
         .btn-success { background-color: var(--color-success); color: white; }
         .btn-danger { background-color: var(--color-danger); color: white; }
         .empty { text-align: center; padding: 3rem; color: var(--color-text-secondary); }
       </style>
       
-      ${this.invoices.length > 0 ? this.renderTable(currency) : '<div class="empty">Nessuna fattura ancora. Clicca "Nuova Fattura" per crearne una.</div>'}
+      <div class="filters-bar">
+        <div class="filter-group">
+          <label for="filter-status">Stato</label>
+          <select id="filter-status">
+            <option value="">Tutti gli stati</option>
+            <option value="draft" ${this.filters.status === 'draft' ? 'selected' : ''}>Bozza</option>
+            <option value="sent" ${this.filters.status === 'sent' ? 'selected' : ''}>Inviata</option>
+            <option value="paid" ${this.filters.status === 'paid' ? 'selected' : ''}>Pagata</option>
+            <option value="overdue" ${this.filters.status === 'overdue' ? 'selected' : ''}>Scaduta</option>
+          </select>
+        </div>
+        
+        <div class="filter-group">
+          <label for="filter-client">Cliente</label>
+          <input type="text" id="filter-client" placeholder="Nome cliente..." value="${this.filters.clientName || ''}">
+        </div>
+        
+        <div class="filter-group">
+          <label for="filter-start-date">Da</label>
+          <input type="date" id="filter-start-date" value="${this.filters.startDate || ''}">
+        </div>
+        
+        <div class="filter-group">
+          <label for="filter-end-date">A</label>
+          <input type="date" id="filter-end-date" value="${this.filters.endDate || ''}">
+        </div>
+        
+        <div class="filter-actions">
+          <button class="btn btn-primary" id="apply-filters">Filtra</button>
+          <button class="btn btn-secondary" id="clear-filters">Reset</button>
+        </div>
+      </div>
+      
+      ${this.invoices.length > 0 ? `
+        <div class="total-banner">
+          <span class="total-label">Totale Fatture (${this.invoices.length})</span>
+          <span class="total-amount">${formatCurrency(total, currency)}</span>
+        </div>
+        ${this.renderTable(currency)}
+      ` : '<div class="empty">Nessuna fattura trovata con questi filtri.</div>'}
     `;
     
     this.attachEventListeners();
@@ -144,6 +289,19 @@ class InvoiceList extends HTMLElement {
   }
   
   attachEventListeners() {
+    // Filter buttons
+    const applyBtn = this.shadowRoot.querySelector('#apply-filters');
+    const clearBtn = this.shadowRoot.querySelector('#clear-filters');
+    
+    if (applyBtn) {
+      applyBtn.addEventListener('click', () => this.applyFilters());
+    }
+    
+    if (clearBtn) {
+      clearBtn.addEventListener('click', () => this.clearFilters());
+    }
+    
+    // Action buttons
     this.shadowRoot.querySelectorAll('[data-action]').forEach(btn => {
       btn.addEventListener('click', (e) => {
         const action = btn.dataset.action;

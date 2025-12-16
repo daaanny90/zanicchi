@@ -94,6 +94,7 @@ class ExpenseList extends HTMLElement {
     const settings = window.AppState?.settings;
     const currency = settings?.currency || 'EUR';
     const categories = window.AppState?.categories || [];
+    const total = this.calculateTotal();
     
     this.shadowRoot.innerHTML = `
       <style>
@@ -135,6 +136,25 @@ class ExpenseList extends HTMLElement {
         .filter-actions {
           display: flex;
           gap: 0.5rem;
+        }
+        .total-banner {
+          padding: 1rem;
+          background-color: var(--color-danger);
+          color: white;
+          border-radius: 0.375rem;
+          margin-bottom: 1rem;
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          font-weight: 600;
+        }
+        .total-banner .total-label {
+          font-size: 0.875rem;
+          text-transform: uppercase;
+          letter-spacing: 0.05em;
+        }
+        .total-banner .total-amount {
+          font-size: 1.5rem;
         }
         .table-container { overflow-x: auto; border-radius: 0.375rem; border: 1px solid var(--color-border); }
         .table { width: 100%; border-collapse: collapse; background-color: var(--color-bg); }
@@ -184,7 +204,13 @@ class ExpenseList extends HTMLElement {
         </div>
       </div>
       
-      ${this.expenses.length > 0 ? this.renderTable(currency) : '<div class="empty">Nessuna spesa trovata con questi filtri.</div>'}
+      ${this.expenses.length > 0 ? `
+        <div class="total-banner">
+          <span class="total-label">Totale Spese (${this.expenses.length})</span>
+          <span class="total-amount">${formatCurrency(total, currency)}</span>
+        </div>
+        ${this.renderTable(currency)}
+      ` : '<div class="empty">Nessuna spesa trovata con questi filtri.</div>'}
     `;
     
     this.attachEventListeners();
