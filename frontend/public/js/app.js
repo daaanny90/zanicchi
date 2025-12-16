@@ -22,6 +22,9 @@ const AppState = {
   dashboardYear: null  // null means current year
 };
 
+// Make AppState globally available
+window.AppState = AppState;
+
 const ThemeState = {
   current: 'light'
 };
