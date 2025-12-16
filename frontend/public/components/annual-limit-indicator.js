@@ -58,7 +58,7 @@ class AnnualLimitIndicator extends HTMLElement {
         borderColor: 'rgba(16, 185, 129, 0.3)',
         icon: '✅',
         title: 'Zona Sicura',
-        message: 'Puoi continuare a fatturare senza preoccupazioni.',
+        message: 'Puoi continuare a fatturare senza preoccupazioni. Contano solo le fatture pagate nell\'anno corrente.',
         gradient: 'linear-gradient(90deg, #10b981 0%, #059669 100%)'
       },
       attention: {
@@ -67,7 +67,7 @@ class AnnualLimitIndicator extends HTMLElement {
         borderColor: 'rgba(245, 158, 11, 0.3)',
         icon: '⚠️',
         title: 'Zona di Attenzione',
-        message: 'Stai avvicinandoti al limite. Monitora le tue fatture.',
+        message: 'Stai avvicinandoti al limite. Monitora i pagamenti ricevuti quest\'anno.',
         gradient: 'linear-gradient(90deg, #f59e0b 0%, #d97706 100%)'
       },
       critical: {
@@ -76,7 +76,7 @@ class AnnualLimitIndicator extends HTMLElement {
         borderColor: 'rgba(239, 68, 68, 0.3)',
         icon: '🚨',
         title: 'Zona Critica',
-        message: 'Attenzione! Sei molto vicino al limite annuale.',
+        message: 'Attenzione! Hai quasi raggiunto il limite annuale di €85.000 (pagamenti incassati).',
         gradient: 'linear-gradient(90deg, #ef4444 0%, #dc2626 100%)'
       }
     };
@@ -343,7 +343,7 @@ class AnnualLimitIndicator extends HTMLElement {
               <span class="limit-icon">💼</span>
               Limite Regime Forfettario
             </h2>
-            <p class="limit-subtitle">Anno ${this.data.year} • Fatture emesse</p>
+            <p class="limit-subtitle">Anno ${this.data.year} • Solo fatture PAGATE (cassa)</p>
           </div>
           <div class="status-badge">
             <span>${statusConfig.icon}</span>
@@ -353,9 +353,9 @@ class AnnualLimitIndicator extends HTMLElement {
         
         <div class="metrics-grid">
           <div class="metric-card">
-            <div class="metric-label">Fatturato Totale</div>
+            <div class="metric-label">Incassato ${this.data.year}</div>
             <p class="metric-value">${formatCurrency(this.data.total_invoiced, currency)}</p>
-            <div class="metric-subtext">${this.data.invoice_count} fattura/e emessa/e</div>
+            <div class="metric-subtext">${this.data.invoice_count} fattura/e pagate quest'anno</div>
           </div>
           
           <div class="metric-card">
