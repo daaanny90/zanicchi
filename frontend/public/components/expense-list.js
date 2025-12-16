@@ -26,12 +26,21 @@ class ExpenseList extends HTMLElement {
     // Listen for data changes to auto-refresh
     this.boundReload = () => this.loadExpenses();
     window.addEventListener(window.AppEvents?.EXPENSES_CHANGED || 'data:expenses:changed', this.boundReload);
+    
+    // Listen for category changes to refresh dropdown
+    this.boundCategoryUpdate = () => this.render();
+    window.addEventListener(window.AppEvents?.CATEGORIES_CHANGED || 'data:categories:changed', this.boundCategoryUpdate);
+    window.addEventListener('categories:updated', this.boundCategoryUpdate); // Legacy event
   }
   
   disconnectedCallback() {
-    // Clean up event listener
+    // Clean up event listeners
     if (this.boundReload) {
       window.removeEventListener(window.AppEvents?.EXPENSES_CHANGED || 'data:expenses:changed', this.boundReload);
+    }
+    if (this.boundCategoryUpdate) {
+      window.removeEventListener(window.AppEvents?.CATEGORIES_CHANGED || 'data:categories:changed', this.boundCategoryUpdate);
+      window.removeEventListener('categories:updated', this.boundCategoryUpdate);
     }
   }
   
@@ -112,8 +121,10 @@ class ExpenseList extends HTMLElement {
   render() {
     const settings = window.AppState?.settings;
     const currency = settings?.currency || 'EUR';
-    const categories = window.AppState?.categories || [];
     const total = this.calculateTotal();
+    
+    // Always get fresh categories from AppState
+    const categories = window.AppState?.categories || [];
     
     this.shadowRoot.innerHTML = `
       <style>
