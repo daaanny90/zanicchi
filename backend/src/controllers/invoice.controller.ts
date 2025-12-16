@@ -24,11 +24,11 @@ import {
  * Get all invoices
  * 
  * GET /api/invoices
- * Query params: status (optional)
+ * Query params: status (optional), client_name (optional), start_date (optional), end_date (optional)
  */
 export async function getAllInvoices(req: Request, res: Response): Promise<void> {
   try {
-    const { status } = req.query;
+    const { status, client_name, start_date, end_date } = req.query;
     
     // Validate status if provided
     if (status && !Object.values(InvoiceStatus).includes(status as InvoiceStatus)) {
@@ -36,7 +36,13 @@ export async function getAllInvoices(req: Request, res: Response): Promise<void>
       return;
     }
     
-    const invoices = await invoiceService.getAllInvoices(status as InvoiceStatus);
+    const filters: any = {};
+    if (status) filters.status = status as InvoiceStatus;
+    if (client_name) filters.clientName = client_name as string;
+    if (start_date) filters.startDate = start_date as string;
+    if (end_date) filters.endDate = end_date as string;
+    
+    const invoices = await invoiceService.getAllInvoices(filters);
     sendSuccess(res, invoices);
   } catch (error) {
     console.error('Error fetching invoices:', error);

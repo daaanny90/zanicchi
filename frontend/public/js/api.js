@@ -80,9 +80,14 @@ const API = {
    * Invoice API Methods
    */
   invoices: {
-    // Get all invoices
-    getAll: (status = null) => {
-      const query = status ? `?status=${status}` : '';
+    // Get all invoices with optional filters
+    getAll: (filters = {}) => {
+      const params = new URLSearchParams();
+      if (filters.status) params.append('status', filters.status);
+      if (filters.clientName) params.append('client_name', filters.clientName);
+      if (filters.startDate) params.append('start_date', filters.startDate);
+      if (filters.endDate) params.append('end_date', filters.endDate);
+      const query = params.toString() ? `?${params}` : '';
       return apiRequest(`/invoices${query}`);
     },
     

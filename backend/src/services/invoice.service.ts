@@ -30,17 +30,46 @@ import { getAllSettings } from './settings.service';
  * Retrieves all invoices from the database with optional filtering.
  * Invoices are returned in descending order by issue date.
  * 
- * @param status - Optional status filter
+ * @param filters - Optional filters (status, clientName, startDate, endDate)
  * @returns Promise resolving to array of invoices
  */
-export async function getAllInvoices(status?: InvoiceStatus): Promise<Invoice[]> {
+export async function getAllInvoices(filters?: {
+  status?: InvoiceStatus;
+  clientName?: string;
+  startDate?: string;
+  endDate?: string;
+}): Promise<Invoice[]> {
   let query = 'SELECT * FROM invoices';
   const params: any[] = [];
+  const conditions: string[] = [];
   
   // Add status filter if provided
-  if (status) {
-    query += ' WHERE status = ?';
-    params.push(status);
+  if (filters?.status) {
+    conditions.push('status = ?');
+    params.push(filters.status);
+  }
+  
+  // Add client name filter if provided (case-insensitive partial match)
+  if (filters?.clientName) {
+    conditions.push('client_name LIKE ?');
+    params.push(`%${filters.clientName}%`);
+  }
+  
+  // Add date range filter if provided
+  if (filters?.startDate && filters?.endDate) {
+    conditions.push('issue_date BETWEEN ? AND ?');
+    params.push(filters.startDate, filters.endDate);
+  } else if (filters?.startDate) {
+    conditions.push('issue_date >= ?');
+    params.push(filters.startDate);
+  } else if (filters?.endDate) {
+    conditions.push('issue_date <= ?');
+    params.push(filters.endDate);
+  }
+  
+  // Apply WHERE clause if we have conditions
+  if (conditions.length > 0) {
+    query += ' WHERE ' + conditions.join(' AND ');
   }
   
   query += ' ORDER BY issue_date DESC';
