@@ -324,13 +324,14 @@ class MonthlyOverview extends HTMLElement {
         </div>
         
         <!-- Expenses Section -->
-        <div class="overview-card expenses-card">
+        <div class="overview-card expenses-card clickable-card" id="expenses-card">
           <div class="card-header">
             <span class="card-icon">💸</span>
             <h3 class="card-title">Spese</h3>
           </div>
           <div class="card-value">${formatCurrency(this.overview.total_expenses, currency)}</div>
           <div class="card-detail">${this.overview.expense_count} spesa/e</div>
+          <div class="card-action">Clicca per dettagli →</div>
         </div>
         
         <!-- Tax Reserve Section -->
@@ -510,6 +511,127 @@ class MonthlyOverview extends HTMLElement {
           </div>
         </div>
       </div>
+      
+      <!-- Expenses Detail Modal -->
+      <div class="modal" id="expenses-modal" style="display: none;">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h3>💸 Dettaglio Spese - ${this.getMonthLabel()}</h3>
+            <button class="modal-close" id="close-expenses-btn">×</button>
+          </div>
+          <div class="modal-body">
+            <div id="expenses-list-container">
+              <div style="text-align: center; padding: 2rem; color: var(--color-text-secondary);">
+                Caricamento spese...
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    `;
+  }
+  
+  /**
+   * Load expenses for the current month
+   */
+  async loadMonthExpenses() {
+    try {
+      // Calculate start and end dates for the month
+      const startDate = new Date(this.selectedYear, this.selectedMonth - 1, 1);
+      const endDate = new Date(this.selectedYear, this.selectedMonth, 0);
+      
+      const filters = {
+        startDate: startDate.toISOString().split('T')[0],
+        endDate: endDate.toISOString().split('T')[0]
+      };
+      
+      const expenses = await API.expenses.getAll(filters);
+      this.renderExpensesList(expenses);
+    } catch (error) {
+      console.error('Failed to load expenses:', error);
+      const container = this.shadowRoot.querySelector('#expenses-list-container');
+      container.innerHTML = `
+        <div style="text-align: center; padding: 2rem; color: var(--color-danger);">
+          Errore nel caricamento delle spese. Riprova.
+        </div>
+      `;
+    }
+  }
+  
+  /**
+   * Render expenses list in modal
+   */
+  renderExpensesList(expenses) {
+    const container = this.shadowRoot.querySelector('#expenses-list-container');
+    
+    if (!expenses || expenses.length === 0) {
+      container.innerHTML = `
+        <div style="text-align: center; padding: 2rem; color: var(--color-text-secondary);">
+          Nessuna spesa registrata per questo mese.
+        </div>
+      `;
+      return;
+    }
+    
+    const currency = this.settings.currency;
+    let totalAmount = 0;
+    let totalIva = 0;
+    
+    const expensesHTML = expenses.map(exp => {
+      const amount = parseFloat(exp.amount);
+      const iva = parseFloat(exp.iva_amount || 0);
+      const total = amount + iva;
+      totalAmount += amount;
+      totalIva += iva;
+      
+      return `
+        <div class="expense-item">
+          <div class="expense-main">
+            <div class="expense-description">
+              <strong>${exp.description}</strong>
+              ${exp.category_name ? `<span class="expense-category">${exp.category_name}</span>` : ''}
+            </div>
+            <div class="expense-amount">
+              <strong>${formatCurrency(total, currency)}</strong>
+            </div>
+          </div>
+          <div class="expense-details">
+            <span class="expense-date">📅 ${new Date(exp.expense_date).toLocaleDateString('it-IT')}</span>
+            ${iva > 0 ? `
+              <span class="expense-breakdown">
+                Netto: ${formatCurrency(amount, currency)} + IVA: ${formatCurrency(iva, currency)}
+                ${exp.iva_included ? ' (reverse charge)' : ''}
+              </span>
+            ` : ''}
+          </div>
+        </div>
+      `;
+    }).join('');
+    
+    const totalHTML = `
+      <div class="expenses-total">
+        <div class="total-row">
+          <span>Totale Spese (netto):</span>
+          <strong>${formatCurrency(totalAmount, currency)}</strong>
+        </div>
+        ${totalIva > 0 ? `
+          <div class="total-row">
+            <span>Totale IVA:</span>
+            <strong>${formatCurrency(totalIva, currency)}</strong>
+          </div>
+          <div class="total-row grand-total">
+            <span>Totale Complessivo:</span>
+            <strong>${formatCurrency(totalAmount + totalIva, currency)}</strong>
+          </div>
+        ` : ''}
+      </div>
+    `;
+    
+    container.innerHTML = `
+      <div class="expenses-list">
+        ${expensesHTML}
+      </div>
+      ${totalHTML}
     `;
   }
   
@@ -568,6 +690,33 @@ class MonthlyOverview extends HTMLElement {
       formulaModal.addEventListener('click', (e) => {
         if (e.target === formulaModal) {
           formulaModal.style.display = 'none';
+        }
+      });
+    }
+    
+    // Expenses card click functionality
+    const expensesCard = this.shadowRoot.querySelector('#expenses-card');
+    const expensesModal = this.shadowRoot.querySelector('#expenses-modal');
+    const closeExpensesBtn = this.shadowRoot.querySelector('#close-expenses-btn');
+    
+    if (expensesCard) {
+      expensesCard.addEventListener('click', () => {
+        expensesModal.style.display = 'flex';
+        this.loadMonthExpenses();
+      });
+    }
+    
+    if (closeExpensesBtn) {
+      closeExpensesBtn.addEventListener('click', () => {
+        expensesModal.style.display = 'none';
+      });
+    }
+    
+    // Close expenses modal on outside click
+    if (expensesModal) {
+      expensesModal.addEventListener('click', (e) => {
+        if (e.target === expensesModal) {
+          expensesModal.style.display = 'none';
         }
       });
     }
@@ -654,6 +803,30 @@ class MonthlyOverview extends HTMLElement {
         .overview-card:hover {
           transform: translateY(-2px);
           box-shadow: 0 2px 4px 0 rgb(0 0 0 / 0.06);
+        }
+        
+        .clickable-card {
+          cursor: pointer;
+          position: relative;
+        }
+        
+        .clickable-card:hover {
+          transform: translateY(-4px);
+          box-shadow: 0 4px 12px 0 rgb(0 0 0 / 0.15);
+          border-color: var(--color-primary);
+        }
+        
+        .card-action {
+          font-size: 0.75rem;
+          color: var(--color-primary);
+          margin-top: 0.5rem;
+          font-weight: 600;
+          opacity: 0;
+          transition: opacity 0.2s;
+        }
+        
+        .clickable-card:hover .card-action {
+          opacity: 1;
         }
         
         .card-header {
@@ -1092,6 +1265,116 @@ class MonthlyOverview extends HTMLElement {
           padding: 1.5rem;
         }
         
+        /* Expenses List Styles */
+        .expenses-list {
+          display: flex;
+          flex-direction: column;
+          gap: 0.75rem;
+          margin-bottom: 1.5rem;
+        }
+        
+        .expense-item {
+          background: var(--color-bg-secondary);
+          border: 1px solid var(--color-border);
+          border-radius: 0.375rem;
+          padding: 1rem;
+          transition: background-color 0.2s;
+        }
+        
+        .expense-item:hover {
+          background: var(--color-bg-tertiary);
+        }
+        
+        .expense-main {
+          display: flex;
+          justify-content: space-between;
+          align-items: flex-start;
+          margin-bottom: 0.5rem;
+        }
+        
+        .expense-description {
+          flex: 1;
+          display: flex;
+          flex-direction: column;
+          gap: 0.25rem;
+        }
+        
+        .expense-description strong {
+          color: var(--color-text-primary);
+          font-size: 0.9375rem;
+        }
+        
+        .expense-category {
+          display: inline-block;
+          font-size: 0.75rem;
+          padding: 0.125rem 0.5rem;
+          background: var(--color-primary-alpha);
+          color: var(--color-primary);
+          border-radius: 0.25rem;
+          font-weight: 600;
+        }
+        
+        .expense-amount {
+          font-size: 1.125rem;
+          color: var(--color-text-primary);
+        }
+        
+        .expense-details {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          font-size: 0.8125rem;
+          color: var(--color-text-secondary);
+          flex-wrap: wrap;
+          gap: 0.5rem;
+        }
+        
+        .expense-date {
+          display: flex;
+          align-items: center;
+          gap: 0.25rem;
+        }
+        
+        .expense-breakdown {
+          font-style: italic;
+        }
+        
+        .expenses-total {
+          background: var(--color-bg-secondary);
+          border: 2px solid var(--color-border);
+          border-radius: 0.375rem;
+          padding: 1.25rem;
+        }
+        
+        .total-row {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          padding: 0.5rem 0;
+          font-size: 0.9375rem;
+        }
+        
+        .total-row:not(:last-child) {
+          border-bottom: 1px solid var(--color-border);
+        }
+        
+        .total-row.grand-total {
+          margin-top: 0.5rem;
+          padding-top: 1rem;
+          border-top: 2px solid var(--color-border);
+          font-size: 1.125rem;
+        }
+        
+        .total-row strong {
+          color: var(--color-text-primary);
+          font-size: 1.125rem;
+        }
+        
+        .total-row.grand-total strong {
+          color: var(--color-primary);
+          font-size: 1.5rem;
+        }
+        
         @media (max-width: 768px) {
           .overview-grid {
             grid-template-columns: 1fr;
@@ -1110,6 +1393,16 @@ class MonthlyOverview extends HTMLElement {
           .modal-content {
             width: 95%;
             max-height: 85vh;
+          }
+          
+          .expense-main {
+            flex-direction: column;
+            gap: 0.5rem;
+          }
+          
+          .expense-details {
+            flex-direction: column;
+            align-items: flex-start;
           }
         }
       </style>
