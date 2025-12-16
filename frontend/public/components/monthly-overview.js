@@ -32,6 +32,26 @@ class MonthlyOverview extends HTMLElement {
   connectedCallback() {
     this.render();
     this.loadSettings();
+    
+    // Listen for data changes to auto-refresh
+    this.boundReload = () => {
+      if (this.settings) {
+        this.loadOverview();
+      }
+    };
+    window.addEventListener(window.AppEvents?.WORKED_HOURS_CHANGED || 'data:worked-hours:changed', this.boundReload);
+    window.addEventListener(window.AppEvents?.EXPENSES_CHANGED || 'data:expenses:changed', this.boundReload);
+    // Keep legacy event for backward compatibility
+    window.addEventListener('worked-hours:updated', this.boundReload);
+  }
+  
+  disconnectedCallback() {
+    // Clean up event listeners
+    if (this.boundReload) {
+      window.removeEventListener(window.AppEvents?.WORKED_HOURS_CHANGED || 'data:worked-hours:changed', this.boundReload);
+      window.removeEventListener(window.AppEvents?.EXPENSES_CHANGED || 'data:expenses:changed', this.boundReload);
+      window.removeEventListener('worked-hours:updated', this.boundReload);
+    }
   }
   
   /**

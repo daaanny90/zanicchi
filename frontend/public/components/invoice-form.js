@@ -59,10 +59,8 @@ class InvoiceForm extends HTMLElement {
       
       this.hide();
       
-      const list = document.querySelector('invoice-list');
-      if (list && list.loadInvoices) {
-        list.loadInvoices();
-      }
+      // Emit event for reactive updates
+      window.emitDataChange?.(window.AppEvents?.INVOICES_CHANGED || 'data:invoices:changed');
       
       refreshDashboard();
     } catch (error) {

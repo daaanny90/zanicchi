@@ -29,7 +29,12 @@ class ChartIncomeExpense extends HTMLElement {
     this.loadChart();
     
     // Listen for year changes
-    window.addEventListener('dashboardYearChanged', () => this.loadChart());
+    this.boundYearChange = () => this.loadChart();
+    window.addEventListener('dashboardYearChanged', this.boundYearChange);
+    
+    // Listen for data changes for reactive updates
+    this.boundRefresh = () => this.loadChart();
+    window.addEventListener(window.AppEvents?.DASHBOARD_REFRESH || 'dashboard:refresh', this.boundRefresh);
   }
   
   /**
@@ -40,7 +45,12 @@ class ChartIncomeExpense extends HTMLElement {
     if (this.chart) {
       this.chart.destroy();
     }
-    window.removeEventListener('dashboardYearChanged', () => this.loadChart());
+    if (this.boundYearChange) {
+      window.removeEventListener('dashboardYearChanged', this.boundYearChange);
+    }
+    if (this.boundRefresh) {
+      window.removeEventListener(window.AppEvents?.DASHBOARD_REFRESH || 'dashboard:refresh', this.boundRefresh);
+    }
   }
   
   /**
