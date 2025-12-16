@@ -558,13 +558,13 @@ function fallbackGroupEntries(entries: WorkedHoursReportEntry[]): WorkedHoursGro
 
 function formatGroupNotes(group: WorkedHoursGroupedEntry): string {
   if (!group.records.length) {
-    return 'No description provided';
+    return '';
   }
 
   return group.records
     .map((record) => {
-      const note = record.note && record.note.trim().length ? record.note.trim() : 'No description provided';
-      return `• ${record.hours.toFixed(2)}h — ${note}`;
+      const note = record.note && record.note.trim().length ? record.note.trim() : '';
+      return `• ${record.hours.toFixed(2)}h ${!note.length ? '' : '—'} ${note}`;
     })
     .join('\n');
 }
