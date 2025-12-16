@@ -30,6 +30,20 @@ class AnnualLimitIndicator extends HTMLElement {
   connectedCallback() {
     this.render();
     this.loadLimitData();
+    
+    // Listen for invoice changes to auto-refresh
+    this.boundReload = () => this.loadLimitData();
+    window.addEventListener(window.AppEvents?.INVOICES_CHANGED || 'data:invoices:changed', this.boundReload);
+  }
+  
+  /**
+   * Disconnected Callback
+   */
+  disconnectedCallback() {
+    // Clean up event listener
+    if (this.boundReload) {
+      window.removeEventListener(window.AppEvents?.INVOICES_CHANGED || 'data:invoices:changed', this.boundReload);
+    }
   }
   
   /**
