@@ -24,6 +24,17 @@ class InvoiceList extends HTMLElement {
   connectedCallback() {
     this.render();
     this.loadInvoices();
+    
+    // Listen for data changes to auto-refresh
+    this.boundReload = () => this.loadInvoices();
+    window.addEventListener(window.AppEvents?.INVOICES_CHANGED || 'data:invoices:changed', this.boundReload);
+  }
+  
+  disconnectedCallback() {
+    // Clean up event listener
+    if (this.boundReload) {
+      window.removeEventListener(window.AppEvents?.INVOICES_CHANGED || 'data:invoices:changed', this.boundReload);
+    }
   }
   
   async loadInvoices() {
@@ -83,8 +94,8 @@ class InvoiceList extends HTMLElement {
     try {
       await API.invoices.delete(id);
       showNotification('Fattura eliminata con successo', 'success');
-      this.loadInvoices();
-      refreshDashboard();
+      // Emit event instead of manual reload
+      window.emitDataChange?.(window.AppEvents?.INVOICES_CHANGED || 'data:invoices:changed');
     } catch (error) {
       console.error('Failed to delete invoice:', error);
       showNotification('Impossibile eliminare la fattura', 'error');
@@ -102,8 +113,8 @@ class InvoiceList extends HTMLElement {
     try {
       await API.invoices.updateStatus(id, status);
       showNotification('Stato fattura aggiornato', 'success');
-      this.loadInvoices();
-      refreshDashboard();
+      // Emit event instead of manual reload
+      window.emitDataChange?.(window.AppEvents?.INVOICES_CHANGED || 'data:invoices:changed');
     } catch (error) {
       console.error('Failed to update status:', error);
       showNotification('Impossibile aggiornare lo stato', 'error');

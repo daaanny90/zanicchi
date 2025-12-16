@@ -22,6 +22,17 @@ class ExpenseList extends HTMLElement {
   connectedCallback() {
     this.render();
     this.loadExpenses();
+    
+    // Listen for data changes to auto-refresh
+    this.boundReload = () => this.loadExpenses();
+    window.addEventListener(window.AppEvents?.EXPENSES_CHANGED || 'data:expenses:changed', this.boundReload);
+  }
+  
+  disconnectedCallback() {
+    // Clean up event listener
+    if (this.boundReload) {
+      window.removeEventListener(window.AppEvents?.EXPENSES_CHANGED || 'data:expenses:changed', this.boundReload);
+    }
   }
   
   async loadExpenses() {
@@ -75,8 +86,8 @@ class ExpenseList extends HTMLElement {
     try {
       await API.expenses.delete(id);
       showNotification('Spesa eliminata con successo', 'success');
-      this.loadExpenses();
-      refreshDashboard();
+      // Emit event instead of manual reload
+      window.emitDataChange?.(window.AppEvents?.EXPENSES_CHANGED || 'data:expenses:changed');
     } catch (error) {
       console.error('Failed to delete expense:', error);
       showNotification('Impossibile eliminare la spesa', 'error');

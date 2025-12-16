@@ -109,6 +109,9 @@ class WorkedHoursModal extends HTMLElement {
         showNotification('Ore registrate con successo', 'success');
       }
 
+      // Emit event for reactive updates
+      window.emitDataChange?.(window.AppEvents?.WORKED_HOURS_CHANGED || 'data:worked-hours:changed');
+      // Keep legacy event for backward compatibility
       window.dispatchEvent(new CustomEvent('worked-hours:updated'));
       this.close();
     } catch (error) {

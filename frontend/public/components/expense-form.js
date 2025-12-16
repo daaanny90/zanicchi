@@ -92,10 +92,8 @@ class ExpenseForm extends HTMLElement {
       
       this.hide();
       
-      const list = document.querySelector('expense-list');
-      if (list && list.loadExpenses) {
-        list.loadExpenses();
-      }
+      // Emit event for reactive updates
+      window.emitDataChange?.(window.AppEvents?.EXPENSES_CHANGED || 'data:expenses:changed');
       
       refreshDashboard();
     } catch (error) {

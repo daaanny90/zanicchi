@@ -24,6 +24,9 @@ class MonthlyWorkedSummary extends HTMLElement {
     window.addEventListener('monthly:monthChanged', this.handleMonthChange);
     window.addEventListener('worked-hours:updated', this.handleWorkedHoursUpdate);
     window.addEventListener('clients:updated', this.handleClientsUpdate);
+    // New reactive event listeners
+    window.addEventListener(window.AppEvents?.WORKED_HOURS_CHANGED || 'data:worked-hours:changed', this.handleWorkedHoursUpdate);
+    window.addEventListener(window.AppEvents?.CLIENTS_CHANGED || 'data:clients:changed', this.handleClientsUpdate);
     this.render();
     this.loadSummary();
   }
@@ -32,6 +35,8 @@ class MonthlyWorkedSummary extends HTMLElement {
     window.removeEventListener('monthly:monthChanged', this.handleMonthChange);
     window.removeEventListener('worked-hours:updated', this.handleWorkedHoursUpdate);
     window.removeEventListener('clients:updated', this.handleClientsUpdate);
+    window.removeEventListener(window.AppEvents?.WORKED_HOURS_CHANGED || 'data:worked-hours:changed', this.handleWorkedHoursUpdate);
+    window.removeEventListener(window.AppEvents?.CLIENTS_CHANGED || 'data:clients:changed', this.handleClientsUpdate);
   }
 
   handleMonthChange(event) {
@@ -282,6 +287,9 @@ class MonthlyWorkedSummary extends HTMLElement {
     try {
       await API.workedHours.delete(entryId);
       showNotification('Registrazione eliminata', 'success');
+      // Emit event for reactive updates
+      window.emitDataChange?.(window.AppEvents?.WORKED_HOURS_CHANGED || 'data:worked-hours:changed');
+      // Keep legacy event for backward compatibility
       window.dispatchEvent(new CustomEvent('worked-hours:updated'));
     } catch (error) {
       console.error('Errore durante l\'eliminazione delle ore:', error);
