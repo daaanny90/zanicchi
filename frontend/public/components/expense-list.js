@@ -59,6 +59,17 @@ class ExpenseList extends HTMLElement {
       }
       
       this.expenses = await API.expenses.getAll(filters);
+      
+      // Ensure categories are loaded before rendering
+      if (!window.AppState?.categories || window.AppState.categories.length === 0) {
+        console.log('Expense list: Loading categories before render...');
+        try {
+          window.AppState.categories = await API.categories.getAll();
+        } catch (err) {
+          console.error('Failed to load categories:', err);
+        }
+      }
+      
       this.render();
     } catch (error) {
       console.error('Failed to load expenses:', error);
@@ -125,6 +136,11 @@ class ExpenseList extends HTMLElement {
     
     // Always get fresh categories from AppState
     const categories = window.AppState?.categories || [];
+    
+    // Debug log to see if categories are available
+    if (categories.length === 0) {
+      console.warn('Expense list: No categories found in AppState. Categories:', window.AppState?.categories);
+    }
     
     this.shadowRoot.innerHTML = `
       <style>
