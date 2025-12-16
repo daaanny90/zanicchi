@@ -48,6 +48,12 @@ class InvoiceForm extends HTMLElement {
       due_date: formData.get('due_date')
     };
     
+    // If status is paid, include payment date
+    if (data.status === 'paid') {
+      const paidDate = formData.get('paid_date');
+      data.paid_date = paidDate || new Date().toISOString().split('T')[0];
+    }
+    
     try {
       if (this.invoice) {
         await API.invoices.update(this.invoice.id, data);
@@ -73,6 +79,8 @@ class InvoiceForm extends HTMLElement {
     const form = this.shadowRoot.querySelector('#invoice-form');
     const closeBtn = this.shadowRoot.querySelector('.close-btn');
     const cancelBtn = this.shadowRoot.querySelector('[data-action="cancel"]');
+    const statusSelect = this.shadowRoot.querySelector('select[name="status"]');
+    const paidDateGroup = this.shadowRoot.querySelector('#paid-date-group');
     
     if (form) {
       form.addEventListener('submit', (e) => this.submitForm(e));
@@ -84,6 +92,27 @@ class InvoiceForm extends HTMLElement {
     
     if (cancelBtn) {
       cancelBtn.addEventListener('click', () => this.hide());
+    }
+    
+    // Show/hide paid date field based on status
+    if (statusSelect && paidDateGroup) {
+      statusSelect.addEventListener('change', (e) => {
+        if (e.target.value === 'paid') {
+          paidDateGroup.style.display = 'block';
+          // Set default to today if empty
+          const paidDateInput = paidDateGroup.querySelector('input[name="paid_date"]');
+          if (paidDateInput && !paidDateInput.value) {
+            paidDateInput.value = new Date().toISOString().split('T')[0];
+          }
+        } else {
+          paidDateGroup.style.display = 'none';
+        }
+      });
+      
+      // Trigger on initial load
+      if (statusSelect.value === 'paid') {
+        paidDateGroup.style.display = 'block';
+      }
     }
   }
   
@@ -128,8 +157,15 @@ class InvoiceForm extends HTMLElement {
                   <select name="status" class="form-select">
                     <option value="draft" ${this.invoice?.status === 'draft' ? 'selected' : ''}>Bozza</option>
                     <option value="sent" ${this.invoice?.status === 'sent' ? 'selected' : ''}>Inviata</option>
-                    <option value="paid" ${!this.invoice || this.invoice.status === 'paid' ? 'selected' : ''}>Pagata</option>
+                    <option value="paid" ${this.invoice?.status === 'paid' ? 'selected' : ''}>Pagata</option>
                   </select>
+                </div>
+                <div class="form-group" id="paid-date-group" style="display: ${this.invoice?.status === 'paid' ? 'block' : 'none'};">
+                  <label class="form-label">Data Pagamento *</label>
+                  <input type="date" name="paid_date" class="form-input" value="${this.invoice?.paid_date || new Date().toISOString().split('T')[0]}">
+                  <small style="display: block; margin-top: 0.25rem; font-size: 0.75rem; color: var(--color-text-secondary);">
+                    Data in cui hai ricevuto il pagamento (conta per limite €85k)
+                  </small>
                 </div>
                 <div class="form-group full">
                   <label class="form-label">Nome Cliente *</label>

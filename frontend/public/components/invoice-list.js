@@ -268,6 +268,7 @@ class InvoiceList extends HTMLElement {
               <th>Importo</th>
               <th>Stato</th>
               <th>Data Emissione</th>
+              <th>Data Pagamento</th>
               <th>Scadenza</th>
               <th>Azioni</th>
             </tr>
@@ -283,6 +284,12 @@ class InvoiceList extends HTMLElement {
                 </td>
                 <td><span class="badge ${getStatusBadgeClass(inv.status)}">${getStatusLabel(inv.status)}</span></td>
                 <td>${formatDate(inv.issue_date, 'short')}</td>
+                <td>
+                  ${inv.status === 'paid' && inv.paid_date ? 
+                    `<strong style="color: var(--color-success);">${formatDate(inv.paid_date, 'short')}</strong><br><small style="color: var(--color-text-secondary); font-size: 0.75rem;">📅 Conta per limite €85k</small>` : 
+                    '<span style="color: var(--color-text-secondary); font-size: 0.875rem;">—</span>'
+                  }
+                </td>
                 <td>${formatDate(inv.due_date, 'short')}</td>
                 <td>
                   <div class="actions">
